@@ -1,0 +1,3 @@
+# les fichiers sont générés à 4h GMT soit 8h heure locale. pour être sûr,
+# lancer le téléchargement à 8h45
+45 8 * * * root dl-dumps >>"$APP_DATADIR/cron.log" 2>&1

@@ -1,0 +1,7 @@
+/app.env
+
+/var/*
+!/var/.keep
+
+.~lock*#
+.*.swp
