@@ -1,0 +1,76 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+MYDIR="$(dirname -- "$0")"
+"$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
+DREINST="$MYDIR"
+source "$DREINST/sbin/functions.sh" || exit 1
+
+function start_dre() {
+    local composefile="$DREINST/docker-compose.yml"
+    [ -f "$composefile" ] || die "$composefile: fichier introuvable"
+    if [ -n "$ForceStart" ]; then
+        :
+    elif dcrunning "$composefile"; then
+        enote "DRE est démarré"
+        return
+    fi
+
+    "$MYDIR/build" ${Rebuild:+--rebuild} || die
+    estep "Démarrage de DRE"
+    docker compose -f "$composefile" up -d --wait || die
+}
+
+function stop_dre() {
+    local composefile="$DREINST/docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Arrêt de DRE"
+        docker compose -f "$composefile" down || die
+    fi
+}
+
+function refresh_dre() {
+    local ForceStart=1
+    start_dre "$@"
+}
+
+function restart_dre() {
+    stop_dre "$@"
+    start_dre "$@"
+}
+
+CheckBefore=1
+ForceUpdate=
+action=auto
+ForceStart=
+Rebuild=
+args=(
+    "Gérer cette instance de DRE"
+    #"usage"
+    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
+    --no-check CheckBefore= "++Ne pas vérifier l'environnement avant de lancer l'opération"
+    --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
+    -s,--start action=start "Démarrer DRE"
+    -k,--stop action=stop "Arrêter DRE"
+    -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
+    -R,--restart action=restart "Forcer le (re)démarrage de DRE"
+    --rebuild Rebuild=1 "++Forcer le rebuild de l'image"
+)
+parse_args "$@"; set -- "${args[@]}"
+
+if [ -n "$CheckBefore" ]; then
+    check_env || exit 0
+    [ "$action" == auto ] && action=start
+else
+    [ "$action" == auto ] && action=start
+fi
+
+case "$action" in
+nope) einfo "Veuillez spécifier l'action à effectuer";;
+bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
+start) start_dre "$@";;
+stop) stop_dre "$@";;
+refresh) refresh_dre "$@";;
+restart) restart_dre "$@";;
+*) die "$action: action non implémentée";;
+esac

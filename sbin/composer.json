@@ -1,0 +1,21 @@
+{
+	"name": "dreinst/tools",
+	"description": "outils pour dreinst",
+	"type": "project",
+	"repositories": [
+		{
+			"type": "composer",
+			"url": "https://repos.univ-reunion.fr/composer"
+		}
+	],
+	"require": {
+		"nulib/php": "dev-wip",
+		"php": ">=7.4"
+	},
+	"authors": [
+		{
+			"name": "Jephte Clain",
+			"email": "Jephte.Clain@univ-reunion.fr"
+		}
+	]
+}

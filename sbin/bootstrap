@@ -1,0 +1,62 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
+MYNAME="$(basename -- "$0")"
+MYSELF="$MYDIR/$MYNAME"
+DREINST="${MYDIR%/*}"
+
+function eecho() { echo "$*" 1>&2; }
+function eerror() { eecho "ERROR: $*"; }
+function die() { [ $# -gt 0 ] && eerror "$*"; exit 1; }
+
+if [ "$1" == --force ]; then
+    force=1
+    shift
+else
+    force=
+fi
+if [ -z "$force" ]; then
+    # si vendor/ n'existe pas, alors on doit faire bootstrap
+    if [ ! -f "$DREINST/sbin/vendor/nulib/php/load.sh" ]; then
+        : # bootstrap
+    elif [ ! -f "$DREINST/.composer.lock" ]; then
+        : # bootstrap
+    elif ! diff -q "$MYDIR/composer.lock" "$DREINST/.composer.lock" >&/dev/null; then
+        : # bootstrap
+    else
+        # bootstrap inutile
+        exit 0
+    fi
+fi
+
+if [ -z "$_RUNDK_IN_DOCKER" ]; then
+    eecho "== bootstrap dreinst"
+    exec "$MYDIR/rundk" "./${MYSELF#$DREINST/}" ${force:+--force} "$@"
+
+else
+    # Lancement depuis l'intérieur du container
+    cd "$DREINST/sbin"
+
+    case "${1:-install}" in
+    i|install)
+        eecho "* installation des dépendances composer dans sbin/"
+        ./composer.phar i || die
+        ;;
+    u|update)
+        eecho "* mise à jour des dépendances composer dans sbin/"
+        ./composer.phar u || die
+        ;;
+    *)
+        die "$*: argument(s) invalide(s)"
+        ;;
+    esac
+
+    # faire une copie du fichier .lock
+    cp "$MYDIR/composer.lock" "$DREINST/.composer.lock"
+
+    if [ "$_RUNDK_UID" == 0 ]; then
+        # si on est lancé avec root, corriger le propriétaire de la destination
+        eecho "* maj des propriétaires et groupes"
+        chown -R "$_RUNDK_UID:$_RUNDK_GID" vendor "$DREINST/.composer.lock"
+    fi
+fi

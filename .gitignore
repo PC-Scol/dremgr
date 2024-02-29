@@ -1,7 +1,9 @@
-/app.env
-
-/var/*
-!/var/.keep
-
 .~lock*#
 .*.swp
+
+/.composer.lock
+
+/.env
+/app.env
+/docker-compose.yml
+/config/cron/dl-dumps

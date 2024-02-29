@@ -2,36 +2,59 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 source /etc/nulib.sh || exit 1
 
+: "${APP_DATADIR:=/data/dre}"
+: "${DLDIR:=$APP_DATADIR/downloads}" "${AODIR:=$APP_DATADIR/addons}"
+
 function dl() {
     curl -fsSO -u "$DRE_USER:$DRE_PASS" "$DRE_URL/$1"
 }
+function runsql() {
+    quietc psql -d dre -c "$@"
+}
+function rundir() {
+    local -a files; local file
+    setx -a files=ls_files "$1" "*.sql" "*.sh"
+    for filename in "${files[@]}"; do
+        file="$1/$filename"
+        case "$file" in
+        *.sql)
+            estep "psql $filename"
+            quietc psql -d dre -f "$file" || die
+            ;;
+        *.sh)
+            if [ -x "$file" ]; then
+                estep "exec $filename"
+                "$file" || die
+            fi
+            ;;
+        esac
+    done
+}
 
-SCHEMAS=()
+DROP_SCHEMAS=()
+IMPORT_SCHEMAS=()
 function add_schema() {
     local sum="$1" file="$2" schema
     schema="$file"
     schema="${schema%.bin}"
     schema="${schema##*-$Timestamp-}"
-    SCHEMAS+=("$schema")
+    DROP_SCHEMAS+=("$schema")
+    IMPORT_SCHEMAS+=("$schema")
 }
 
-if [ -z "$DRE_URL" -o -z "$DRE_USER" -o -z "$DRE_PASS" ]; then
-    # test
-    DRE_URL=https://dre-dump.test-univ-reunion.pc-scol.fr
-    DRE_USER=dre
-    DRE_PASS='cahNaiHeeg}eiyah1rey'
+force_dlsums=1
+Timestamp=
+Clean=1
+args=(
+    "télécharger les dumps"
+    -n,--no-force-dlsums force_dlsums= "ne pas retélécharger les checksums si le fichier existe déjà"
+    -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
+    -g,--no-clean Clean= "Ne pas nettoyer les anciens fichiers à la fin du téléchargement"
+)
+parse_args "$@"; set -- "${args[@]}"
 
-    function psql() {
-        docker compose -f ../docker-compose.yml exec db psql "$@"
-    }
-    function pg_restore() {
-        docker compose -f ../docker-compose.yml exec -T db pg_restore "$@"
-    }
-
-    cd "$MYDIR/../../devel"
-else
-    [ -n "$APP_DATADIR" ] && cd "$APP_DATADIR/downloads"
-fi
+quietc_logto "$APP_DATADIR/import.log"
+cd "$DLDIR"
 
 if [ -z "$DRE_PREFIX" ]; then
     DRE_PREFIX="${DRE_URL}"
@@ -39,16 +62,6 @@ if [ -z "$DRE_PREFIX" ]; then
     DRE_PREFIX="${DRE_PREFIX%/*}"
     DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
 fi
-
-force_dlsums=1
-Timestamp=
-args=(
-    "télécharger les dumps"
-    -n,--no-force-dlsums force_dlsums= "ne pas retélécharger les checksums si le fichier existe déjà"
-    -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
-)
-parse_args "$@"; set -- "${args[@]}"
-
 [ -n "$Timestamp" ] || setx Timestamp=date +%Y%m%d
 
 sums="checksums-$Timestamp"
@@ -61,17 +74,9 @@ eval "$(sed 's/^/add_schema /' "$sums")"
 version="DRE_VERSION_$Timestamp"
 if [ ! -f "$version" ]; then
     estep "$version"
-    if dl "$version"; then
-        :
-    elif dl "${version:0:18}12${version:18}"; then
-        # @$*#! de bug
-        mv "${version:0:18}12${version:18}" "$version"
-    else
-        # version est facultatif pour le moment
-        version=
-    fi
+    dl "$version" || die
 fi
-for schema in "${SCHEMAS[@]}"; do
+for schema in "${IMPORT_SCHEMAS[@]}"; do
     file="${DRE_PREFIX}-$Timestamp-$schema.bin"
     if [ ! -f "$file" ]; then
         estep "$file"
@@ -79,48 +84,158 @@ for schema in "${SCHEMAS[@]}"; do
     fi
 done
 
-estep "Vérifications"
+estep "Vérifications des sommes de contrôle"
 sha256sum --status -c "$sums" || die
 
-estep "Nettoyage"
+estep "Calcul de la version"
+eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
+
+estep "Vérification des addons"
+setx -a aourls=echo "$ADDON_URLS"
+for aourl in "${aourls[@]}"; do
+    [ -n "$aourl" ] || continue
+    setx aoname=basename "$aourl"
+    aodir="$AODIR/${aoname%.git}"
+    if [ ! -d "$aodir" ]; then
+        # Il faut cloner le dépôt
+        estep "$aourl --> $aodir"
+        quietc git clone "$aourl" "$aodir" || continue
+    else
+        # il faut mettre à jour le dépôt
+        estep "$aodir"
+        (cd "$aodir"; quietc git fetch && quietc git reset --hard origin/master)
+    fi
+done
+
+setx -a aodirs=ls_dirs "$AODIR"
+ADDONS=()
+for aoname in "${aodirs[@]}"; do
+    aodir="$AODIR/$aoname"
+
+    if [ ! -f "$aodir/dreaddon.conf" ]; then
+        ewarn "$aodir: n'est pas un répertoire d'addons"
+        continue
+    fi
+
+    # calculer la version minimum
+    minv=
+    setx -a vs=ls_dirs "$aodir" "v*"
+    for v in "${vs[@]}"; do
+        v="${v#v}"
+        [ -z "${v//[0-9]/}" ] || continue
+        if [ -z "$minv" ]; then minv="$v"
+        elif [ $v -lt $minv ]; then minv="$v"
+        fi
+    done
+
+    eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
+    if [ "$vxx" == all ]; then
+        vxx=
+    else
+        [ "$vxx" == vxx ] && vxx="v$majeure"
+        if [ ! -d "$aodir/$vxx" ]; then
+            v="${vxx#v}"
+            found=
+            while [ $v -gt $minv ]; do
+                let v=v-1
+                if [ -d "$aodir/v$v" ]; then
+                    found=1
+                    vxx="v$v"
+                    enote "$aoname: Sélection de la version $vxx"
+                    break
+                fi
+            done
+            if [ -z "$found" ]; then
+                ewarn "$aodir: cet addon est incompatible avec la version $vxx, il sera ignoré"
+                continue
+            fi
+        fi
+        vxx=":$vxx"
+    fi
+    ADDONS+=("$aodir$vxx")
+done
+
+estep "Suppression des anciens schémas"
 schema_list=
-for schema in "${SCHEMAS[@]}"; do
+for schema in "${DROP_SCHEMAS[@]}"; do
     schema_list="${schema_list}${schema_list:+, }schema_${schema}"
 done
-psql -d dre -c "drop schema if exists $schema_list cascade;" || die
+runsql "drop schema if exists $schema_list cascade;" || die
 
-estep "Importation"
-for schema in "${SCHEMAS[@]}"; do
+etitle "Importation des schémas"
+for schema in "${IMPORT_SCHEMAS[@]}"; do
     file="${DRE_PREFIX}-$Timestamp-$schema.bin"
 
-    estep "$schema: nettoyage"
-    psql -d dre -c "drop extension if exists unaccent, pg_trgm cascade;" || die
+    estep "$schema: drop extensions"
+    runsql "drop extension if exists unaccent, pg_trgm cascade;" || die
 
     estep "$schema: import $file"
-    pg_restore -d dre --no-owner --no-acl -Fc <"$file" || die
-    psql -d dre -c "\
+    quietc pg_restore -d dre --no-owner --no-acl -Fc <"$file" || die
+    runsql "\
 grant usage on schema schema_$schema to reader;
 grant select on all tables in schema schema_$schema to reader;
-alter table if exists __provisionning_changelog_lock set schema schema_$schema;
-alter table if exists __provisionning_changelog set schema schema_$schema;
+-- alter table if exists __provisionning_changelog_lock set schema schema_$schema;
+-- alter table if exists __provisionning_changelog set schema schema_$schema;
 " || die
 done
+eend
 
-if [ -n "$version" ]; then
-    estep "Maj version"
-    version="$(<"$version")"
-    version="${version/\}/, \"timestamp\": \"$Timestamp\"\}}"
-    psql -d dre -c "\
+etitle "Installation des addons"
+for addon in "${ADDONS[@]}"; do
+    etitle "$addon"
+    if [[ "$addon" == *:* ]]; then
+        aodir="${addon%:*}"
+        vxx="${addon##*:}"
+    else
+        aodir="$addon"
+        vxx=
+    fi
+    SCHEMAS=()
+    eval "$(SCHEMAS=(); source "$aodir/dreaddon.conf"; echo "SCHEMAS+=(${SCHEMAS[*]})")"
+
+    if [ -d "$aodir/Aprepare" ]; then
+        estep "Préparation"
+        # Les scripts de préparation peuvent créer les schémas nécessaires ou
+        # faire toute autre opération utile
+        rundir "$aodir/Aprepare"
+        # S'assurer tout de même que les schémas mentionnés existent
+        for schema in "${SCHEMAS[@]}"; do
+            runsql "create schema if not exists $schema;" || die
+        done
+    fi
+    if [ -n "$vxx" ]; then
+        rundir "$aodir/$vxx"
+    fi
+    if [ -d "$aodir/Zfinalize" ]; then
+        estep "Finalisation"
+        # Donner un accès complet en lecture au compte reader
+        for schema in "${SCHEMAS[@]}"; do
+            runsql "\
+grant usage on schema $schema to reader;
+grant select on all tables in schema $schema to reader;
+" || die
+        done
+        # Les scripts de finalisation peuvent influer sur ce comportement par
+        # défaut si nécessaire
+        rundir "$aodir/Zfinalize"
+    fi
+    eend
+done
+eend
+
+estep "Maj version"
+runsql "\
 create table if not exists version (majeure int, mineure int, patch int, prerelease varchar(8), timestamp varchar(8));
 truncate table version;
 insert into version(majeure, mineure, patch, prerelease, timestamp)
-select * from json_populate_record(null::version, '$version');
+values ($majeure, $mineure, $patch, '$prerelease', '$Timestamp');
 " || die
-fi
 
-estep "Nettoyage"
-find -name "checksums-*" -mtime +30 -delete
-find -name "DRE_VERSION_*" -mtime +30 -delete
-find -name "$DRE_PREFIX-*" -mtime +30 -delete
+if [ -n "$Clean" ]; then
+    estep "Nettoyage des fichiers obsolètes"
+    find -name "checksums-*" -mtime +30 -delete
+    find -name "DRE_VERSION_*" -mtime +30 -delete
+    find -name "$DRE_PREFIX-*" -mtime +30 -delete
+fi
 
 estep "Fin de l'import"

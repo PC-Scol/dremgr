@@ -4,7 +4,7 @@ version: "3.8"
 
 services:
   db:
-    image: docker.devel.self/dreinst/db
+    image: @@PRIVAREG@@dreinst/db
     env_file: app.env
     environment: &db-environment
       APP_PROFILE: devel
@@ -13,15 +13,15 @@ services:
       - ./var/run:/run/postgresql
       - ./var/pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
-    ports:
-      - 127.0.0.1:7432:5432
+    #@@IF:FE_PORT@@#ports:
+    #@@IF:FE_PORT@@#  - @@FE_VIP@@@@FE_PORT@@:5432
     deploy:
       update_config:
         order: stop-first
     restart: always
 
   cron-db:
-    image: docker.devel.self/dreinst/db
+    image: @@PRIVAREG@@dreinst/db
     env_file: app.env
     environment:
       APP_DATADIR: /data/dre

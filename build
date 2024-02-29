@@ -1,0 +1,61 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+MYDIR="$(dirname -- "$0")"
+"$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
+DREINST="$MYDIR"
+source "$DREINST/sbin/functions.sh" || exit 1
+
+BUILD_ARGS=(
+    REGISTRY
+    APT_PROXY
+    APT_MIRROR
+    SEC_MIRROR
+    TIMEZONE
+)
+
+function build_dreinst() {
+    source "$DREINST/.env"
+
+    local image="${PRIVAREG:+$PRIVAREG/}dreinst/db"
+    if [ -n "$ForceBuild" -o -z "$(dklsimg "$image")" ]; then
+        estep "Construction $image"
+        args=(
+            ${NoCache:+--no-cache}
+            ${BuildPlain:+--progress plain}
+            -t "$image"
+        )
+        for arg in "${BUILD_ARGS[@]}"; do
+            args+=(--build-arg "$arg=${!arg}")
+        done
+        docker build "${args[@]}" "$DREINST"
+    fi
+}
+
+CheckBefore=1
+ForceUpdate=
+action=build
+ForceBuild=
+NoCache=
+BuildPlain=
+args=(
+    "Construire les images pour DRE"
+    #"usage"
+    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
+    --no-check CheckBefore= "++Ne pas vérifier l'environnement avant de lancer l'opération"
+    --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
+    -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
+    -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
+    --build-plain BuildPlain=1 "++Afficher le détail du build"
+)
+parse_args "$@"; set -- "${args[@]}"
+
+if [ -n "$CheckBefore" ]; then
+    check_env || die
+fi
+
+case "$action" in
+nope) einfo "Veuillez spécifier l'action à effectuer";;
+bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
+build) build_dreinst "$@";;
+*) die "$action: action non implémentée";;
+esac

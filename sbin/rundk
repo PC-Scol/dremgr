@@ -1,0 +1,183 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
+MYNAME="$(basename -- "$0")"
+MYSELF="$MYDIR/$MYNAME"
+DREINST="${MYDIR%/*}"
+
+function eecho() { echo "$*" 1>&2; }
+function eerror() { eecho "ERROR: $*"; }
+function die() { [ $# -gt 0 ] && eerror "$*"; exit 1; }
+
+if [ -z "$_RUNDK_IN_DOCKER" ]; then
+    ################################################################################
+    # Charger ~/.dkbuild.env
+
+    REGISTRY="$SET_REGISTRY"
+    RUN_IMAGE="$SET_RUN_IMAGE"
+    PROFILE=
+    HOST_MAPPINGS=()
+    function default_profile() {
+        PROFILE="$1"
+    }
+    function profile() {
+        local profile
+        for profile in "$@"; do
+            [ "$profile" == "$PROFILE" ] && return 0
+        done
+        return 1
+    }
+    function setenv() {
+        eval "export $1"
+    }
+    function default() {
+        local command="$1"; shift
+        local nv n v
+        case "$command" in
+        docker)
+            for nv in "$@"; do
+                [[ "$nv" == *=* ]] || continue
+                n="${nv%%=*}"
+                v="${nv#*=}"
+                case "$n" in
+                host-mappings)
+                    read -a nv <<<"$v"
+                    for v in "${ns[@]}"; do
+                        HOST_MAPPINGS+=("$v")
+                    done
+                    ;;
+                esac
+            done
+            ;;
+        esac
+    }
+    [ -f ~/.dkbuild.env ] && source ~/.dkbuild.env
+
+    [ -n "$REGISTRY" ] || REGISTRY=pubdocker.univ-reunion.fr
+    [ -n "$RUN_IMAGE" ] || RUN_IMAGE="$REGISTRY/image/php:d11"
+
+    ################################################################################
+    # Lancer la commande depuis l'extérieur du container
+
+    SOPTS=+vw:
+    LOPTS=help,verbose,chdir:
+    args="$(getopt -n rundk -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
+
+    VERBOSE=
+    CHDIR=
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --) shift; break;;
+        --help)
+            eecho "\
+rundk: lancer une commande dans docker
+
+avant de lancer la commande, le répertoire courant est systématiquement modifié
+pour être celui de dreinst.
+
+USAGE
+    $MYNAME command [args...]
+
+OPTIONS
+    -w, --chdir CHDIR
+        aller dans le répertoire spécifié avant de lancer la commande. si le
+        répertoire est relatif, il est exprimé par rapport au répertoire de
+        dreinst
+    -v, --verbose
+        afficher plus d'informations"
+            exit 0
+            ;;
+        -v|--verbose) VERBOSE=1;;
+        -w|--chdir) shift; CHDIR="$1";;
+        *) die "$1: option non configurée";;
+        esac
+        shift
+    done
+
+    uid="$(id -u)"
+    gid="$(id -g)"
+    args=(
+        run -it --rm
+        --name dreinst-rundk
+        -e _RUNDK_IN_DOCKER=1
+        -e _RUNDK_UID="$uid"
+        -e _RUNDK_GID="$gid"
+    )
+    for host in "${HOST_MAPPINGS[@]}"; do
+        args+=(--add-host "$host")
+    done
+
+    # monter le répertoire qui contient $DREINST
+    mount_composer=
+    if [ "${DREINST#$HOME/}" != "$DREINST" -o "$DREINST" == "$HOME" ]; then
+        # bind mount /home
+        args+=(-v "$HOME:$HOME:rslave" -w "$DREINST")
+        mounted_home=1
+    else
+        # bind mount dreinst
+        args+=(-v "$DREINST:/rundk" -w /rundk)
+        mount_composer=1
+    fi
+    if [ $uid -eq 0 -a -n "$mount_composer" -a -d "$HOME/.composer" ]; then
+        # si c'est root, monter la configuration de composer
+        args+=(-v "$HOME/.composer:/root/.composer")
+    fi
+
+    # lancer avec l'utilisateur courant
+    if [ $uid -ne 0 ]; then
+        # si c'est un utilisateur lambda, il faut monter les informations
+        # nécessaires. composer est déjà monté via $HOME
+        user="$(id -un)"
+        userent="$(getent passwd "$user")"
+        group="$(id -gn)"
+        groupent="$(getent group "$group")"
+        args+=(
+            -e _RUNDK_USER="$user"
+            -e _RUNDK_USERENT="$userent"
+            -e _RUNDK_GROUPENT="$groupent"
+        )
+    fi
+
+    args+=(
+        "$RUN_IMAGE"
+        exec "$MYSELF" -w "$CHDIR"
+    )
+    [ -n "$VERBOSE" ] && eecho "\$ docker ${args[*]} $*"
+    exec docker "${args[@]}" "$@"
+
+else
+    # Ajouter les informations utilisateur le cas échéant
+    if [ -n "$_RUNDK_USERENT" ]; then
+        grep -q "^$_RUNDK_USER:" /etc/passwd || echo "$_RUNDK_USERENT" >>/etc/passwd
+    fi
+    if [ -n "$_RUNDK_GROUPENT" ]; then
+        grep -q "^$_RUNDK_GROUP:" /etc/group || echo "$_RUNDK_GROUPENT" >>/etc/group
+    fi
+    if [ -n "$_RUNDK_USER" ]; then
+        user="$_RUNDK_USER"
+        export _RUNDK_USER=
+        export _RUNDK_USERENT=
+        export _RUNDK_GROUPENT=
+        exec su-exec "$user" "$0" "$@"
+    fi
+
+    # Lancement depuis l'intérieur du container
+    SOPTS=+w:
+    LOPTS=chdir:
+    args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
+
+    CHDIR=
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --) shift; break;;
+        -w|--chdir) shift; CHDIR="$1";;
+        *) die "$1: option non configurée";;
+        esac
+        shift
+    done
+
+    if [ -n "$CHDIR" ]; then
+        cd "$CHDIR" || die
+    fi
+    "${@:-bash}"
+fi
