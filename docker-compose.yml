@@ -4,40 +4,53 @@ version: "3.8"
 
 services:
   db:
-    image: docker.devel.self/dreinst/db
-    env_file: app.env
+    image: dreinst/db
+    env_file: prod_profile.env
     environment: &db-environment
-      APP_PROFILE: devel
-      POSTGRES_PROFILE: devel
+      APP_PROFILE: prod
+      POSTGRES_PROFILE: prod
     volumes:
-      - ./var/run:/run/postgresql
-      - ./var/pgdata:/var/lib/postgresql/data
+      - ./var/prod-run:/run/postgresql
+      - ./var/prod-pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
+    networks:
+      dreinst_db:
+        aliases:
+          - prod_db
     ports:
-      - 127.0.0.1:7432:5432
+      - 5433:5432
+    extra_hosts:
+      - pridocker.univ-reunion.fr:10.85.1.56
+      - pubdocker.univ-reunion.fr:10.85.1.57
+      - repos.univ-reunion.fr:10.85.1.57
+      - git.univ-reunion.fr:10.85.1.55
     deploy:
       update_config:
         order: stop-first
     restart: always
 
   cron-db:
-    image: docker.devel.self/dreinst/db
-    env_file: app.env
+    image: dreinst/db
+    env_file: prod_profile.env
     environment:
+      <<: *db-environment
       APP_DATADIR: /data/dre
       UPDATE_CRON_FILES: dl-dumps
       UPDATE_CRON_VARS: >
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
-        DRE_URL DRE_USER DRE_PASS DRE_PREFIX
-      <<: *db-environment
+        DRE_URL DRE_USER DRE_PASS
     command: cron
     volumes:
-      - ./var/run:/run/postgresql
-      - ./var/dredata:/data/dre
+      - ./var/prod-run:/run/postgresql
+      - ./var/prod-dredata:/data/dre
       - ./config/cron:/cron-config
       - ./bin/dl-dumps:/usr/local/bin/dl-dumps
     deploy:
       update_config:
         order: stop-first
     restart: always
+
+networks:
+  dreinst_db:
+    external: true

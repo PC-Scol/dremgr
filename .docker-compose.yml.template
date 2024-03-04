@@ -5,16 +5,22 @@ version: "3.8"
 services:
   db:
     image: @@PRIVAREG@@dreinst/db
-    env_file: app.env
+    env_file: @@Profile@@_profile.env
     environment: &db-environment
-      APP_PROFILE: devel
-      POSTGRES_PROFILE: devel
+      APP_PROFILE: @@Profile@@
+      POSTGRES_PROFILE: @@Profile@@
     volumes:
-      - ./var/run:/run/postgresql
-      - ./var/pgdata:/var/lib/postgresql/data
+      - ./var/@@Profile@@-run:/run/postgresql
+      - ./var/@@Profile@@-pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
+    #@@IF:DBNET@@#networks:
+    #@@IF:DBNET@@#  @@DBNET@@:
+    #@@IF:DBNET@@#    aliases:
+    #@@IF:DBNET@@#      - @@Profile@@_db
     #@@IF:FE_PORT@@#ports:
     #@@IF:FE_PORT@@#  - @@FE_VIP@@@@FE_PORT@@:5432
+    #@@IF:HOST_MAPPINGS@@#extra_hosts:
+    #@@IF:HOST_MAPPINGS@@#@@EACH:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:
       update_config:
         order: stop-first
@@ -22,22 +28,26 @@ services:
 
   cron-db:
     image: @@PRIVAREG@@dreinst/db
-    env_file: app.env
+    env_file: @@Profile@@_profile.env
     environment:
+      <<: *db-environment
       APP_DATADIR: /data/dre
       UPDATE_CRON_FILES: dl-dumps
       UPDATE_CRON_VARS: >
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
-        DRE_URL DRE_USER DRE_PASS DRE_PREFIX
-      <<: *db-environment
+        DRE_URL DRE_USER DRE_PASS
     command: cron
     volumes:
-      - ./var/run:/run/postgresql
-      - ./var/dredata:/data/dre
+      - ./var/@@Profile@@-run:/run/postgresql
+      - ./var/@@Profile@@-dredata:/data/dre
       - ./config/cron:/cron-config
       - ./bin/dl-dumps:/usr/local/bin/dl-dumps
     deploy:
       update_config:
         order: stop-first
     restart: always
+
+#@@IF:DBNET@@#networks:
+#@@IF:DBNET@@#  @@DBNET@@:
+#@@IF:DBNET@@#    external: true

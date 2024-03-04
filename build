@@ -14,7 +14,7 @@ BUILD_ARGS=(
 )
 
 function build_dreinst() {
-    source "$DREINST/.env"
+    source "$DREINST/build.env"
 
     local image="${PRIVAREG:+$PRIVAREG/}dreinst/db"
     if [ -n "$ForceBuild" -o -z "$(dklsimg "$image")" ]; then
@@ -31,7 +31,6 @@ function build_dreinst() {
     fi
 }
 
-CheckBefore=1
 ForceUpdate=
 action=build
 ForceBuild=
@@ -40,8 +39,8 @@ BuildPlain=
 args=(
     "Construire les images pour DRE"
     #"usage"
+    --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
-    --no-check CheckBefore= "++Ne pas vérifier l'environnement avant de lancer l'opération"
     --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
@@ -49,12 +48,10 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-if [ -n "$CheckBefore" ]; then
-    check_env || die
-fi
+build_check_env || die
+[ "$action" == none ] && exit 0
 
 case "$action" in
-nope) einfo "Veuillez spécifier l'action à effectuer";;
 bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
 build) build_dreinst "$@";;
 *) die "$action: action non implémentée";;
