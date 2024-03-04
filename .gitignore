@@ -3,7 +3,11 @@
 
 /.composer.lock
 
+/var/
 /.env
-/app.env
+/build.env
+/all_profiles.env
+/*_profile.env
+/*_start
 /docker-compose.yml
 /config/cron/dl-dumps

@@ -41,7 +41,7 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
                 v="${nv#*=}"
                 case "$n" in
                 host-mappings)
-                    read -a nv <<<"$v"
+                    read -a ns <<<"$v"
                     for v in "${ns[@]}"; do
                         HOST_MAPPINGS+=("$v")
                     done

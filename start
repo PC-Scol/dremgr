@@ -11,12 +11,12 @@ function start_dre() {
     if [ -n "$ForceStart" ]; then
         :
     elif dcrunning "$composefile"; then
-        enote "DRE est démarré"
+        enote "DRE [$Profile] est démarré"
         return
     fi
 
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
-    estep "Démarrage de DRE"
+    estep "Démarrage de DRE [$Profile]"
     docker compose -f "$composefile" up -d --wait || die
 }
 
@@ -24,7 +24,7 @@ function stop_dre() {
     local composefile="$DREINST/docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
-        estep "Arrêt de DRE"
+        estep "Arrêt de DRE [$Profile]"
         docker compose -f "$composefile" down || die
     fi
 }
@@ -39,17 +39,25 @@ function restart_dre() {
     start_dre "$@"
 }
 
-CheckBefore=1
+case "$MYNAME" in
+*_start) Profile="${MYNAME%_start}";;
+*) Profile=prod;;
+esac
 ForceUpdate=
 action=auto
-ForceStart=
 Rebuild=
 args=(
     "Gérer cette instance de DRE"
     #"usage"
+    --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
-    --no-check CheckBefore= "++Ne pas vérifier l'environnement avant de lancer l'opération"
     --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
+    -g:,--profile Profile= "\
+++Spécifier le profil. Un fichier de configuration PROFILE-profile.env doit exister.
+Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
+    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans all_profiles.env"
+    -P,--prod Profile=prod "++alias pour --profile prod"
+    -T,--test Profile=test "++alias pour --profile test"
     -s,--start action=start "Démarrer DRE"
     -k,--stop action=stop "Arrêter DRE"
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
@@ -58,15 +66,47 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-if [ -n "$CheckBefore" ]; then
-    check_env || exit 0
-    [ "$action" == auto ] && action=start
-else
-    [ "$action" == auto ] && action=start
+if [ "$Profile" == ALL ]; then
+    [ -f "$DREINST/all_profiles.env" ] || die "all_profiles.env: fichier introuvable"
+    eval "$(source "$DREINST/all_profiles.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+    [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
+
+    args=(
+        ${ForceUpdate:+--force-update}
+        ${Rebuild:+--rebuild}
+    )
+    case "$action" in
+    none) args+=(--check-only);;
+    bootstrap) args+=(--bootstrap);;
+    auto) ;;
+    *) args+=("--$action");;
+    esac
+
+    read -a profiles <<<"$APP_PROFILES"
+    for profile in "${profiles[@]}"; do
+        etitle "$profile" "$MYSELF" --profile "$profile" "${args[@]}"
+    done
+    exit
 fi
 
+Profile="${Profile##*/}"
+Profile="${Profile%_profile.env}"
+envfile="$DREINST/${Profile}_profile.env"
+
+start_check_env || exit 0
+if [ -f "$envfile" ]; then
+    dredata="$MYDIR/var/${Profile}-dredata"
+    for dir in addons downloads; do
+        mkdir -p "$dredata/$dir"
+    done
+fi
+[ "$action" == auto ] && action=start
+
+[ -f "$envfile" ] || die "$Profile: profil invalide (${Profile}-profile.env: fichier de profil introuvable)"
+[ "$action" == none ] && exit 0
+
+ForceStart=
 case "$action" in
-nope) einfo "Veuillez spécifier l'action à effectuer";;
 bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
 start) start_dre "$@";;
 stop) stop_dre "$@";;

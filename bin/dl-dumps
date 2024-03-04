@@ -6,7 +6,7 @@ source /etc/nulib.sh || exit 1
 : "${DLDIR:=$APP_DATADIR/downloads}" "${AODIR:=$APP_DATADIR/addons}"
 
 function dl() {
-    curl -fsSO -u "$DRE_USER:$DRE_PASS" "$DRE_URL/$1"
+    curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "$DRE_URL/$1"
 }
 function runsql() {
     quietc psql -d dre -c "$@"
