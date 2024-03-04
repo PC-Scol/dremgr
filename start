@@ -45,7 +45,6 @@ case "$MYNAME" in
 esac
 ForceUpdate=
 action=auto
-ForceStart=
 Rebuild=
 args=(
     "Gérer cette instance de DRE"
@@ -53,9 +52,10 @@ args=(
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
     --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
-    -p:,--profile Profile= "\
+    -g:,--profile Profile= "\
 ++Spécifier le profil. Un fichier de configuration PROFILE-profile.env doit exister.
 Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
+    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans all_profiles.env"
     -P,--prod Profile=prod "++alias pour --profile prod"
     -T,--test Profile=test "++alias pour --profile test"
     -s,--start action=start "Démarrer DRE"
@@ -65,6 +65,29 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     --rebuild Rebuild=1 "++Forcer le rebuild de l'image"
 )
 parse_args "$@"; set -- "${args[@]}"
+
+if [ "$Profile" == ALL ]; then
+    [ -f "$DREINST/all_profiles.env" ] || die "all_profiles.env: fichier introuvable"
+    eval "$(source "$DREINST/all_profiles.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+    [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
+
+    args=(
+        ${ForceUpdate:+--force-update}
+        ${Rebuild:+--rebuild}
+    )
+    case "$action" in
+    none) args+=(--check-only);;
+    bootstrap) args+=(--bootstrap);;
+    auto) ;;
+    *) args+=("--$action");;
+    esac
+
+    read -a profiles <<<"$APP_PROFILES"
+    for profile in "${profiles[@]}"; do
+        etitle "$profile" "$MYSELF" --profile "$profile" "${args[@]}"
+    done
+    exit
+fi
 
 Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
@@ -82,6 +105,7 @@ fi
 [ -f "$envfile" ] || die "$Profile: profil invalide (${Profile}-profile.env: fichier de profil introuvable)"
 [ "$action" == none ] && exit 0
 
+ForceStart=
 case "$action" in
 bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
 start) start_dre "$@";;
