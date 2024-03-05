@@ -92,7 +92,11 @@ function list_vars() {
 
 function _set_source_envs() {
     source_envs=("$DREINST/build.env")
-    [ -n "$Profile" ] && source_envs+=("$DREINST/${Profile}_profile.env")
+    if [ -n "$Profile" ]; then
+        source_envs+=("$DREINST/${Profile}_profile.env")
+    elif [ -f "$DREINST/all_profiles.env" ]; then
+        source_envs+=("$DREINST/all_profiles.env")
+    fi
 }
 
 function _resolve_scripts() {
@@ -114,6 +118,7 @@ function _resolve_scripts() {
         fi
 
         # fix pour certaines variables
+        [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
         [ -n "$FE_VIP" ] && FE_VIP="$FE_VIP:"
         [ -n "$PRIVAREG" ] && PRIVAREG="$PRIVAREG/"
 
@@ -240,7 +245,7 @@ function start_check_env() {
     done
     ac_clean "$script1" "$script2" "$workfile"
 
-    if [ -n "$updated" ]; then
+    if [ -n "$updated" -a -n "$Profile" ]; then
         enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier ${Profile}_profile.env
     ${EDITOR:-nano} ${Profile}_profile.env
 ENSUITE, vous pourrez relancer la commande"
