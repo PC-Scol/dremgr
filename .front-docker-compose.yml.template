@@ -7,7 +7,6 @@ services:
     image: @@PRIVAREG@@dreinst/db
     command: pgbouncer
     env_file: all_profiles.env
-    #volumes:
     #@@IF:DBNET@@#networks:
     #@@IF:DBNET@@#  @@DBNET@@:
     #@@IF:DBPORT@@#ports:
