@@ -119,7 +119,7 @@ function _resolve_scripts() {
 
         # fix pour certaines variables
         [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
-        [ -n "$FE_VIP" ] && FE_VIP="$FE_VIP:"
+        [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"
         [ -n "$PRIVAREG" ] && PRIVAREG="$PRIVAREG/"
 
         NL=$'\n'
