@@ -9,5 +9,6 @@
 /all_profiles.env
 /*_profile.env
 /*_start
-/docker-compose.yml
+/inst-docker-compose.yml
+/front-docker-compose.yml
 /config/cron/dl-dumps

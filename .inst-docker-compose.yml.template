@@ -19,8 +19,6 @@ services:
     #@@IF:DBNET@@#      - @@Profile@@_db
     #@@IF:FE_PORT@@#ports:
     #@@IF:FE_PORT@@#  - @@FE_VIP@@@@FE_PORT@@:5432
-    #@@IF:HOST_MAPPINGS@@#extra_hosts:
-    #@@IF:HOST_MAPPINGS@@#@@EACH:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:
       update_config:
         order: stop-first
@@ -43,6 +41,8 @@ services:
       - ./var/@@Profile@@-dredata:/data/dre
       - ./config/cron:/cron-config
       - ./bin/dl-dumps:/usr/local/bin/dl-dumps
+    #@@IF:HOST_MAPPINGS@@#extra_hosts:
+    #@@IF:HOST_MAPPINGS@@#@@EACH:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:
       update_config:
         order: stop-first

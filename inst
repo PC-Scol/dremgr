@@ -6,7 +6,7 @@ DREINST="$MYDIR"
 source "$DREINST/sbin/functions.sh" || exit 1
 
 function start_dre() {
-    local composefile="$DREINST/docker-compose.yml"
+    local composefile="$DREINST/inst-docker-compose.yml"
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
@@ -21,7 +21,7 @@ function start_dre() {
 }
 
 function stop_dre() {
-    local composefile="$DREINST/docker-compose.yml"
+    local composefile="$DREINST/inst-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
         estep "Arrêt de DRE [$Profile]"

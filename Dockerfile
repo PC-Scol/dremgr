@@ -10,7 +10,7 @@ COPY --from=postgres /g/ /g/
 ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
 ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
 
-RUN /g/build -a @default postgres
+RUN /g/build -s postgres
 RUN /g/pkg i @ssl @git
 
 ENTRYPOINT ["/g/entrypoint"]
