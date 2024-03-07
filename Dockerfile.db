@@ -4,13 +4,14 @@ FROM $REGISTRY/src/base as base
 FROM $REGISTRY/src/postgres as postgres
 
 FROM postgres:15-bookworm
-COPY --from=base /g/ /g/
-COPY --from=postgres /g/ /g/
 
+COPY --from=base /g/ /g/
 ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
 ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
-
-RUN /g/build -s postgres
+RUN /g/build
 RUN /g/pkg i @ssl @git
+
+COPY --from=postgres /g/ /g/
+RUN /g/build -a @postgres
 
 ENTRYPOINT ["/g/entrypoint"]

@@ -13,13 +13,12 @@ BUILD_ARGS=(
     TIMEZONE
 )
 
-function build_dreinst() {
-    source "$DREINST/build.env"
-
-    local image="${PRIVAREG:+$PRIVAREG/}dreinst/db"
+function _build() {
+    local image="${PRIVAREG:+$PRIVAREG/}dreinst/$1"
     if [ -n "$ForceBuild" -o -z "$(dklsimg "$image")" ]; then
         estep "Construction $image"
         args=(
+            -f "$DREINST/Dockerfile.$1"
             ${NoCache:+--no-cache}
             ${BuildPlain:+--progress plain}
             -t "$image"
@@ -29,6 +28,14 @@ function build_dreinst() {
         done
         docker build "${args[@]}" "$DREINST"
     fi
+}
+function build_inst() {
+    local image
+    source "$DREINST/build.env"
+
+    _build db
+    _build web
+    _build pgadmin
 }
 
 ForceUpdate=
@@ -44,7 +51,7 @@ args=(
     --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
-    --build-plain BuildPlain=1 "++Afficher le détail du build"
+    -p,--build-plain BuildPlain=1 "++Afficher le détail du build"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -53,6 +60,6 @@ build_check_env || die
 
 case "$action" in
 bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
-build) build_dreinst "$@";;
+build) build_inst "$@";;
 *) die "$action: action non implémentée";;
 esac

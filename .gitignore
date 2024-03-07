@@ -12,3 +12,7 @@
 /inst-docker-compose.yml
 /front-docker-compose.yml
 /config/cron/dl-dumps
+/config/apache/setup.conf
+/config/apache/certs.conf
+/config/apache/authnz.conf
+/config/apache/mods-available/auth_cas.conf

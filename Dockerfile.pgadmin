@@ -1,0 +1,14 @@
+# -*- coding: utf-8 mode: dockerfile -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+ARG REGISTRY=pubdocker.univ-reunion.fr
+FROM $REGISTRY/src/base as base
+FROM $REGISTRY/src/postgres as postgres
+
+FROM dpage/pgadmin4:8.3
+
+USER root
+COPY --from=base /g/ /g/
+COPY --from=postgres /g/ /g/
+RUN /g/build.bb -z pgadmin && /g/pgadmin/fixperms
+
+USER pgadmin
+ENTRYPOINT ["/g/pgadmin/entrypoint"]

@@ -1,0 +1,8 @@
+# -*- coding: utf-8 mode: conf -*- vim:syntax=apache:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+
+#if BASE_URL_CAS#CASRootProxiedAs @@BASE_URL_CAS@@
+<Location />
+    AuthType CAS
+    CASAuthNHeader On
+    Require valid-user
+</Location>

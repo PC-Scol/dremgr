@@ -15,9 +15,18 @@ function start_front() {
         return
     fi
 
+    #local reload
+    #dcrunning "$composefile" && reload=1
+
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
     estep "Démarrage du frontal DRE"
     docker compose -f "$composefile" up -d --wait || die
+
+    #if [ -n "$reload" ]; then
+    #    estep "Rechargement pgAdmin"
+    #    sleep 2
+    #    docker compose exec pgadmin /g/pgadmin/reload
+    #fi
 }
 
 function stop_front() {
@@ -39,7 +48,6 @@ function restart_front() {
     start_front "$@"
 }
 
-ForceUpdate=
 action=auto
 Rebuild=
 args=(
@@ -47,12 +55,11 @@ args=(
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
-    --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
     -s,--start action=start "Démarrer le frontal DRE"
     -k,--stop action=stop "Arrêter le frontal DRE"
     -r,--refresh action=refresh "(Re)démarrer le frontal DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage du frontal DRE"
-    --rebuild Rebuild=1 "++Forcer le rebuild de l'image"
+    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -60,7 +67,7 @@ parse_args "$@"; set -- "${args[@]}"
 eval "$(source "$DREINST/all_profiles.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
 [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
-start_check_env || exit 0
+inst_check_env || exit 0
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 

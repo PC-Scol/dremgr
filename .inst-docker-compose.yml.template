@@ -24,17 +24,18 @@ services:
         order: stop-first
     restart: always
 
-  cron-db:
+  cron:
     image: @@PRIVAREG@@dreinst/db
     env_file: @@Profile@@_profile.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre
+      TAIL_LOGFILES: /data/dre/cron.log
       UPDATE_CRON_FILES: dl-dumps
       UPDATE_CRON_VARS: >
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
-        DRE_URL DRE_USER DRE_PASS
+        DRE_URL DRE_USER DRE_PASSWORD
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
