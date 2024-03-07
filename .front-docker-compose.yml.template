@@ -16,6 +16,36 @@ services:
         order: stop-first
     restart: always
 
-#@@IF:DBNET@@#networks:
+  pgadmin:
+    image: @@PRIVAREG@@dreinst/pgadmin
+    env_file: all_profiles.env
+    volumes:
+      - ./var/pgadmindata:/var/lib/pgadmin
+    #@@IF:DBNET@@#networks:
+    #@@IF:DBNET@@#  @@DBNET@@:
+    restart: always
+
+  web:
+    image: @@PRIVAREG@@dreinst/web
+    env_file: all_profiles.env
+    environment:
+      #@@UL:LBHTTPS@@#DEVEL: 1
+      #@@UL:LBHTTPS@@#BASE_URL: http://@@LBHOST@@:@@LBHTTP@@
+      #@@IF:LBHTTPS@@#BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
+    networks:
+      default:
+    #@@IF:LBNET@@#  @@LBNET@@:
+    #@@IF:DBNET@@#  @@DBNET@@:
+    #@@IF:LBHTTP@@#ports:
+    #@@IF:LBHTTP@@#  - @@LBVIP@@@@LBHTTP@@:80
+    #@@IF:LBHTTPS@@#  - @@LBVIP@@@@LBHTTPS@@:443
+    #@@IF:HOST_MAPPINGS@@#extra_hosts:
+    #@@IF:HOST_MAPPINGS@@#@@EACH:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
+    restart: always
+
+networks:
+  default:
+#@@IF:LBNET@@#  @@LBNET@@:
+#@@IF:LBNET@@#    external: true
 #@@IF:DBNET@@#  @@DBNET@@:
 #@@IF:DBNET@@#    external: true

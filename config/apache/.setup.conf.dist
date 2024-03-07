@@ -1,0 +1,71 @@
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+
+# Configurations à activer
+#ENCONFS=()
+
+# Modules à activer
+ENMODS=(
+    #remoteip
+    #rewrite
+    headers
+    proxy_http
+    #@@IF:LBHTTPS@@#ssl
+    xsendfile
+)
+
+# Sites à activer
+ENSITES=(
+    000-default.conf
+    #@@IF:LBHTTPS@@#000-default.ssl.conf
+)
+
+# Répertoire des logs
+# Cette valeur est mise à jour dans le fichier /etc/apache2/envvars APRES copie
+# du fichier éventuellement fourni par l'utilisateur.
+#APACHE_LOG_DIR=/var/log/apache2
+
+# Faut-il corriger la configuration des logs?
+#FIXLOGS=1
+
+# Type de correction à effectuer
+#   none|"" -- laisser en l'état
+#   stdout|stderr -- diriger vers stdout pour accesslog, stderr pour errorlog
+#   rotate -- faire traiter par rotatelogs
+#ACCESSLOG=rotate
+#ACCESSLOG_FORMAT=combined
+#ACCESSLOG_ROTATE_PROG=(/usr/bin/rotatelogs)
+#ACCESSLOG_ROTATE_ARGS=(-l -L '${APACHE_LOG_DIR}/access.log' -p /g/apache/compresslogs -f -c '${APACHE_LOG_DIR}/access.log-%Y%m%d' 86400)
+#ERRORLOG=rotate
+#ERRORLOG_ROTATE_PROG=(/usr/bin/rotatelogs)
+#ERRORLOG_ROTATE_ARGS=(-l -L '${APACHE_LOG_DIR}/error.log' -p /g/apache/compresslogs -f -c -e '${APACHE_LOG_DIR}/error.log-%Y%m%d' 86400)
+
+# Variables à interpoler. syntaxe:
+#   @@var@@
+#   #if var#...
+#   #unless var#...
+#   #if var comment NUMBER#
+#   #if var uncomment NUMBER#
+#   #unless var comment NUMBER#
+#   #unless var uncomment NUMBER#
+#   #ignore#
+VARS=(
+    #PROD TEST DEVEL
+    #SERVER_NAME
+    #BASE_URL
+    BASE_URL_CAS
+    #conf_CONF
+    #module_MOD
+)
+
+# Par défaut, l'interpolation des variables se fait sur les fichiers suivants:
+#   /etc/apache2/apache2.conf
+#   /etc/apache2/sites-available/*.conf
+# Fichiers supplémentaires dans lesquels faire l'interpolation. Les chemins sont
+# exprimés par rapport à /etc/apache2
+VARS_FILES=(
+    authnz.conf
+)
+
+# Désactiver le module OPCACHE de PHP. C'est la valeur par défaut si la variable
+# DEVEL est définie
+#APACHE_PHP_DISABLE_OPCACHE=1

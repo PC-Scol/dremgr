@@ -40,10 +40,9 @@ function restart_dre() {
 }
 
 case "$MYNAME" in
-*_start) Profile="${MYNAME%_start}";;
+*_inst) Profile="${MYNAME%_inst}";;
 *) Profile=prod;;
 esac
-ForceUpdate=
 action=auto
 Rebuild=
 args=(
@@ -51,7 +50,6 @@ args=(
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
-    --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
     -g:,--profile Profile= "\
 ++Spécifier le profil. Un fichier de configuration PROFILE-profile.env doit exister.
 Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
@@ -62,7 +60,7 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -k,--stop action=stop "Arrêter DRE"
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
-    --rebuild Rebuild=1 "++Forcer le rebuild de l'image"
+    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -93,7 +91,7 @@ Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
 envfile="$DREINST/${Profile}_profile.env"
 
-start_check_env || exit 0
+inst_check_env || exit 0
 if [ -f "$envfile" ]; then
     dredata="$MYDIR/var/${Profile}-dredata"
     for dir in addons downloads; do

@@ -36,38 +36,19 @@ function dcrunning() {
     fi
 }
 
-function should_update() {
-    # faut-il mettre à jour le fichier $1 qui est construit à partir des
-    # fichiers $2..@
-    local dest="$1"; shift
-    local source
-    for source in "$@"; do
-        [ -f "$source" ] || continue
-        [ "$source" -nt "$dest" ] && return 0
-    done
-    return 1
-}
-
 BUILD_TEMPLATE=.build.env.dist
 PROFILE_TEMPLATE=.prod_profile.env.dist
 ENV_TEMPLATE=..env.template
 
 function _copy_template() {
-    local src="$1" srcdir srcname dest update
+    local src="$1" srcdir srcname dest
     setx srcdir=dirname "$src"
     setx srcname=basename "$src"
     dest="${srcname#.}"; dest="${dest%.template}"; dest="$srcdir/$dest"
+
     userfiles+=("$dest")
-    if [ "$srcname" == "$ENV_TEMPLATE" ]; then update=1
-    elif [ -n "$ForceUpdate" ]; then update=1
-    elif should_update "$dest" "$src" "${source_envs[@]}"; then update=1
-    else update=
-    fi
-    if [ -n "$update" ]; then
-        cp "$src" "$dest"
-        return 0
-    fi
-    return 1
+    cp "$src" "$dest"
+    return 0
 }
 
 function _copy_dist() {
@@ -75,6 +56,7 @@ function _copy_dist() {
     setx srcdir=dirname "$src"
     setx srcname=basename "$src"
     dest="${srcname#.}"; dest="${dest%.dist}"; dest="$srcdir/$dest"
+
     userfiles+=("$dest")
     if [ ! -f "$dest" ]; then
         cp "$src" "$dest"
@@ -100,7 +82,7 @@ function _set_source_envs() {
 }
 
 function _resolve_scripts() {
-    local script1="$1" script2="$2"
+    local script1="$1" script2="$2" script3="$3"
     (
         for env in "${source_envs[@]}"; do
             [ -f "$env" ] && source "$env"
@@ -119,12 +101,23 @@ function _resolve_scripts() {
 
         # fix pour certaines variables
         [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
+        [ -n "$LBVIP" ] && LBVIP="$LBVIP:"
         [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"
         [ -n "$PRIVAREG" ] && PRIVAREG="$PRIVAREG/"
 
         NL=$'\n'
+        # random
+        cat >"$script1" <<EOF
+@include "base.tools.awk"
+{
+  if (should_generate_password()) {
+    generate_password()
+  }
+  print
+}
+EOF
         # each
-        exec >"$script1"
+        exec >"$script2"
         for varz in "${vars[@]}"; do
             values="${!varz}"; read -a values <<<"${values//
 / }"
@@ -155,7 +148,7 @@ function _resolve_scripts() {
             echo "}"
         done
         # var, if, ul
-        exec >"$script2"
+        exec >"$script3"
         for var in "${vars[@]}"; do
             value="${!var}"
             value="${value//\//\\\/}"
@@ -176,24 +169,28 @@ function _resolve_scripts() {
     )
     #etitle "script1" cat "$script1"
     #etitle "script2" cat "$script2"
+    #etitle "script3" cat "$script3"
 }
 
 function build_check_env() {
     local -a source_envs; local updated
-    local -a userfiles; local file script1 script2 workfile
+    local -a userfiles; local file script1 script2 script3 workfile
 
     local Profile=
     _set_source_envs
     _copy_dist "$DREINST/$BUILD_TEMPLATE" && updated=1
+
     ac_set_tmpfile script1
     ac_set_tmpfile script2
-    _resolve_scripts "$script1" "$script2"
-    ac_set_tmpfile workfile
+    ac_set_tmpfile script3
+    _resolve_scripts "$script1" "$script2" "$script3"
 
     file="$DREINST/build.env"
-    cat "$file" | sed -f "$script1" | sed -f "$script2" >"$workfile" &&
+    ac_set_tmpfile workfile
+    cat "$file" | awk -f "$script1" | sed -f "$script2" | sed -f "$script3" >"$workfile" &&
         cat "$workfile" >"$file"
-    ac_clean "$script1" "$script2" "$workfile"
+
+    ac_clean "$script1" "$script2" "$script3" "$workfile"
 
     if [ -n "$updated" ]; then
         enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier build.env
@@ -203,7 +200,7 @@ ENSUITE, vous pourrez relancer la commande"
     fi
 }
 
-function start_check_env() {
+function inst_check_env() {
     local -a source_envs; local updated
     local -a filter files userfiles; local file script1 script2 workfile
 
@@ -236,14 +233,16 @@ function start_check_env() {
     # puis mettre à jour les fichiers
     ac_set_tmpfile script1
     ac_set_tmpfile script2
-    _resolve_scripts "$script1" "$script2"
-    ac_set_tmpfile workfile
+    ac_set_tmpfile script3
+    _resolve_scripts "$script1" "$script2" "$script3"
 
+    ac_set_tmpfile workfile
     for file in "${userfiles[@]}"; do
-        cat "$file" | sed -f "$script1" | sed -f "$script2" >"$workfile" &&
+        cat "$file" | awk -f "$script1" | sed -f "$script2" | sed -f "$script3" >"$workfile" &&
             cat "$workfile" >"$file"
     done
-    ac_clean "$script1" "$script2" "$workfile"
+
+    ac_clean "$script1" "$script2" "$script3" "$workfile"
 
     if [ -n "$updated" -a -n "$Profile" ]; then
         enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier ${Profile}_profile.env
