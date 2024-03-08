@@ -63,8 +63,8 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-[ -f "$DREINST/all_profiles.env" ] || die "all_profiles.env: fichier introuvable"
-eval "$(source "$DREINST/all_profiles.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+[ -f "$DREINST/front.env" ] || die "front.env: fichier introuvable"
+eval "$(source "$DREINST/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
 [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
 inst_check_env || exit 0

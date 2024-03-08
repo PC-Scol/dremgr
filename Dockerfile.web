@@ -15,7 +15,6 @@ RUN /g/build -a @apache-php-cas php-utils && /g/pkg i libapache2-mod-xsendfile
 COPY config/apache/ /apache-config/
 COPY config/php/ /php-config/
 COPY config/ssl/ /ssl-config/
-COPY web/ /var/www/app/
 
 EXPOSE 80
 ENTRYPOINT ["/g/entrypoint"]

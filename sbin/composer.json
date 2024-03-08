@@ -10,7 +10,14 @@
 	],
 	"require": {
 		"nulib/php": "dev-wip",
+		"nur/sery": "dev-master",
 		"php": ">=7.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"app\\config\\": "../config",
+			"app\\": "../src"
+		}
 	},
 	"authors": [
 		{

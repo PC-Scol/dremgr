@@ -1,4 +1,0 @@
-# -*- coding: utf-8 mode: text -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
-# Liste de packages à installer
-# La liste est commentée parce qu'elle a été intégrée dans Dockerfile
-#libapache2-mod-auth-cas

@@ -53,7 +53,7 @@ args=(
     -g:,--profile Profile= "\
 ++Spécifier le profil. Un fichier de configuration PROFILE-profile.env doit exister.
 Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
-    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans all_profiles.env"
+    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans front.env"
     -P,--prod Profile=prod "++alias pour --profile prod"
     -T,--test Profile=test "++alias pour --profile test"
     -s,--start action=start "Démarrer DRE"
@@ -65,8 +65,8 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
 parse_args "$@"; set -- "${args[@]}"
 
 if [ "$Profile" == ALL ]; then
-    [ -f "$DREINST/all_profiles.env" ] || die "all_profiles.env: fichier introuvable"
-    eval "$(source "$DREINST/all_profiles.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+    [ -f "$DREINST/front.env" ] || die "front.env: fichier introuvable"
+    eval "$(source "$DREINST/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
     [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(
