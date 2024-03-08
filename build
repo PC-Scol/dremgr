@@ -36,6 +36,7 @@ function build_inst() {
     _build db
     _build web
     _build pgadmin
+    _build adminer
 }
 
 ForceUpdate=

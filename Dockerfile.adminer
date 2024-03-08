@@ -1,0 +1,17 @@
+# -*- coding: utf-8 mode: dockerfile -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+ARG REGISTRY=pubdocker.univ-reunion.fr
+FROM $REGISTRY/src/base as base
+FROM $REGISTRY/src/php as php
+
+FROM debian:11-slim
+
+COPY --from=base /g/ /g/
+ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
+ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
+RUN /g/build
+
+COPY --from=php /g/ /g/
+RUN /g/build -a @adminer
+
+EXPOSE 80
+ENTRYPOINT ["/g/entrypoint"]
