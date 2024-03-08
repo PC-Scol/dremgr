@@ -25,6 +25,13 @@ services:
     #@@IF:DBNET@@#  @@DBNET@@:
     restart: always
 
+  adminer:
+    image: @@PRIVAREG@@dreinst/adminer
+    env_file: front.env
+    #@@IF:DBNET@@#networks:
+    #@@IF:DBNET@@#  @@DBNET@@:
+    restart: always
+
   web:
     image: @@PRIVAREG@@dreinst/web
     env_file: front.env
