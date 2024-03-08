@@ -34,62 +34,45 @@ class DumpsPage extends ANavigablePage {
       return SV::compare($afilename, $bfilename);
     });
 
-    $dl = F::get("dl");
-    if ($dl) {
-      # télécharger un fichier
-      $dl = path::filename($dl);
-      if (in_array($dl, $afilenames)) {
-        header("x-sendfile: $dldir/$dl");
-        http::content_type();
-        http::download_as($dl);
-        $this->haveContent = false;
-      } else {
-        throw new Exception("$dl: fichier invalide");
-      }
-    } else {
-      $ydates = [];
-      $yfilenames = [];
-      foreach ($afilenames as $filename) {
-        if (preg_match('/\d{8}/', $filename, $ms)) {
-          $ymd = $ms[0];
-          if (!array_key_exists($ymd, $ydates)) {
-            $y = substr($ymd, 0, 4);
-            $m = substr($ymd, 4, 2);
-            $d = substr($ymd, 6, 2);
-            $ydates[$ymd] = "$d/$m/$y";
-          }
-          $yfilenames[$ymd][] = $filename;
+    if ($this->download($dldir, $afilenames)) return;
+
+    $ydates = [];
+    $yfilenames = [];
+    foreach ($afilenames as $filename) {
+      if (preg_match('/\d{8}/', $filename, $ms)) {
+        $ymd = $ms[0];
+        if (!array_key_exists($ymd, $ydates)) {
+          $y = substr($ymd, 0, 4);
+          $m = substr($ymd, 4, 2);
+          $d = substr($ymd, 6, 2);
+          $ydates[$ymd] = "$d/$m/$y";
         }
+        $yfilenames[$ymd][] = $filename;
       }
-      foreach ($ydates as $ymd => &$date) {
-        $date = [$ymd, $date];
-      }; unset($date);
-      $this->yfilenames = $yfilenames;
-
-      $this->fo = $fo = new FormInline([
-        "params" => [
-          "p" => [
-            "control" => ControlHidden::class,
-            "value" => $this->profile,
-          ],
-          "ymd" => [
-            "control" => ControlSelect::class,
-            "label" => "Date",
-            "items" => $ydates,
-          ],
-        ],
-        "autoload_params" => true,
-        "autoadd_submit" => false,
-      ]);
-      $ymd = $fo["ymd"];
-      if (!$ymd) $ymd = array_key_first($ydates);
-      $this->ymd = $ymd;
     }
-  }
+    foreach ($ydates as $ymd => &$date) {
+      $date = [$ymd, $date];
+    }; unset($date);
+    $this->yfilenames = $yfilenames;
 
-  protected $haveContent = true;
-  function haveContent(): bool {
-    return $this->haveContent;
+    $this->fo = $fo = new FormInline([
+      "params" => [
+        "p" => [
+          "control" => ControlHidden::class,
+          "value" => $this->profile,
+        ],
+        "ymd" => [
+          "control" => ControlSelect::class,
+          "label" => "Date",
+          "items" => $ydates,
+        ],
+      ],
+      "autoload_params" => true,
+      "autoadd_submit" => false,
+    ]);
+    $ymd = $fo["ymd"];
+    if (!$ymd) $ymd = array_key_first($ydates);
+    $this->ymd = $ymd;
   }
 
   protected $dldir, $ymd, $yfilenames;

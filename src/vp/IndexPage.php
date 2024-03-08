@@ -29,6 +29,10 @@ class IndexPage extends ANavigablePage {
     $this->resolveProfiles();
     $profile = $this->profile;
 
+    $this->docdir = $docdir = path::join("/data", $profile, "documentation");
+    $this->docs = $docs = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    if ($this->download($docdir, $docs)) return;
+
     $conninfo = [];
     foreach (self::VARS as $key => $var) {
       $pvar = "${profile}_$var";
@@ -41,30 +45,30 @@ class IndexPage extends ANavigablePage {
       $conninfo[$key] = $value;
     }
     $this->conninfo = $conninfo;
-
-    $this->docdir = $docdir = path::join("/data", $profile, "documentation");
-    $this->files = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
   }
 
   protected $conninfo;
 
-  protected $files;
+  protected $docdir, $docs;
 
   function print(): void {
     $this->printProfileTabs();
 
     vo::h1("Documentation");
-    $files = $this->files;
-    if ($files) {
+    $docs = $this->docs;
+    if ($docs) {
       vo::p([
         "Une documentation technique et fonctionnelle est disponible. ",
         "Vous y trouverez notamment le schéma de la base de données",
       ]);
-      new CListGroup($files, [
+      new CListGroup($docs, [
         "container" => "div",
         "map_func" => function ($file) {
           return [
-            "href" => "doc/$file",
+            "href" => page::bu("", [
+              "p" => $this->profile,
+              "dl" => $file,
+            ]),
             $file,
           ];
         },
