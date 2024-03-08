@@ -4,6 +4,7 @@ namespace app\vp;
 use app\app\ANavigablePage;
 use nur\A;
 use nur\F;
+use nur\path;
 use nur\shutils;
 use nur\txt;
 use nur\v\bs3\vc\CListGroup;
@@ -25,25 +26,12 @@ class IndexPage extends ANavigablePage {
   ];
 
   function setup(): void {
-    $profiles = explode(" ", getenv("APP_PROFILES"));
-    $this->profiles = $profiles;
-
-    $cprofile = F::get("p");
-    if (!$cprofile) $cprofile = A::first($profiles);
-    $this->cprofile = $cprofile;
-
-    $profileTabs = [];
-    foreach ($profiles as $iprofile) {
-      $profileTabs[$iprofile] = [
-        txt::upper1($iprofile),
-        "url" => page::self(["p" => $iprofile]),
-      ];
-    }
-    $this->profileTabs = $profileTabs;
+    $this->resolveProfiles();
+    $profile = $this->profile;
 
     $conninfo = [];
     foreach (self::VARS as $key => $var) {
-      $pvar = "${cprofile}_$var";
+      $pvar = "${profile}_$var";
       $avar = "__ALL__$var";
       if (($value = getenv($pvar)) === false) {
         if (($value = getenv($avar)) === false) {
@@ -54,40 +42,39 @@ class IndexPage extends ANavigablePage {
     }
     $this->conninfo = $conninfo;
 
-    $pubdir = __DIR__.'/../../public';
-    $this->files = shutils::ls_files("$pubdir/doc", null, SCANDIR_SORT_DESCENDING);
+    $this->docdir = $docdir = path::join("/data", $profile, "documentation");
+    $this->files = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
   }
-
-  /** @var array */
-  protected $profiles;
-
-  protected $cprofile;
-
-  /** @var array */
-  protected $profileTabs;
 
   protected $conninfo;
 
   protected $files;
 
   function print(): void {
-    new CNavTabs($this->profileTabs, $this->cprofile);
+    $this->printProfileTabs();
 
     vo::h1("Documentation");
-    vo::p([
-      "Une documentation technique et fonctionnelle est disponible. ",
-      "Vous y trouverez notamment le schéma de la base de données",
-    ]);
-    new CListGroup($this->files, [
-      "container" => "div",
-      "map_func" => function ($file) {
-        return [
-          "href" => "doc/$file",
-          $file,
-        ];
-      },
-      "autoprint" => true,
-    ]);
+    $files = $this->files;
+    if ($files) {
+      vo::p([
+        "Une documentation technique et fonctionnelle est disponible. ",
+        "Vous y trouverez notamment le schéma de la base de données",
+      ]);
+      new CListGroup($files, [
+        "container" => "div",
+        "map_func" => function ($file) {
+          return [
+            "href" => "doc/$file",
+            $file,
+          ];
+        },
+        "autoprint" => true,
+      ]);
+    } else {
+      vo::p([
+        "Aucune documentation n'est actuellement disponible pour cette version",
+      ]);
+    }
 
     vo::h1("Accès à la base de données");
     vo::p([

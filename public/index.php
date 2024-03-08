@@ -18,18 +18,11 @@ config::set_fact("nur/v-bs3");
 config::init_configurator(new class {
   const APPCODE = "dre";
 
-  protected static function get_datadir(): string {
-    $datadir = getenv("APP_DATADIR");
-    if ($datadir === false) $datadir = "/tmp/".self::APPCODE;
-    return $datadir;
-  }
-
   function configure__initial_config() {
     config::init_appcode(self::APPCODE);
     config::add(cdefaults::class);
     config::add(new ArrayConfig(["app" => [
       "url" => getenv("BASE_URL"),
-      "datadir" => self::get_datadir(),
     ]]));
     config::add(cprod::class, config::PROD);
   }

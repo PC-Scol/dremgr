@@ -34,6 +34,7 @@ services:
       #@@IF:LBHTTPS@@#BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
     volumes:
       - .:/var/www/app
+      @@EACH:APP_PROFILES@@- ./var/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
     networks:
       default:
     #@@IF:LBNET@@#  @@LBNET@@:

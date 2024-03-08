@@ -10,6 +10,7 @@ use nur\num;
 use nur\path;
 use nur\shutils;
 use nur\SV;
+use nur\v\bs3\fo\ControlHidden;
 use nur\v\bs3\fo\ControlSelect;
 use nur\v\bs3\fo\FormInline;
 use nur\v\bs3\vc\CTable;
@@ -20,7 +21,8 @@ use nur\v\vo;
 
 class DumpsPage extends ANavigablePage {
   function setup(): void {
-    $this->dldir = $dldir = path::join(config::k("datadir"), "downloads");
+    $this->resolveProfiles();
+    $this->dldir = $dldir = path::join("/data", $this->profile, "downloads");
 
     $afilenames = shutils::ls_files($dldir);
     usort($afilenames, function ($afilename, $bfilename) use ($dldir) {
@@ -66,6 +68,10 @@ class DumpsPage extends ANavigablePage {
 
       $this->fo = $fo = new FormInline([
         "params" => [
+          "p" => [
+            "control" => ControlHidden::class,
+            "value" => $this->profile,
+          ],
           "ymd" => [
             "control" => ControlSelect::class,
             "label" => "Date",
@@ -107,6 +113,8 @@ class DumpsPage extends ANavigablePage {
   }
 
   function print(): void {
+    $this->printProfileTabs();
+
     $dldir = $this->dldir;
     vo::h1("Fichiers de dumps");
     $this->fo->print();
@@ -117,6 +125,7 @@ class DumpsPage extends ANavigablePage {
         return [
           "Nom" => v::a([
             "href" => page::bu("", [
+              "p" => $this->profile,
               "dl" => $filename
             ]),
             $filename,
