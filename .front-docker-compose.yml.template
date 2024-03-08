@@ -6,7 +6,7 @@ services:
   pgbouncer:
     image: @@PRIVAREG@@dreinst/db
     command: pgbouncer
-    env_file: all_profiles.env
+    env_file: front.env
     #@@IF:DBNET@@#networks:
     #@@IF:DBNET@@#  @@DBNET@@:
     #@@IF:DBPORT@@#ports:
@@ -18,7 +18,7 @@ services:
 
   pgadmin:
     image: @@PRIVAREG@@dreinst/pgadmin
-    env_file: all_profiles.env
+    env_file: front.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
     #@@IF:DBNET@@#networks:
@@ -27,11 +27,14 @@ services:
 
   web:
     image: @@PRIVAREG@@dreinst/web
-    env_file: all_profiles.env
+    env_file: front.env
     environment:
       #@@UL:LBHTTPS@@#DEVEL: 1
       #@@UL:LBHTTPS@@#BASE_URL: http://@@LBHOST@@:@@LBHTTP@@
       #@@IF:LBHTTPS@@#BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
+    volumes:
+      - .:/var/www/app
+      @@EACH:APP_PROFILES@@- ./var/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
     networks:
       default:
     #@@IF:LBNET@@#  @@LBNET@@:

@@ -47,7 +47,7 @@ function _copy_template() {
     dest="${srcname#.}"; dest="${dest%.template}"; dest="$srcdir/$dest"
 
     userfiles+=("$dest")
-    cp "$src" "$dest"
+    cp -P "$src" "$dest"
     return 0
 }
 
@@ -58,8 +58,8 @@ function _copy_dist() {
     dest="${srcname#.}"; dest="${dest%.dist}"; dest="$srcdir/$dest"
 
     userfiles+=("$dest")
-    if [ ! -f "$dest" ]; then
-        cp "$src" "$dest"
+    if [ ! -e "$dest" ]; then
+        cp -P "$src" "$dest"
         return 0
     fi
     return 1
@@ -76,8 +76,8 @@ function _set_source_envs() {
     source_envs=("$DREINST/build.env")
     if [ -n "$Profile" ]; then
         source_envs+=("$DREINST/${Profile}_profile.env")
-    elif [ -f "$DREINST/all_profiles.env" ]; then
-        source_envs+=("$DREINST/all_profiles.env")
+    elif [ -f "$DREINST/front.env" ]; then
+        source_envs+=("$DREINST/front.env")
     fi
 }
 
@@ -211,6 +211,7 @@ function inst_check_env() {
         -type d -name .git -prune -or
         -type d -name vendor -prune -or
         -type d -name var -prune -or
+        -type l -name ".*.template" -print -or
         -type f -name ".*.template" -print
     )
     setx -a files=find "$DREINST" "${filter[@]}"
@@ -223,6 +224,7 @@ function inst_check_env() {
         -type d -name .git -prune -or
         -type d -name vendor -prune -or
         -type d -name var -prune -or
+        -type l -name ".*.dist" -print -or
         -type f -name ".*.dist" -print
     )
     setx -a files=find "$DREINST" "${filter[@]}"
