@@ -1,3 +1,7 @@
+## Version 0.3.0 du 08/03/2024-13:44
+
+* `1dddb82` ajouter adminer
+
 ## Version 0.2.1 du 08/03/2024-11:26
 
 * `682d120` bug
