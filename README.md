@@ -99,6 +99,7 @@ variables suivantes doivent être configurées le cas échéant:
   * `https://github.com/PC-Scol/dreaddon-pilotage.git`
     schéma "pilotage" développé par l'UPHF, base de l'univers BO livré aussi par
     l'UPHF
+
   Si ces URLs ne sont pas en accès public, il suffit de spécifier un compte
   autorisé et son mot de passe e.g
   `https://LOGIN:PASSWORD@github.com/PC-Scol/dreaddon-pilotage.git`
@@ -153,8 +154,8 @@ et test sont définis, on fait les liens symboliques correspondants:
 ln -sf front.env prod_profile.env
 ln -sf front.env test_profile.env
 ~~~
-Attention! le fichier prod_profile.env précédent est perdu au profit du nouveau
-lien symbolique.
+Attention! Si le mode simple avait été utilisé auparavant, le fichier
+`prod_profile.env` précédent est perdu au profit du nouveau lien symbolique.
 
 Créer le réseau mentionné dans la configuration (variable `DBNET`)
 ~~~sh
@@ -165,13 +166,14 @@ Puis démarrer toutes les instances correspondant à chaque profil défini
 ~~~sh
 ./inst -A
 ~~~
-Attention! si l'instance en mode simple avait déjà été démarrée, il faut la
-remplacer par les nouvelles instances, i.e
+Attention! si l'instance de prod en mode simple avait déjà été démarrée, il
+faut la remplacer par les nouvelles instances, i.e
 ~~~sh
 # forcer le redémarrage
 ./inst -Ar
 ~~~
-Notez aussi que si l'instance existait déjà, les comptes ne sont pas récréés
+Notez aussi que les comptes ne sont pas recréés si l'instance de prod en mode
+simple avait déjà été démarrée.
 
 Maintenant, il faut configurer les services frontaux.
 
