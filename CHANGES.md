@@ -1,3 +1,8 @@
+## Version 0.5.0 du 10/03/2024-21:15
+
+* `12b1f3d` maj doc
+* `3424234` maj configuration d'exemple
+
 ## Version 0.4.1 du 10/03/2024-18:50
 
 * `07a462c` bug
