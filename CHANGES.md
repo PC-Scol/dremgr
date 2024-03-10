@@ -1,3 +1,7 @@
+## Version 0.5.1 du 10/03/2024-21:30
+
+* `b68bcc6` maj doc
+
 ## Version 0.5.0 du 10/03/2024-21:15
 
 * `12b1f3d` maj doc
