@@ -33,6 +33,7 @@ function _build() {
                 docker push "$image" || die
             else
                 ewarn "PRIVAREG non défini: impossible de pousser l'image"
+            fi
         fi
     fi
 }

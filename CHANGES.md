@@ -1,3 +1,7 @@
+## Version 0.4.1 du 10/03/2024-18:50
+
+* `07a462c` bug
+
 ## Version 0.4.0 du 10/03/2024-18:45
 
 * `4d9b4d4` build: option pour pousser l'image après construction
