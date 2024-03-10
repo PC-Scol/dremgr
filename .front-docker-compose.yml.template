@@ -4,7 +4,7 @@ version: "3.8"
 
 services:
   pgbouncer:
-    image: @@PRIVAREG@@dreinst/db
+    image: @@PRIVAREG@@dremgr/db
     command: pgbouncer
     env_file: front.env
     #@@IF:DBNET@@#networks:
@@ -17,7 +17,7 @@ services:
     restart: always
 
   pgadmin:
-    image: @@PRIVAREG@@dreinst/pgadmin
+    image: @@PRIVAREG@@dremgr/pgadmin
     env_file: front.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
@@ -26,14 +26,14 @@ services:
     restart: always
 
   adminer:
-    image: @@PRIVAREG@@dreinst/adminer
+    image: @@PRIVAREG@@dremgr/adminer
     env_file: front.env
     #@@IF:DBNET@@#networks:
     #@@IF:DBNET@@#  @@DBNET@@:
     restart: always
 
   web:
-    image: @@PRIVAREG@@dreinst/web
+    image: @@PRIVAREG@@dremgr/web
     env_file: front.env
     environment:
       #@@UL:LBHTTPS@@#DEVEL: 1

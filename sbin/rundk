@@ -3,7 +3,7 @@
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 MYNAME="$(basename -- "$0")"
 MYSELF="$MYDIR/$MYNAME"
-DREINST="${MYDIR%/*}"
+DREMGR="${MYDIR%/*}"
 
 function eecho() { echo "$*" 1>&2; }
 function eerror() { eecho "ERROR: $*"; }
@@ -73,7 +73,7 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
 rundk: lancer une commande dans docker
 
 avant de lancer la commande, le répertoire courant est systématiquement modifié
-pour être celui de dreinst.
+pour être celui de dremgr.
 
 USAGE
     $MYNAME command [args...]
@@ -82,7 +82,7 @@ OPTIONS
     -w, --chdir CHDIR
         aller dans le répertoire spécifié avant de lancer la commande. si le
         répertoire est relatif, il est exprimé par rapport au répertoire de
-        dreinst
+        dremgr
     -v, --verbose
         afficher plus d'informations"
             exit 0
@@ -98,7 +98,7 @@ OPTIONS
     gid="$(id -g)"
     args=(
         run -it --rm
-        --name dreinst-rundk
+        --name dremgr-rundk
         -e _RUNDK_IN_DOCKER=1
         -e _RUNDK_UID="$uid"
         -e _RUNDK_GID="$gid"
@@ -107,15 +107,15 @@ OPTIONS
         args+=(--add-host "$host")
     done
 
-    # monter le répertoire qui contient $DREINST
+    # monter le répertoire qui contient $DREMGR
     mount_composer=
-    if [ "${DREINST#$HOME/}" != "$DREINST" -o "$DREINST" == "$HOME" ]; then
+    if [ "${DREMGR#$HOME/}" != "$DREMGR" -o "$DREMGR" == "$HOME" ]; then
         # bind mount /home
-        args+=(-v "$HOME:$HOME:rslave" -w "$DREINST")
+        args+=(-v "$HOME:$HOME:rslave" -w "$DREMGR")
         mounted_home=1
     else
-        # bind mount dreinst
-        args+=(-v "$DREINST:/rundk" -w /rundk)
+        # bind mount dremgr
+        args+=(-v "$DREMGR:/rundk" -w /rundk)
         mount_composer=1
     fi
     if [ $uid -eq 0 -a -n "$mount_composer" -a -d "$HOME/.composer" ]; then

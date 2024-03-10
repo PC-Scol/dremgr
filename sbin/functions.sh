@@ -1,6 +1,6 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 
-inspath "$DREINST/sbin"
+inspath "$DREMGR/sbin"
 
 function dklsnet() {
     docker network ls --no-trunc --format '{{.Name}}' -f name="$1" 2>/dev/null
@@ -67,17 +67,17 @@ function _copy_dist() {
 
 function list_vars() {
     echo Profile
-    cat "$DREINST/.prod_profile.env.dist" "$DREINST/.build.env.dist" |
+    cat "$DREMGR/.prod_profile.env.dist" "$DREMGR/.build.env.dist" |
         grep -E '^[A-Z_]+=' |
         sed 's/=.*//'
 }
 
 function _set_source_envs() {
-    source_envs=("$DREINST/build.env")
+    source_envs=("$DREMGR/build.env")
     if [ -n "$Profile" ]; then
-        source_envs+=("$DREINST/${Profile}_profile.env")
-    elif [ -f "$DREINST/front.env" ]; then
-        source_envs+=("$DREINST/front.env")
+        source_envs+=("$DREMGR/${Profile}_profile.env")
+    elif [ -f "$DREMGR/front.env" ]; then
+        source_envs+=("$DREMGR/front.env")
     fi
 }
 
@@ -178,14 +178,14 @@ function build_check_env() {
 
     local Profile=
     _set_source_envs
-    _copy_dist "$DREINST/$BUILD_TEMPLATE" && updated=1
+    _copy_dist "$DREMGR/$BUILD_TEMPLATE" && updated=1
 
     ac_set_tmpfile script1
     ac_set_tmpfile script2
     ac_set_tmpfile script3
     _resolve_scripts "$script1" "$script2" "$script3"
 
-    file="$DREINST/build.env"
+    file="$DREMGR/build.env"
     ac_set_tmpfile workfile
     cat "$file" | awk -f "$script1" | sed -f "$script2" | sed -f "$script3" >"$workfile" &&
         cat "$workfile" >"$file"
@@ -214,7 +214,7 @@ function inst_check_env() {
         -type l -name ".*.template" -print -or
         -type f -name ".*.template" -print
     )
-    setx -a files=find "$DREINST" "${filter[@]}"
+    setx -a files=find "$DREMGR" "${filter[@]}"
     for file in "${files[@]}"; do
         _copy_template "$file"
     done
@@ -227,7 +227,7 @@ function inst_check_env() {
         -type l -name ".*.dist" -print -or
         -type f -name ".*.dist" -print
     )
-    setx -a files=find "$DREINST" "${filter[@]}"
+    setx -a files=find "$DREMGR" "${filter[@]}"
     for file in "${files[@]}"; do
         _copy_dist "$file" && updated=1
     done
