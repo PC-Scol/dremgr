@@ -2,11 +2,11 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(dirname -- "$0")"
 "$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
-DREINST="$MYDIR"
-source "$DREINST/sbin/functions.sh" || exit 1
+DREMGR="$MYDIR"
+source "$DREMGR/sbin/functions.sh" || exit 1
 
 function start_dre() {
-    local composefile="$DREINST/inst-docker-compose.yml"
+    local composefile="$DREMGR/inst-docker-compose.yml"
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
@@ -21,7 +21,7 @@ function start_dre() {
 }
 
 function stop_dre() {
-    local composefile="$DREINST/inst-docker-compose.yml"
+    local composefile="$DREMGR/inst-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
         estep "Arrêt de DRE [$Profile]"
@@ -65,8 +65,8 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
 parse_args "$@"; set -- "${args[@]}"
 
 if [ "$Profile" == ALL ]; then
-    [ -f "$DREINST/front.env" ] || die "front.env: fichier introuvable"
-    eval "$(source "$DREINST/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+    [ -f "$DREMGR/front.env" ] || die "front.env: fichier introuvable"
+    eval "$(source "$DREMGR/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
     [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(
@@ -89,7 +89,7 @@ fi
 
 Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
-envfile="$DREINST/${Profile}_profile.env"
+envfile="$DREMGR/${Profile}_profile.env"
 
 inst_check_env || exit 0
 if [ -f "$envfile" ]; then
@@ -105,7 +105,7 @@ fi
 
 ForceStart=
 case "$action" in
-bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
+bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
 start) start_dre "$@";;
 stop) stop_dre "$@";;
 refresh) refresh_dre "$@";;

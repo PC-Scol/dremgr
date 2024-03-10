@@ -2,8 +2,8 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(dirname -- "$0")"
 "$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
-DREINST="$MYDIR"
-source "$DREINST/sbin/functions.sh" || exit 1
+DREMGR="$MYDIR"
+source "$DREMGR/sbin/functions.sh" || exit 1
 
 BUILD_ARGS=(
     REGISTRY
@@ -14,11 +14,11 @@ BUILD_ARGS=(
 )
 
 function _build() {
-    local image="${PRIVAREG:+$PRIVAREG/}dreinst/$1"
+    local image="${PRIVAREG:+$PRIVAREG/}dremgr/$1"
     if [ -n "$ForceBuild" -o -z "$(dklsimg "$image")" ]; then
         estep "Construction $image"
         args=(
-            -f "$DREINST/Dockerfile.$1"
+            -f "$DREMGR/Dockerfile.$1"
             ${NoCache:+--no-cache}
             ${BuildPlain:+--progress plain}
             -t "$image"
@@ -26,12 +26,12 @@ function _build() {
         for arg in "${BUILD_ARGS[@]}"; do
             args+=(--build-arg "$arg=${!arg}")
         done
-        docker build "${args[@]}" "$DREINST"
+        docker build "${args[@]}" "$DREMGR"
     fi
 }
 function build_inst() {
     local image
-    source "$DREINST/build.env"
+    source "$DREMGR/build.env"
 
     _build db
     _build web
@@ -52,7 +52,7 @@ args=(
     --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
-    -p,--build-plain BuildPlain=1 "++Afficher le détail du build"
+    -D,--build-plain BuildPlain=1 "++Afficher le détail du build"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -60,7 +60,7 @@ build_check_env || die
 [ "$action" == none ] && exit 0
 
 case "$action" in
-bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
+bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
 build) build_inst "$@";;
 *) die "$action: action non implémentée";;
 esac

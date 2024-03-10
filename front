@@ -2,11 +2,11 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(dirname -- "$0")"
 "$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
-DREINST="$MYDIR"
-source "$DREINST/sbin/functions.sh" || exit 1
+DREMGR="$MYDIR"
+source "$DREMGR/sbin/functions.sh" || exit 1
 
 function start_front() {
-    local composefile="$DREINST/front-docker-compose.yml"
+    local composefile="$DREMGR/front-docker-compose.yml"
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
@@ -30,7 +30,7 @@ function start_front() {
 }
 
 function stop_front() {
-    local composefile="$DREINST/front-docker-compose.yml"
+    local composefile="$DREMGR/front-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
         estep "Arrêt du frontal DRE"
@@ -63,8 +63,8 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-[ -f "$DREINST/front.env" ] || die "front.env: fichier introuvable"
-eval "$(source "$DREINST/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+[ -f "$DREMGR/front.env" ] || die "front.env: fichier introuvable"
+eval "$(source "$DREMGR/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
 [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
 inst_check_env || exit 0
@@ -74,7 +74,7 @@ inst_check_env || exit 0
 Profile=
 ForceStart=
 case "$action" in
-bootstrap) "$DREINST/sbin/bootstrap" --force "$@";;
+bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
 start) start_front "$@";;
 stop) stop_front "$@";;
 refresh) refresh_front "$@";;

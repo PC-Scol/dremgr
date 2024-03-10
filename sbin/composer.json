@@ -1,6 +1,6 @@
 {
-	"name": "dreinst/tools",
-	"description": "outils pour dreinst",
+	"name": "dremgr/tools",
+	"description": "outils pour dremgr",
 	"type": "project",
 	"repositories": [
 		{

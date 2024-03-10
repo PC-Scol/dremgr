@@ -3,7 +3,7 @@
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 MYNAME="$(basename -- "$0")"
 MYSELF="$MYDIR/$MYNAME"
-DREINST="${MYDIR%/*}"
+DREMGR="${MYDIR%/*}"
 
 function eecho() { echo "$*" 1>&2; }
 function eerror() { eecho "ERROR: $*"; }
@@ -17,11 +17,11 @@ else
 fi
 if [ -z "$force" ]; then
     # si vendor/ n'existe pas, alors on doit faire bootstrap
-    if [ ! -f "$DREINST/sbin/vendor/nulib/php/load.sh" ]; then
+    if [ ! -f "$DREMGR/sbin/vendor/nulib/php/load.sh" ]; then
         : # bootstrap
-    elif [ ! -f "$DREINST/.composer.lock" ]; then
+    elif [ ! -f "$DREMGR/.composer.lock" ]; then
         : # bootstrap
-    elif ! diff -q "$MYDIR/composer.lock" "$DREINST/.composer.lock" >&/dev/null; then
+    elif ! diff -q "$MYDIR/composer.lock" "$DREMGR/.composer.lock" >&/dev/null; then
         : # bootstrap
     else
         # bootstrap inutile
@@ -30,12 +30,12 @@ if [ -z "$force" ]; then
 fi
 
 if [ -z "$_RUNDK_IN_DOCKER" ]; then
-    eecho "== bootstrap dreinst"
-    exec "$MYDIR/rundk" "./${MYSELF#$DREINST/}" ${force:+--force} "$@"
+    eecho "== bootstrap dremgr"
+    exec "$MYDIR/rundk" "./${MYSELF#$DREMGR/}" ${force:+--force} "$@"
 
 else
     # Lancement depuis l'intérieur du container
-    cd "$DREINST/sbin"
+    cd "$DREMGR/sbin"
 
     case "${1:-install}" in
     i|install)
@@ -52,11 +52,11 @@ else
     esac
 
     # faire une copie du fichier .lock
-    cp "$MYDIR/composer.lock" "$DREINST/.composer.lock"
+    cp "$MYDIR/composer.lock" "$DREMGR/.composer.lock"
 
     if [ "$_RUNDK_UID" == 0 ]; then
         # si on est lancé avec root, corriger le propriétaire de la destination
         eecho "* maj des propriétaires et groupes"
-        chown -R "$_RUNDK_UID:$_RUNDK_GID" vendor "$DREINST/.composer.lock"
+        chown -R "$_RUNDK_UID:$_RUNDK_GID" vendor "$DREMGR/.composer.lock"
     fi
 fi
