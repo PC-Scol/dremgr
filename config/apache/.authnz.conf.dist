@@ -4,5 +4,5 @@
 <Location />
     AuthType CAS
     CASAuthNHeader On
-    Require valid-user
+    Require user dreuser
 </Location>
