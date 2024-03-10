@@ -16,7 +16,7 @@ BUILD_ARGS=(
 function _build() {
     local image="${PRIVAREG:+$PRIVAREG/}dremgr/$1"
     if [ -n "$ForceBuild" -o -z "$(dklsimg "$image")" ]; then
-        estep "Construction $image"
+        estep "Construction de $image"
         args=(
             -f "$DREMGR/Dockerfile.$1"
             ${NoCache:+--no-cache}
@@ -26,7 +26,14 @@ function _build() {
         for arg in "${BUILD_ARGS[@]}"; do
             args+=(--build-arg "$arg=${!arg}")
         done
-        docker build "${args[@]}" "$DREMGR"
+        docker build "${args[@]}" "$DREMGR" || die
+        if [ -n "$Push" ]; then
+            if [ -n "$PRIVAREG" ]; then
+                estep "Poussement de $image"
+                docker push "$image" || die
+            else
+                ewarn "PRIVAREG non défini: impossible de pousser l'image"
+        fi
     fi
 }
 function build_inst() {
@@ -44,6 +51,7 @@ action=build
 ForceBuild=
 NoCache=
 BuildPlain=
+Push=
 args=(
     "Construire les images pour DRE"
     #"usage"
@@ -53,6 +61,7 @@ args=(
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
     -D,--build-plain BuildPlain=1 "++Afficher le détail du build"
+    -p,--push Push=1 "Pousser les images vers le registry après construction"
 )
 parse_args "$@"; set -- "${args[@]}"
 
