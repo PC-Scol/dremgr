@@ -1,3 +1,8 @@
+## Version 0.4.0 du 10/03/2024-18:45
+
+* `4d9b4d4` build: option pour pousser l'image après construction
+* `8d88bd1` renommer le projet en dremgr
+
 ## Version 0.3.0 du 08/03/2024-13:44
 
 * `1dddb82` ajouter adminer
