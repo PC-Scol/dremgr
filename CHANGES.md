@@ -1,3 +1,7 @@
+## Version 0.5.2 du 11/03/2024-18:36
+
+* `d6609e5` support WSL
+
 ## Version 0.5.1 du 10/03/2024-21:30
 
 * `b68bcc6` maj doc

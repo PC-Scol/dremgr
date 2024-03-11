@@ -59,12 +59,23 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
     ################################################################################
     # Lancer la commande depuis l'extérieur du container
 
-    SOPTS=+vw:
-    LOPTS=help,verbose,chdir:
+    if [ -n "$DREMGR_NO_USE_RSLAVE" ]; then
+        UseRslave=
+    elif [ -n "$DREMGR_USE_RSLAVE" ]; then
+        UseRslave=1
+    elif [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        # pas de mount propagation sous WSL
+        UseRslave=
+    else
+        UseRslave=1
+    fi
+
+    SOPTS=+w:v
+    LOPTS=help,chdir:,verbose,no-use-rslave
     args="$(getopt -n rundk -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
-    VERBOSE=
     CHDIR=
+    VERBOSE=
     while [ $# -gt 0 ]; do
         case "$1" in
         --) shift; break;;
@@ -87,8 +98,9 @@ OPTIONS
         afficher plus d'informations"
             exit 0
             ;;
-        -v|--verbose) VERBOSE=1;;
         -w|--chdir) shift; CHDIR="$1";;
+        -v|--verbose) VERBOSE=1;;
+        --no-use-rslave) UseRslave=;;
         *) die "$1: option non configurée";;
         esac
         shift
@@ -111,7 +123,7 @@ OPTIONS
     mount_composer=
     if [ "${DREMGR#$HOME/}" != "$DREMGR" -o "$DREMGR" == "$HOME" ]; then
         # bind mount /home
-        args+=(-v "$HOME:$HOME:rslave" -w "$DREMGR")
+        args+=(-v "$HOME:$HOME${UseRslave:+:rslave}" -w "$DREMGR")
         mounted_home=1
     else
         # bind mount dremgr
