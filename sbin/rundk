@@ -64,7 +64,6 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
     [ -n "$TIMEZONE" ] || TIMEZONE=Europe/Paris
     [ -n "$PRIVAREG" ] || PRIVAREG=
     [ -n "$REGISTRY" ] || REGISTRY=pubdocker.univ-reunion.fr
-    [ -n "$IMAGE" ] || IMAGE="$REGISTRY/dremgr/rundk"
 
     ################################################################################
     # Lancer la commande depuis l'extérieur du container
@@ -143,6 +142,10 @@ OPTIONS
         shift
     done
 
+    if [ -z "$IMAGE" ]; then
+        IMAGE=dremgr/rundk
+        [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGE" || IMAGE="$REGISTRY/$IMAGE"
+    fi
     if [ -n "$Build" ]; then
         if [ -n "$Config" ]; then
             source "$Config" || exit 1
@@ -159,7 +162,7 @@ OPTIONS
         mkdir -p /tmp/rundk
         docker build "${args[@]}" /tmp/rundk || exit 1
         if [ -n "$Push" -a -n "$PRIVAREG" ]; then
-            docker push "$image" || exit 1
+            docker push "$IMAGE" || exit 1
         fi
         exit 0
     fi
