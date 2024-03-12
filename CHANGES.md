@@ -1,3 +1,7 @@
+## Version 0.6.1 du 12/03/2024-10:43
+
+* `8550569` build fait frontal pour rundk -0
+
 ## Version 0.6.0 du 12/03/2024-09:48
 
 * `4fbf627` l'image rundk est nommée d'après PRIVAREG si défini

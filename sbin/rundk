@@ -77,10 +77,11 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
     )
 
     SOPTS=+0jDc:x:z:r:pw:v
-    LOPTS=help,build,no-cache,plain-output,config:,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
+    LOPTS=help,build,unless-exists,no-cache,plain-output,config:,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
     args="$(getopt -n rundk -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
     Build=
+    UnlessExists=
     NoCache=
     PlainOutput=
     Chdir=
@@ -110,6 +111,7 @@ USAGE
 
 OPTIONS
     -0, --build
+    --unless-exists
     -j, --no-cache
     -D, --plain-output
     -c, --config build.env
@@ -127,6 +129,7 @@ OPTIONS
             exit 0
             ;;
         -0|--build) Build=1;;
+        --unless-exists) UnlessExists=1;;
         -j|--no-cache) NoCache=1;;
         -D|--plain-output) PlainOutput=1;;
         -c|--config) shift; Config="$1";;
@@ -142,16 +145,19 @@ OPTIONS
         shift
     done
 
-    if [ -z "$IMAGE" ]; then
-        IMAGE=dremgr/rundk
-        [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGE" || IMAGE="$REGISTRY/$IMAGE"
-    fi
+    IMAGENAME=dremgr/rundk
     if [ -n "$Build" ]; then
         if [ -n "$Config" ]; then
             source "$Config" || exit 1
         fi
+        if [ -z "$IMAGE" ]; then
+            [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGENAME" || IMAGE="$REGISTRY/$IMAGENAME"
+        fi
+        if [ -n "$UnlessExists" -a -n "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$IMAGE" 2>/dev/null)" ]; then
+            exit 0
+        fi
         args=(
-            -f "$MYDIR/Dockerfile.tools"
+            -f "$MYDIR/Dockerfile.rundk"
             ${NoCache:+--no-cache}
             ${BuildPlain:+--progress plain}
             -t "$IMAGE"
@@ -165,6 +171,8 @@ OPTIONS
             docker push "$IMAGE" || exit 1
         fi
         exit 0
+    elif [ -z "$IMAGE" ]; then
+        [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGENAME" || IMAGE="$REGISTRY/$IMAGENAME"
     fi
 
     uid="$(id -u)"
