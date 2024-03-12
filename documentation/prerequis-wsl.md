@@ -10,10 +10,10 @@ wsl --install -d debian
 
 Puis installer Docker Desktop <https://www.docker.com/products/docker-desktop/>
 
-Ouvrir Docker Desktop pour lancer les services nécessaires. Il faudra garder
-Docker Desktop ouvert à chaque utilisation de dremgr
+Lancer Docker Desktop pour s'assurer de la présence des services nécessaires. Il
+faut garder Docker Desktop ouvert à chaque utilisation de dremgr
 
-Ouvrir Debian, puis installer les outils nécessaires
+Lancer Debian, puis installer les outils nécessaires
 ~~~sh
 sudo apt update && sudo apt install git curl rsync tar unzip python3 gawk
 ~~~
