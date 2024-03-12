@@ -8,25 +8,26 @@ DRE
 dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
-Le document [pré-requis rddmgr](documentation/prerequis.md) liste tous les
-pré-requis et donne les instructions pour les installer sur Debian 11
+* Installation des [pré-requis pour Debian](documentation/prerequis-linux.md)
+  et autres distributions Linux.
+* Installation des [pré-requis pour WSL](documentation/prerequis-wsl.md)
 
 ## Démarrage rapide
 
 Ouvrez un terminal et clonez le dépôt
 ~~~sh
 git clone https://github.com/PC-Scol/dremgr.git
-
+~~~
+~~~sh
 cd dremgr
 ~~~
 
-Il faut d'abord construire les images utilisées par l'application
+Il faut d'abord construire les images utilisées par l'application. Commencer en
+faisant une copie de `build.env` depuis `.build.env.dist`
 ~~~sh
-./build
+cp .build.env.dist build.env
 ~~~
-La première invocation crée le fichier d'exemple `build.env`
-
-Il FAUT consulter ce fichier et l'éditer AVANT de continuer. Notamment, les
+Il FAUT consulter `build.env` et l'éditer AVANT de continuer. Notamment, les
 variables suivantes doivent être configurées le cas échéant:
 
 `APT_PROXY`
@@ -46,6 +47,9 @@ variables suivantes doivent être configurées le cas échéant:
 
 Une fois le fichier configuré, les images peuvent être construites
 ~~~sh
+./sbin/rundk -0 -c build.env
+~~~
+~~~sh
 ./build
 ~~~
 
@@ -60,7 +64,7 @@ fonctionnement:
   * proxy pgbouncer qui permet de servir plusieurs bases postgresql sur la même
     adresse IP. ce service est obligatoire.
   * pgAdmin pour accéder à la base de façon graphique
-  * adminer, en tant qu'alternative pour accéder à la base de façon graphique
+  * adminer, alternative pour accéder à la base de façon graphique
   * une application web destinée aux utilisateurs autorisés qui affiche les
     informations de connexion à la base de données, et met à disposition de la
     documentation technique et/ou fonctionnelle
@@ -213,6 +217,8 @@ chaque instance de base DRE. par défaut, il s'agit de l'adresse locale:
 ~~~sh
 # prod
 psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
+~~~
+~~~sh
 # test
 psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=test_dre"
 ~~~
@@ -222,6 +228,8 @@ forcer le téléchargement et l'importation:
 ~~~sh
 # prod
 docker exec prod-dreinst-cron-1 dl-dumps
+~~~
+~~~sh
 # test
 docker exec test-dreinst-cron-1 dl-dumps
 ~~~

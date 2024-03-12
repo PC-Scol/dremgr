@@ -20,7 +20,7 @@ function _build() {
         args=(
             -f "$DREMGR/Dockerfile.$1"
             ${NoCache:+--no-cache}
-            ${BuildPlain:+--progress plain}
+            ${PlainOutput:+--progress plain}
             -t "$image"
         )
         for arg in "${BUILD_ARGS[@]}"; do
@@ -51,7 +51,7 @@ ForceUpdate=
 action=build
 ForceBuild=
 NoCache=
-BuildPlain=
+PlainOutput=
 Push=
 args=(
     "Construire les images pour DRE"
@@ -61,7 +61,7 @@ args=(
     --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
-    -D,--build-plain BuildPlain=1 "++Afficher le détail du build"
+    -D,--plain-output PlainOutput=1 "++Afficher le détail du build"
     -p,--push Push=1 "Pousser les images vers le registry après construction"
 )
 parse_args "$@"; set -- "${args[@]}"

@@ -1,3 +1,10 @@
+## Version 0.6.0 du 12/03/2024-09:48
+
+* `4fbf627` l'image rundk est nommée d'après PRIVAREG si défini
+* `fe2d5eb` maj doc pour build rundk
+* `e6f5465` ajout doc pour installer sous WSL
+* `9ab4119` support construction locale de rundk
+
 ## Version 0.5.2 du 11/03/2024-18:36
 
 * `d6609e5` support WSL
