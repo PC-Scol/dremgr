@@ -43,7 +43,7 @@ function _build() {
         fi
     fi
 }
-function build_inst() {
+function build_images() {
     local image
     source "$DREMGR/build.env"
 
@@ -53,7 +53,6 @@ function build_inst() {
     _build adminer
 }
 
-ForceUpdate=
 action=build
 ForceBuild=
 NoCache=
@@ -63,8 +62,7 @@ args=(
     "Construire les images pour DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
-    --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
+    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau sbin/bootstrap"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
     -D,--plain-output PlainOutput=1 "++Afficher le détail du build"
@@ -77,6 +75,6 @@ build_check_env || die
 
 case "$action" in
 bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
-build) build_inst "$@";;
+build) build_images "$@";;
 *) die "$action: action non implémentée";;
 esac
