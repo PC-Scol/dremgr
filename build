@@ -1,6 +1,12 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(dirname -- "$0")"
+if [ ! -f "$MYDIR/sbin/vendor/nulib/php/load.sh" ]; then
+    if [ -f "$MYDIR/build.env" ]; then config="$MYDIR/build.env"
+    else config="$MYDIR/.build.env.dist"
+    fi
+    "$MYDIR/sbin/rundk" -0 --unless-exists -c "$config" || exit 1
+fi
 "$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
 DREMGR="$MYDIR"
 source "$DREMGR/sbin/functions.sh" || exit 1
