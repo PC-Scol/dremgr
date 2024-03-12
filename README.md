@@ -8,8 +8,9 @@ DRE
 dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
-Le document [pré-requis rddmgr](documentation/prerequis.md) liste tous les
-pré-requis et donne les instructions pour les installer sur Debian 11
+* Installation des [pré-requis pour Debian](documentation/prerequis-linux.md)
+  et autres distributions Linux.
+* Installation des [pré-requis pour WSL](documentation/prerequis-wsl.md)
 
 ## Démarrage rapide
 
