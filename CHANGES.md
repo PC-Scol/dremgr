@@ -1,3 +1,9 @@
+## Version 0.7.0 du 13/03/2024-22:35
+
+* `ed62aec` utiliser nulib:template
+* `5cd5791` cosmetic: chaque fichier dist ignoré depuis son propre répertoire
+* `50460dd` cosmetic
+
 ## Version 0.6.1 du 12/03/2024-10:43
 
 * `8550569` build fait frontal pour rundk -0

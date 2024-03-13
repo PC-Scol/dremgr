@@ -13,12 +13,12 @@ services:
       - ./var/@@Profile@@-run:/run/postgresql
       - ./var/@@Profile@@-pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
-    #@@IF:DBNET@@#networks:
-    #@@IF:DBNET@@#  @@DBNET@@:
-    #@@IF:DBNET@@#    aliases:
-    #@@IF:DBNET@@#      - @@Profile@@_db
-    #@@IF:INST_PORT@@#ports:
-    #@@IF:INST_PORT@@#  - @@INST_VIP@@@@INST_PORT@@:5432
+    #@@IF:DBNET@@networks:
+    #@@IF:DBNET@@  @@DBNET@@:
+    #@@IF:DBNET@@    aliases:
+    #@@IF:DBNET@@      - @@Profile@@_db
+    #@@IF:INST_PORT@@ports:
+    #@@IF:INST_PORT@@  - @@INST_VIP@@@@INST_PORT@@:5432
     deploy:
       update_config:
         order: stop-first
@@ -42,13 +42,13 @@ services:
       - ./var/@@Profile@@-dredata:/data/dre
       - ./config/cron:/cron-config
       - ./bin/dl-dumps:/usr/local/bin/dl-dumps
-    #@@IF:HOST_MAPPINGS@@#extra_hosts:
-    #@@IF:HOST_MAPPINGS@@#@@EACH:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
+    #@@IF:HOST_MAPPINGS@@extra_hosts:
+    @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:
       update_config:
         order: stop-first
     restart: always
 
-#@@IF:DBNET@@#networks:
-#@@IF:DBNET@@#  @@DBNET@@:
-#@@IF:DBNET@@#    external: true
+#@@IF:DBNET@@networks:
+#@@IF:DBNET@@  @@DBNET@@:
+#@@IF:DBNET@@    external: true

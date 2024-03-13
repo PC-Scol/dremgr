@@ -7,10 +7,10 @@ services:
     image: @@PRIVAREG@@dremgr/db
     command: pgbouncer
     env_file: front.env
-    #@@IF:DBNET@@#networks:
-    #@@IF:DBNET@@#  @@DBNET@@:
-    #@@IF:DBPORT@@#ports:
-    #@@IF:DBPORT@@#  - @@DBVIP@@@@DBPORT@@:5432
+    #@@IF:DBNET@@networks:
+    #@@IF:DBNET@@  @@DBNET@@:
+    #@@IF:DBPORT@@ports:
+    #@@IF:DBPORT@@  - @@DBVIP@@@@DBPORT@@:5432
     deploy:
       update_config:
         order: stop-first
@@ -21,41 +21,41 @@ services:
     env_file: front.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
-    #@@IF:DBNET@@#networks:
-    #@@IF:DBNET@@#  @@DBNET@@:
+    #@@IF:DBNET@@networks:
+    #@@IF:DBNET@@  @@DBNET@@:
     restart: always
 
   adminer:
     image: @@PRIVAREG@@dremgr/adminer
     env_file: front.env
-    #@@IF:DBNET@@#networks:
-    #@@IF:DBNET@@#  @@DBNET@@:
+    #@@IF:DBNET@@networks:
+    #@@IF:DBNET@@  @@DBNET@@:
     restart: always
 
   web:
     image: @@PRIVAREG@@dremgr/web
     env_file: front.env
     environment:
-      #@@UL:LBHTTPS@@#DEVEL: 1
-      #@@UL:LBHTTPS@@#BASE_URL: http://@@LBHOST@@:@@LBHTTP@@
-      #@@IF:LBHTTPS@@#BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
+      #@@UL:LBHTTPS@@DEVEL: 1
+      #@@UL:LBHTTPS@@BASE_URL: http://@@LBHOST@@:@@LBHTTP@@
+      #@@IF:LBHTTPS@@BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
     volumes:
       - .:/var/www/app
-      @@EACH:APP_PROFILES@@- ./var/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
+      @@FOR:APP_PROFILES@@- ./var/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
     networks:
       default:
-    #@@IF:LBNET@@#  @@LBNET@@:
-    #@@IF:DBNET@@#  @@DBNET@@:
-    #@@IF:LBHTTP@@#ports:
-    #@@IF:LBHTTP@@#  - @@LBVIP@@@@LBHTTP@@:80
-    #@@IF:LBHTTPS@@#  - @@LBVIP@@@@LBHTTPS@@:443
-    #@@IF:HOST_MAPPINGS@@#extra_hosts:
-    #@@IF:HOST_MAPPINGS@@#@@EACH:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
+    #@@IF:LBNET@@  @@LBNET@@:
+    #@@IF:DBNET@@  @@DBNET@@:
+    #@@IF:LBHTTP@@ports:
+    #@@IF:LBHTTP@@  - @@LBVIP@@@@LBHTTP@@:80
+    #@@IF:LBHTTPS@@  - @@LBVIP@@@@LBHTTPS@@:443
+    #@@IF:HOST_MAPPINGS@@extra_hosts:
+    @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     restart: always
 
 networks:
   default:
-#@@IF:LBNET@@#  @@LBNET@@:
-#@@IF:LBNET@@#    external: true
-#@@IF:DBNET@@#  @@DBNET@@:
-#@@IF:DBNET@@#    external: true
+  #@@IF:LBNET@@@@LBNET@@:
+  #@@IF:LBNET@@  external: true
+  #@@IF:DBNET@@@@DBNET@@:
+  #@@IF:DBNET@@  external: true

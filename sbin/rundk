@@ -165,8 +165,8 @@ OPTIONS
         for arg in "${BUILD_ARGS[@]}"; do
             args+=(--build-arg "$arg=${!arg}")
         done
-        mkdir -p /tmp/rundk
-        docker build "${args[@]}" /tmp/rundk || exit 1
+        mkdir -p /tmp/dremgr-build
+        docker build "${args[@]}" /tmp/dremgr-build || exit 1
         if [ -n "$Push" -a -n "$PRIVAREG" ]; then
             docker push "$IMAGE" || exit 1
         fi

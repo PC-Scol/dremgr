@@ -1,14 +1,17 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
-MYDIR="$(dirname -- "$0")"
-if [ ! -f "$MYDIR/sbin/vendor/nulib/php/load.sh" ]; then
-    if [ -f "$MYDIR/build.env" ]; then config="$MYDIR/build.env"
-    else config="$MYDIR/.build.env.dist"
-    fi
-    "$MYDIR/sbin/rundk" -0 --unless-exists -c "$config" || exit 1
-fi
-"$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
+MYNAME="$(basename -- "$0")"
+MYSELF="$MYDIR/$MYNAME"
 DREMGR="$MYDIR"
+
+if [ ! -f "$DREMGR/sbin/vendor/nulib/php/load.sh" ]; then
+    if [ -f "$DREMGR/build.env" ]; then config="$DREMGR/build.env"
+    else config="$DREMGR/.build.env.dist"
+    fi
+    "$DREMGR/sbin/rundk" -0 --unless-exists -c "$config" || exit 1
+fi
+"$DREMGR/sbin/bootstrap" && source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
 BUILD_ARGS=(
@@ -43,17 +46,19 @@ function _build() {
         fi
     fi
 }
-function build_inst() {
-    local image
-    source "$DREMGR/build.env"
+function build_images() {
+    local -a args
+    [ -z "$ForceBuild" ] && args+=(--unless-exists)
+    args+=(-0 -c "$DREMGR/build.env")
+    "$DREMGR/sbin/rundk" "${args[@]}"
 
+    source "$DREMGR/build.env"
     _build db
     _build web
     _build pgadmin
     _build adminer
 }
 
-ForceUpdate=
 action=build
 ForceBuild=
 NoCache=
@@ -63,8 +68,7 @@ args=(
     "Construire les images pour DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
-    --force-update ForceUpdate=1 "++Forcer la mise à jour des fichiers dépendants"
+    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau sbin/bootstrap"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
     -D,--plain-output PlainOutput=1 "++Afficher le détail du build"
@@ -77,6 +81,6 @@ build_check_env || die
 
 case "$action" in
 bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
-build) build_inst "$@";;
+build) build_images "$@";;
 *) die "$action: action non implémentée";;
 esac

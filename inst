@@ -70,7 +70,6 @@ if [ "$Profile" == ALL ]; then
     [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(
-        ${ForceUpdate:+--force-update}
         ${Rebuild:+--rebuild}
     )
     case "$action" in

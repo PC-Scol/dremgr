@@ -5,18 +5,19 @@
 
 # Modules à activer
 ENMODS=(
+    #-auth_cas
     #remoteip
     #rewrite
     headers
     proxy_http
-    #@@IF:LBHTTPS@@#ssl
+    #@@if:LBHTTPS@@ssl
     xsendfile
 )
 
 # Sites à activer
 ENSITES=(
     000-default.conf
-    #@@IF:LBHTTPS@@#000-default.ssl.conf
+    #@@if:LBHTTPS@@000-default.ssl.conf
 )
 
 # Répertoire des logs
