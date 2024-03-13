@@ -1,14 +1,17 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
-MYDIR="$(dirname -- "$0")"
-if [ ! -f "$MYDIR/sbin/vendor/nulib/php/load.sh" ]; then
-    if [ -f "$MYDIR/build.env" ]; then config="$MYDIR/build.env"
-    else config="$MYDIR/.build.env.dist"
-    fi
-    "$MYDIR/sbin/rundk" -0 --unless-exists -c "$config" || exit 1
-fi
-"$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
+MYNAME="$(basename -- "$0")"
+MYSELF="$MYDIR/$MYNAME"
 DREMGR="$MYDIR"
+
+if [ ! -f "$DREMGR/sbin/vendor/nulib/php/load.sh" ]; then
+    if [ -f "$DREMGR/build.env" ]; then config="$DREMGR/build.env"
+    else config="$DREMGR/.build.env.dist"
+    fi
+    "$DREMGR/sbin/rundk" -0 --unless-exists -c "$config" || exit 1
+fi
+"$DREMGR/sbin/bootstrap" && source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
 BUILD_ARGS=(
@@ -44,9 +47,12 @@ function _build() {
     fi
 }
 function build_images() {
-    local image
-    source "$DREMGR/build.env"
+    local -a args
+    [ -z "$ForceBuild" ] && args+=(--unless-exists)
+    args+=(-0 -c "$DREMGR/build.env")
+    "$DREMGR/sbin/rundk" "${args[@]}"
 
+    source "$DREMGR/build.env"
     _build db
     _build web
     _build pgadmin

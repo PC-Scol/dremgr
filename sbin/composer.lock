@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aef49f948b9fea35209015da9bd5f029",
+    "content-hash": "7d3a3c4330eaccc1e090f3e04a07cc8c",
     "packages": [
         {
             "name": "nulib/php",
@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "12344f7b14a19df8565b099b67a91ad7a6c4070a"
+                "reference": "ba33c7815f6477151dd43b411e9cc951f20b3165"
             },
             "require": {
                 "php": ">=7.4"
@@ -43,7 +43,7 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2024-03-06T04:55:06+00:00"
+            "time": "2024-03-13T12:23:52+00:00"
         },
         {
             "name": "nur/sery",
