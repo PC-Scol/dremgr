@@ -5,17 +5,9 @@
 
 /.env
 /build.env
+/*_profile.env
+/front.env
 
 /var/
 /*_start
-/*_profile.env
-/inst-docker-compose.yml
-/config/cron/dl-dumps
-
-/front.env
-/front-docker-compose.yml
-/config/apache/setup.conf
-/config/apache/certs.conf
-/config/apache/authnz.conf
-/config/apache/mods-available/auth_cas.conf
-/public/brand.png
+/*-docker-compose.yml
