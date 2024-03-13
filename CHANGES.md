@@ -1,3 +1,7 @@
+## Version 0.7.1 du 13/03/2024-22:47
+
+* `93b9100` simplifier l'exemple front.env
+
 ## Version 0.7.0 du 13/03/2024-22:35
 
 * `ed62aec` utiliser nulib:template
