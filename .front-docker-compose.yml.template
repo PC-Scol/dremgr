@@ -6,7 +6,9 @@ services:
   pgbouncer:
     image: @@PRIVAREG@@dremgr/db
     command: pgbouncer
-    env_file: front.env
+    env_file:
+      - .proxy.env
+      - front.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     #@@IF:DBPORT@@ports:
@@ -18,7 +20,9 @@ services:
 
   pgadmin:
     image: @@PRIVAREG@@dremgr/pgadmin
-    env_file: front.env
+    env_file:
+      - .proxy.env
+      - front.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
     #@@IF:DBNET@@networks:
@@ -27,14 +31,18 @@ services:
 
   adminer:
     image: @@PRIVAREG@@dremgr/adminer
-    env_file: front.env
+    env_file:
+      - .proxy.env
+      - front.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     restart: always
 
   web:
     image: @@PRIVAREG@@dremgr/web
-    env_file: front.env
+    env_file:
+      - .proxy.env
+      - front.env
     environment:
       #@@UL:LBHTTPS@@DEVEL: 1
       #@@UL:LBHTTPS@@BASE_URL: http://@@LBHOST@@:@@LBHTTP@@
