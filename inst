@@ -51,7 +51,7 @@ args=(
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
     -g:,--profile Profile= "\
-++Spécifier le profil. Un fichier de configuration PROFILE-profile.env doit exister.
+++Spécifier le profil. Un fichier de configuration PROFILE_profile.env doit exister.
 Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
     -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans front.env"
     -P,--prod Profile=prod "++alias pour --profile prod"

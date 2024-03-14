@@ -1,3 +1,8 @@
+## Version 0.7.2 du 14/03/2024-09:56
+
+* `1ed6fcf` maj nulib
+* `9e9c10d` typo
+
 ## Version 0.7.1 du 13/03/2024-22:47
 
 * `93b9100` simplifier l'exemple front.env
