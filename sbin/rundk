@@ -76,12 +76,13 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
         TIMEZONE
     )
 
-    SOPTS=+0jDc:x:z:r:pw:v
-    LOPTS=help,build,unless-exists,no-cache,plain-output,config:,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
+    SOPTS=+0UjDc:x:z:r:pw:v
+    LOPTS=help,build,unless-exists,pull,no-cache,plain-output,config:,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
     args="$(getopt -n rundk -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
     Build=
     UnlessExists=
+    Pull=
     NoCache=
     PlainOutput=
     Chdir=
@@ -130,6 +131,7 @@ OPTIONS
             ;;
         -0|--build) Build=1;;
         --unless-exists) UnlessExists=1;;
+        -U|--pull) Pull=1;;
         -j|--no-cache) NoCache=1;;
         -D|--plain-output) PlainOutput=1;;
         -c|--config) shift; Config="$1";;
@@ -158,6 +160,7 @@ OPTIONS
         fi
         args=(
             -f "$MYDIR/Dockerfile.rundk"
+            ${Pull:+--pull}
             ${NoCache:+--no-cache}
             ${BuildPlain:+--progress plain}
             -t "$IMAGE"
