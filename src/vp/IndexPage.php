@@ -2,8 +2,11 @@
 namespace app\vp;
 
 use app\app\ANavigablePage;
+use app\q\tools;
+use Exception;
 use nur\A;
 use nur\F;
+use nur\m\pgsql\PgsqlConn;
 use nur\path;
 use nur\shutils;
 use nur\txt;
@@ -17,12 +20,20 @@ use nur\v\vo;
 class IndexPage extends ANavigablePage {
   const TITLE = "DRE - Données PEGASE";
 
-  const VARS = [
+  const FE_VARS = [
     "host" => "FE_HOST",
     "port" => "FE_PORT",
     "dbname" => "FE_DBNAME",
     "user" => "FE_USER",
     "password" => "FE_PASSWORD",
+  ];
+
+  const INST_VARS = [
+    "host" => "POSTGRES_HOST",
+    "port" => "DBPORT",
+    "dbname" => "DBNAME",
+    "user" => "POSTGRES_USER",
+    "password" => "POSTGRES_PASSWORD",
   ];
 
   function setup(): void {
@@ -33,26 +44,46 @@ class IndexPage extends ANavigablePage {
     $this->docs = $docs = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
     if ($this->download($docdir, $docs)) return;
 
-    $conninfo = [];
-    foreach (self::VARS as $key => $var) {
-      $pvar = "${profile}_$var";
-      $avar = "__ALL__$var";
-      if (($value = getenv($pvar)) === false) {
-        if (($value = getenv($avar)) === false) {
-          $value = getenv($var);
-        }
-      }
-      $conninfo[$key] = $value;
+    $this->conninfo = tools::get_profile_vars(self::FE_VARS, $profile);
+
+    $inst = tools::get_profile_vars(self::INST_VARS, $profile);
+    $version = ["valid" => false];
+    try {
+      $conn = new PgsqlConn("host=$inst[host] port=$inst[port] dbname=$inst[dbname] user=$inst[user] password=$inst[password]");
+      $version = $conn->first("select * from version");
+      $version["valid"] = true;
+      $version["version"] = "$version[majeure].$version[mineure].$version[patch]";
+      if ($version["prerelease"]) $version["version"] .= "-$version[prerelease]";
+      $version["date"] = tools::ts2date($version["timestamp"]);
+    } catch (Exception $e) {
     }
-    $this->conninfo = $conninfo;
+    $this->version = $version;
   }
 
   protected $conninfo;
+
+  protected $version;
 
   protected $docdir, $docs;
 
   function print(): void {
     $this->printProfileTabs();
+
+    $version = $this->version;
+    if ($version["valid"]) {
+      vo::p([
+        "class" => "alert alert-info",
+        "La base DRE a été importée le ",
+        v::b($version["date"]),
+        " et sa version est ",
+        v::b($version["version"]),
+      ]);
+    } else {
+      vo::p([
+        "class" => "alert alert-warning",
+        "Impossible de déterminer la version actuelle de la base de données. Elle n'a peut-être pas encore été chargée",
+      ]);
+    }
 
     vo::h1("Documentation");
     $docs = $this->docs;
@@ -96,7 +127,7 @@ class IndexPage extends ANavigablePage {
           "class" => "hpc",
           v::span([
             "class" => "hp password",
-            $conninfo["password"]
+            $conninfo["password"],
           ]),
         ]),
       ],
