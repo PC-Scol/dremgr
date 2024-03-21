@@ -1,3 +1,7 @@
+## Version 0.8.1 du 21/03/2024-12:33
+
+* `a896b34` front: afficher la source des dumps
+
 ## Version 0.8.0 du 21/03/2024-11:53
 
 * `a176164` front: afficher la version importée courante
