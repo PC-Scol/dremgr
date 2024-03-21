@@ -124,7 +124,7 @@ psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
 Bien entendu, pour le moment elle ne contient aucune donnée. On peut forcer le
 téléchargement et l'importation:
 ~~~sh
-docker exec prod-dreinst-cron-1 dl-dumps
+./inst -i
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
 définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h45
@@ -223,12 +223,7 @@ psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=test_dre"
 Bien entendu, pour le moment, les bases ne contiennent aucune donnée. On peut
 forcer le téléchargement et l'importation:
 ~~~sh
-# prod
-docker exec prod-dreinst-cron-1 dl-dumps
-~~~
-~~~sh
-# test
-docker exec test-dreinst-cron-1 dl-dumps
+./inst -Ai
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
 définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h45
