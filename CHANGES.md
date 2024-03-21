@@ -1,3 +1,11 @@
+## Version 0.8.0 du 21/03/2024-11:53
+
+* `a176164` front: afficher la version importée courante
+* `e82a452` inst: option -i pour déclencher l'import
+* `372321b` cosmetic
+* `1bd8836` build: honorer --no-cache pour rundk
+* `73d7a29` build: support de l'option --pull
+
 ## Version 0.7.2 du 14/03/2024-09:56
 
 * `1ed6fcf` maj nulib
