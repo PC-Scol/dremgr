@@ -1,3 +1,9 @@
+## Version 0.8.2 du 21/03/2024-17:16
+
+* `c734cb1` cosmetic
+* `27c3b0a` front: afficher les logs d'importation
+* `cf2e26d` cron: recharger systématiquement l'environnement système
+
 ## Version 0.8.1 du 21/03/2024-12:33
 
 * `a896b34` front: afficher la source des dumps
