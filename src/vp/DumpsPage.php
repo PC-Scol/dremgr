@@ -14,16 +14,21 @@ use nur\SV;
 use nur\v\bs3\fo\ControlHidden;
 use nur\v\bs3\fo\ControlSelect;
 use nur\v\bs3\fo\FormInline;
+use nur\v\bs3\vc\CNavTabs;
 use nur\v\bs3\vc\CTable;
 use nur\v\http;
+use nur\v\js;
 use nur\v\page;
 use nur\v\v;
 use nur\v\vo;
 
 class DumpsPage extends ANavigablePage {
+  const CRON_LOG_MAX_SIZE = 2 * 1024 * 1024;
+
   function setup(): void {
     $this->resolveProfiles();
-    $this->dldir = $dldir = path::join("/data", $this->profile, "downloads");
+    $appdir = path::join("/data", $this->profile);
+    $this->dldir = $dldir = path::join($appdir, "downloads");
 
     $afilenames = shutils::ls_files($dldir);
     usort($afilenames, function ($afilename, $bfilename) use ($dldir) {
@@ -72,6 +77,27 @@ class DumpsPage extends ANavigablePage {
     $ymd = $fo["ymd"];
     if (!$ymd) $ymd = array_key_first($ydates);
     $this->ymd = $ymd;
+
+    $cronlog = path::join($appdir, "cron.log");
+    if (file_exists($cronlog)) {
+      $size = filesize($cronlog);
+      $inf = fopen($cronlog, "rb");
+      if ($size > self::CRON_LOG_MAX_SIZE) {
+        fseek($inf, -self::CRON_LOG_MAX_SIZE, SEEK_END);
+      }
+      $croncontent = stream_get_contents($inf);
+      fclose($inf);
+    } else {
+      $croncontent = null;
+    }
+    $this->croncontent = $croncontent;
+    $importlog = path::join($appdir, "import.log");
+    if (file_exists($importlog)) {
+      $importcontent = file_get_contents($importlog);
+    } else {
+      $importcontent = null;
+    }
+    $this->importcontent = $importcontent;
   }
 
   protected $dldir, $ymd, $yfilenames;
@@ -80,6 +106,8 @@ class DumpsPage extends ANavigablePage {
 
   /** @var FormInline */
   protected $fo;
+
+  protected $croncontent, $importcontent;
 
   const HAVE_JQUERY = true;
 
@@ -91,6 +119,8 @@ class DumpsPage extends ANavigablePage {
       this.form.submit();
       return false;
     });
+
+    $("#cron-content").scrollTop(function () { return this.scrollHeight; });
   });
 </script>
 <?php
@@ -129,5 +159,17 @@ class DumpsPage extends ANavigablePage {
       },
       "autoprint" => true,
     ]);
+
+    if ($this->croncontent || $this->importcontent) {
+      vo::h2("Logs d'importation");
+      if ($this->croncontent) {
+        vo::p("cron.log");
+        vo::pre(["id" => "cron-content", $this->croncontent]);
+      }
+      if ($this->importcontent) {
+        vo::p("import.log");
+        vo::pre(["id" => "import-content", $this->importcontent]);
+      }
+    }
   }
 }

@@ -34,8 +34,6 @@ services:
       UPDATE_CRON_FILES: dl-dumps
       UPDATE_CRON_VARS: >
         APP_DATADIR
-        POSTGRES_USER POSTGRES_PASSWORD
-        DRE_URL DRE_USER DRE_PASSWORD
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
