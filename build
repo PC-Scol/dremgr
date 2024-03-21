@@ -57,6 +57,7 @@ function build_images() {
             local -a args
             [ -z "$ForceBuild" ] && args+=(--unless-exists)
             [ -n "$Pull" ] && args+=(--pull)
+            [ -n "$NoCache" ] && args+=(--no-cache)
             args+=(-0 -c "$DREMGR/build.env")
             "$DREMGR/sbin/rundk" "${args[@]}"
             ;;
