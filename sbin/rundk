@@ -76,12 +76,18 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
         TIMEZONE
     )
 
-    SOPTS=+0jDc:x:z:r:pw:v
-    LOPTS=help,build,unless-exists,no-cache,plain-output,config:,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
+    SOPTS=+c:0UjDx:z:r:pw:v
+    LOPTS=help,config:,build,unless-exists,pull,no-cache,plain-output,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
     args="$(getopt -n rundk -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
+    if [ -f "$DREMGR/build.env" ]; then
+        Config="$DREMGR/build.env"
+    else
+        Config=
+    fi
     Build=
     UnlessExists=
+    Pull=
     NoCache=
     PlainOutput=
     Chdir=
@@ -110,11 +116,11 @@ USAGE
     $MYNAME command [args...]
 
 OPTIONS
+    -c, --config build.env
     -0, --build
     --unless-exists
     -j, --no-cache
     -D, --plain-output
-    -c, --config build.env
     -x, --apt-proxy APT_PROXY
     -z, --timezone TIMEZONE
     -r, --privareg PRIVAREG
@@ -128,11 +134,12 @@ OPTIONS
         afficher plus d'informations"
             exit 0
             ;;
+        -c|--config) shift; Config="$1";;
         -0|--build) Build=1;;
         --unless-exists) UnlessExists=1;;
+        -U|--pull) Pull=1;;
         -j|--no-cache) NoCache=1;;
         -D|--plain-output) PlainOutput=1;;
-        -c|--config) shift; Config="$1";;
         -x|--apt-proxy) shift; APT_PROXY="$1";;
         -z|--timezone) shift; TIMEZONE="$1";;
         -r|--privareg) shift; PRIVAREG="$1";;
@@ -147,6 +154,7 @@ OPTIONS
 
     IMAGENAME=dremgr/rundk
     if [ -n "$Build" ]; then
+        [ "$Config" == none ] && Config=
         if [ -n "$Config" ]; then
             source "$Config" || exit 1
         fi
@@ -158,6 +166,7 @@ OPTIONS
         fi
         args=(
             -f "$MYDIR/Dockerfile.rundk"
+            ${Pull:+--pull}
             ${NoCache:+--no-cache}
             ${BuildPlain:+--progress plain}
             -t "$IMAGE"

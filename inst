@@ -39,6 +39,17 @@ function restart_dre() {
     start_dre "$@"
 }
 
+function import_dumps() {
+    local composefile="$DREMGR/inst-docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Import des dumps [$Profile]"
+        docker compose -f "$composefile" exec cron dl-dumps "$@" || die
+    else
+        eerror "Impossible d'importer les dumps: DRE [$Profile] est arrêté"
+    fi
+}
+
 case "$MYNAME" in
 *_inst) Profile="${MYNAME%_inst}";;
 *) Profile=prod;;
@@ -60,6 +71,7 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -k,--stop action=stop "Arrêter DRE"
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
+    -i,--import action=import "Forcer le lancement de l'import"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"
@@ -81,7 +93,9 @@ if [ "$Profile" == ALL ]; then
 
     read -a profiles <<<"$APP_PROFILES"
     for profile in "${profiles[@]}"; do
-        etitle "$profile" "$MYSELF" --profile "$profile" "${args[@]}"
+        etitle "$profile"
+        "$MYSELF" --profile "$profile" "${args[@]}" -- "$@"
+        eend
     done
     exit
 fi
@@ -109,5 +123,6 @@ start) start_dre "$@";;
 stop) stop_dre "$@";;
 refresh) refresh_dre "$@";;
 restart) restart_dre "$@";;
+import) import_dumps "$@";;
 *) die "$action: action non implémentée";;
 esac

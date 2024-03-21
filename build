@@ -28,6 +28,7 @@ function _build() {
         estep "Construction de $image"
         args=(
             -f "$DREMGR/Dockerfile.$1"
+            ${Pull:+--pull}
             ${NoCache:+--no-cache}
             ${PlainOutput:+--progress plain}
             -t "$image"
@@ -47,20 +48,33 @@ function _build() {
     fi
 }
 function build_images() {
-    local -a args
-    [ -z "$ForceBuild" ] && args+=(--unless-exists)
-    args+=(-0 -c "$DREMGR/build.env")
-    "$DREMGR/sbin/rundk" "${args[@]}"
+    local image sourced
 
-    source "$DREMGR/build.env"
-    _build db
-    _build web
-    _build pgadmin
-    _build adminer
+    [ $# -gt 0 ] || set -- rundk db web pgadmin adminer
+    for image in "$@"; do
+        case "$image" in
+        rundk)
+            local -a args
+            [ -z "$ForceBuild" ] && args+=(--unless-exists)
+            [ -n "$Pull" ] && args+=(--pull)
+            [ -n "$NoCache" ] && args+=(--no-cache)
+            args+=(-0 -c "$DREMGR/build.env")
+            "$DREMGR/sbin/rundk" "${args[@]}"
+            ;;
+        *)
+            if [ -z "$sourced" ]; then
+                source "$DREMGR/build.env"
+                sourced=1
+            fi
+            _build "$image"
+            ;;
+        esac
+    done
 }
 
 action=build
 ForceBuild=
+Pull=
 NoCache=
 PlainOutput=
 Push=
@@ -70,6 +84,7 @@ args=(
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau sbin/bootstrap"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
+    -U,--pull Pull=1 "++Forcer le re-téléchargement des images dépendantes"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
     -D,--plain-output PlainOutput=1 "++Afficher le détail du build"
     -p,--push Push=1 "Pousser les images vers le registry après construction"

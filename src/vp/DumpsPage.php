@@ -2,6 +2,7 @@
 namespace app\vp;
 
 use app\app\ANavigablePage;
+use app\q\tools;
 use Exception;
 use nur\b\date\Datetime;
 use nur\config;
@@ -39,14 +40,9 @@ class DumpsPage extends ANavigablePage {
     $ydates = [];
     $yfilenames = [];
     foreach ($afilenames as $filename) {
-      if (preg_match('/\d{8}/', $filename, $ms)) {
-        $ymd = $ms[0];
-        if (!array_key_exists($ymd, $ydates)) {
-          $y = substr($ymd, 0, 4);
-          $m = substr($ymd, 4, 2);
-          $d = substr($ymd, 6, 2);
-          $ydates[$ymd] = "$d/$m/$y";
-        }
+      if (tools::isa_ts($filename, $ms)) {
+        $date = tools::ts2date($filename, $ymd);
+        if (!array_key_exists($ymd, $ydates)) $ydates[$ymd] = $date;
         $yfilenames[$ymd][] = $filename;
       }
     }
