@@ -16,5 +16,5 @@
 
 #cron-content, #import-content {
   overflow: auto;
-  height: 30em;
+  max-height: 30em;
 }
