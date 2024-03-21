@@ -51,6 +51,9 @@ class DumpsPage extends ANavigablePage {
     }; unset($date);
     $this->yfilenames = $yfilenames;
 
+    $dre = tools::get_profile_vars(["url" => "DRE_URL"], $this->profile);
+    $this->dreUrl = $dre["url"];
+
     $this->fo = $fo = new FormInline([
       "params" => [
         "p" => [
@@ -72,6 +75,8 @@ class DumpsPage extends ANavigablePage {
   }
 
   protected $dldir, $ymd, $yfilenames;
+
+  protected $dreUrl;
 
   /** @var FormInline */
   protected $fo;
@@ -95,7 +100,16 @@ class DumpsPage extends ANavigablePage {
     $this->printProfileTabs();
 
     $dldir = $this->dldir;
+    $dreUrl = $this->dreUrl;
     vo::h1("Fichiers de dumps");
+    vo::p([
+      "Source: ",
+      v::a([
+        "href" => $dreUrl,
+        "target" => "_blank",
+        $dreUrl,
+      ]),
+    ]);
     $this->fo->print();
 
     new CTable($this->yfilenames[$this->ymd], [
