@@ -1,9 +1,10 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(dirname -- "$0")"
-"$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
+"$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
+source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
 DREMGR="$MYDIR"
-source "$DREMGR/sbin/functions.sh" || exit 1
+source "$MYDIR/sbin/functions.sh" || exit 1
 
 function start_dre() {
     local composefile="$DREMGR/inst-docker-compose.yml"

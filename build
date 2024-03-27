@@ -1,18 +1,10 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
-MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
-MYNAME="$(basename -- "$0")"
-MYSELF="$MYDIR/$MYNAME"
+MYDIR="$(dirname -- "$0")"
+"$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
+source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
 DREMGR="$MYDIR"
-
-if [ ! -f "$DREMGR/sbin/vendor/nulib/php/load.sh" ]; then
-    if [ -f "$DREMGR/build.env" ]; then config="$DREMGR/build.env"
-    else config="$DREMGR/.build.env.dist"
-    fi
-    "$DREMGR/sbin/rundk" -0 --unless-exists -c "$config" || exit 1
-fi
-"$DREMGR/sbin/bootstrap" && source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
-source "$DREMGR/sbin/functions.sh" || exit 1
+source "$MYDIR/sbin/functions.sh" || exit 1
 
 BUILD_ARGS=(
     REGISTRY
@@ -54,11 +46,10 @@ function build_images() {
     for image in "$@"; do
         case "$image" in
         rundk)
-            local -a args
+            local -a args=(--bootstrap)
             [ -z "$ForceBuild" ] && args+=(--unless-exists)
             [ -n "$Pull" ] && args+=(--pull)
             [ -n "$NoCache" ] && args+=(--no-cache)
-            args+=(-0 -c "$DREMGR/build.env")
             "$DREMGR/sbin/rundk" "${args[@]}"
             ;;
         *)

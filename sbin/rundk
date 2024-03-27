@@ -1,25 +1,144 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+# Script permettant de lancer une commande dans docker et/ou de bootstrapper
+# l'utilisation de nulib dans un projet
+# Les fichiers suivants doivent être copiés à un endroit quelconque du projet:
+# - rundk  (ce script)
+# - Dockerfile.rundk
+# Les fichiers suivants peuvent être intégrés dans le projet comme exemples:
+# - dot-build.env.dist
+# - dot-dkbuild.env.dist
+# Par défaut, ce script assume que bootstrap est copié dans le répertoire sbin/
+# du projet, et que le fichier composer.json et le répertoire vendor/ sont à la
+# racine du projet. Le cas échéant, modifier les valeurs ci-dessous
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 MYNAME="$(basename -- "$0")"
-MYSELF="$MYDIR/$MYNAME"
-DREMGR="${MYDIR%/*}"
+
+################################################################################
+# Modifier les valeurs suivantes si nécessaire
+
+# répertoire du projet. ce chemin doit être absolu
+PROJDIR="$(dirname "$MYDIR")"
+
+# composer: répertoire du projet composer (celui qui contient le fichier
+# composer.json), chemin de composer.phar et répertoire vendor. ces chemions
+# doivent être relatifs à $PROJDIR
+COMPOSERDIR=sbin
+COMPOSERPHAR=sbin/composer.phar
+VENDORDIR=sbin/vendor
+
+# fichier de configuration pour le build
+BUILDENV0=.build.env.dist
+BUILDENV=build.env
+
+# version de debian à utiliser pour l'image
+# d12=php8.2, d11=php7.4, d10=php7.3
+DIST=d11
+
+# Nom de base de l'image (sans le registry)
+IMAGENAME=dremgr/rundk
+
+################################################################################
+# Ne pas modifier à partir d'ici
+
+[ -n "$PROJDIR" ] || PROJDIR="$(dirname -- "$MYDIR")"
+[ -n "$COMPOSERDIR" ] || COMPOSERDIR=.
+[ -n "$COMPOSERPHAR" ] || COMPOSERPHAR=sbin/composer.phar
+[ -n "$VENDORDIR" ] || VENDORDIR=vendor
+[ -n "$BUILDENV0" ] || BUILDENV0=.build.env.dist
+[ -n "$BUILDENV" ] || BUILDENV=build.env
+[ -n "$DIST" ] || DIST=d12
+[ -n "$IMAGENAME" ] || IMAGENAME=nulib/rundk
+
+[ "$COMPOSERPHAR" == none ] && COMPOSERPHAR=
+[ "$BUILDENV0" == none ] && BUILDENV0=
+[ "$BUILDENV" == none ] && BUILDENV=
 
 function eecho() { echo "$*" 1>&2; }
 function eerror() { eecho "ERROR: $*"; }
 function die() { [ $# -gt 0 ] && eerror "$*"; exit 1; }
+function is_defined() { [ -n "$(declare -p "$1" 2>/dev/null)" ]; }
+function in_path() { [ -n "$1" -a -x "$(which "$1" 2>/dev/null)" ]; }
+function composer() {
+    cd "$PROJDIR/$COMPOSERDIR" || exit 1
+    if [ -x "$PROJDIR/$COMPOSERPHAR" ]; then
+        "$PROJDIR/$COMPOSERPHAR" "$@"
+    elif in_path composer; then
+        command composer "$@"
+    elif [ -x /usr/bin/composer ]; then
+        /usr/bin/composer "$@"
+    elif [ -x /usr/local/bin/composer ]; then
+        /usr/local/bin/composer "$@"
+    else
+        die "impossible de trouver composer"
+    fi
+    if [ -f composer.lock ]; then
+        cp composer.lock "$PROJDIR/.composer.lock.rundk"
+    fi
+}
+
+bootstrap=
+BootstrapOnly=1
+ComposerInstall=
+ForcedBootstrap=
+parse_opts=1
+args=()
+for arg in "$@"; do
+    if [ -z "$parse_opts" ]; then
+        args+=("$arg")
+    elif [ "$arg" == --bootstrap -o "$arg" == --bs ]; then
+        bootstrap=1
+    elif [ "$arg" == --exec ]; then
+        BootstrapOnly=
+    elif [ "$arg" == --composer-install -o "$arg" == --ci ]; then
+        ComposerInstall=1
+    elif [[ "$arg" == -* ]]; then
+        args+=("$arg")
+    else
+        args+=("$arg")
+        parse_opts=
+    fi
+done
+set -- "${args[@]}"
+
+if [ -z "$bootstrap" ]; then
+    # si vendor/ n'existe pas, alors on doit faire bootstrap
+    if [ ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+        ForcedBootstrap=1
+    elif [ ! -f "$PROJDIR/.composer.lock.rundk" ]; then
+        ForcedBootstrap=1
+    elif ! diff -q "$PROJDIR/$COMPOSERDIR/composer.lock" "$PROJDIR/.composer.lock.rundk" >&/dev/null; then
+        ForcedBootstrap=1
+    elif [ -n "$bootstrap" -a -n "$BootstrapOnly" ]; then
+        # bootstrap inutile
+        exit 0
+    fi
+
+    if [ -n "$ForcedBootstrap" ]; then
+        [ -z "$_RUNDK_IN_DOCKER" ] && eecho "== bootstrap rundk is needed"
+        bootstrap=1
+        BootstrapOnly=
+    fi
+fi
 
 if [ -z "$_RUNDK_IN_DOCKER" ]; then
-    ################################################################################
-    # Charger ~/.dkbuild.env
+    ############################################################################
+    # Lancement depuis l'extérieur du container
 
-    APT_PROXY="$DREMGR_APT_PROXY"
-    APT_MIRROR="$DREMGR_APT_MIRROR"
-    SEC_MIRROR="$DREMGR_SEC_MIRROR"
-    TIMEZONE="$DREMGR_TIMEZONE"
-    PRIVAREG="$DREMGR_PRIVAREG"
-    REGISTRY="$DREMGR_REGISTRY"
-    IMAGE="$DREMGR_IMAGE"
+    # recenser les valeur de proxy
+    declare -A PROXY_VARS
+    for var in {HTTPS,ALL,NO}_PROXY {http,https,all,no}_proxy; do
+        is_defined "$var" && PROXY_VARS[${var,,}]="${!var}"
+    done
+
+    ## Charger ~/.dkbuild.env
+
+    APT_PROXY=
+    APT_MIRROR=
+    SEC_MIRROR=
+    TIMEZONE=
+    PRIVAREG=
+    REGISTRY=
     PROFILE=
     HOST_MAPPINGS=()
     function default_profile() {
@@ -65,36 +184,11 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
     [ -n "$PRIVAREG" ] || PRIVAREG=
     [ -n "$REGISTRY" ] || REGISTRY=pubdocker.univ-reunion.fr
 
-    ################################################################################
-    # Lancer la commande depuis l'extérieur du container
+    ## Construire l'image
 
-    BUILD_ARGS=(
-        REGISTRY
-        APT_PROXY
-        APT_MIRROR
-        SEC_MIRROR
-        TIMEZONE
-    )
-
-    SOPTS=+c:0UjDx:z:r:pw:v
-    LOPTS=help,config:,build,unless-exists,pull,no-cache,plain-output,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
-    args="$(getopt -n rundk -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
-
-    if [ -f "$DREMGR/build.env" ]; then
-        Config="$DREMGR/build.env"
-    else
-        Config=
-    fi
-    Build=
-    UnlessExists=
-    Pull=
-    NoCache=
-    PlainOutput=
-    Chdir=
-    Verbose=
-    if [ -n "$DREMGR_NO_USE_RSLAVE" ]; then
+    if [ -n "$RUNDK_NO_USE_RSLAVE" ]; then
         UseRslave=
-    elif [ -n "$DREMGR_USE_RSLAVE" ]; then
+    elif [ -n "$RUNDK_USE_RSLAVE" ]; then
         UseRslave=1
     elif [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
         # pas de mount propagation sous WSL
@@ -102,116 +196,218 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
     else
         UseRslave=1
     fi
-    while [ $# -gt 0 ]; do
-        case "$1" in
-        --) shift; break;;
-        --help)
-            eecho "\
-rundk: lancer une commande dans docker
 
-avant de lancer la commande, le répertoire courant est systématiquement modifié
-pour être celui de dremgr.
+    IMAGE=
+    if [ -z "$bootstrap" ]; then
+        if [ -n "$BUILDENV" -a -f "$PROJDIR/$BUILDENV" ]; then
+            source "$PROJDIR/$BUILDENV" || exit 1
+        elif [ -n "$BUILDENV0" -a -f "$PROJDIR/$BUILDENV0" ]; then
+            source "$PROJDIR/$BUILDENV0" || exit 1
+        fi
+        if [ -z "$IMAGE" ]; then
+            [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGENAME:$DIST" || IMAGE="$REGISTRY/$IMAGENAME:$DIST"
+        fi
+        if [ -z "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$IMAGE" 2>/dev/null)" ]; then
+            bootstrap=1
+        fi
+    fi
+
+    if [ -n "$bootstrap" ]; then
+        BUILD_ARGS=(
+            REGISTRY
+            APT_PROXY
+            APT_MIRROR
+            SEC_MIRROR
+            TIMEZONE
+        )
+
+        SOPTS=+d:9876543210:c:UjDx:z:r:pw:v
+        LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
+        args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
+
+        Dist=
+        if [ -n "$BUILDENV" -a -f "$PROJDIR/$BUILDENV" ]; then
+            Config="$PROJDIR/$BUILDENV"
+        elif [ -n "$BUILDENV0" -a -f "$PROJDIR/$BUILDENV0" ]; then
+            Config="$PROJDIR/$BUILDENV0"
+        else
+            Config=
+        fi
+        UnlessExists=
+        Pull=
+        NoCache=
+        PlainOutput=
+        Chdir=
+        Verbose=
+        while [ $# -gt 0 ]; do
+            case "$1" in
+            --) shift; break;;
+            --help)
+                eecho "\
+rundk: construire l'image docker
 
 USAGE
-    $MYNAME command [args...]
+    $MYNAME --bootstrap [options...] [--exec command [args...]]
 
 OPTIONS
     -c, --config build.env
-    -0, --build
     --unless-exists
+    -U, --pull
     -j, --no-cache
     -D, --plain-output
     -x, --apt-proxy APT_PROXY
     -z, --timezone TIMEZONE
     -r, --privareg PRIVAREG
     -p, --push
-        construire l'image rundk en local au lieu de la télécharger
+        paramètres pour la consruction de l'image
     -w, --chdir CHDIR
-        aller dans le répertoire spécifié avant de lancer la commande. si le
-        répertoire est relatif, il est exprimé par rapport au répertoire de
-        dremgr
+        aller dans le répertoire spécifié avant de lancer la commande
     -v, --verbose
         afficher plus d'informations"
-            exit 0
-            ;;
-        -c|--config) shift; Config="$1";;
-        -0|--build) Build=1;;
-        --unless-exists) UnlessExists=1;;
-        -U|--pull) Pull=1;;
-        -j|--no-cache) NoCache=1;;
-        -D|--plain-output) PlainOutput=1;;
-        -x|--apt-proxy) shift; APT_PROXY="$1";;
-        -z|--timezone) shift; TIMEZONE="$1";;
-        -r|--privareg) shift; PRIVAREG="$1";;
-        -p|--push) Push=1;;
-        -w|--chdir) shift; Chdir="$1";;
-        -v|--verbose) Verbose=1;;
-        --no-use-rslave) UseRslave=;;
-        *) die "$1: option non configurée";;
-        esac
-        shift
-    done
+                exit 0
+                ;;
+            -d|--dist) shift; Dist="$1";;
+            -[0-9]) Dist="d1${1#-}";;
+            --d*) Dist="${1#--}";;
+            -c|--config) shift; Config="$1";;
+            --ue|--unless-exists) UnlessExists=1;;
+            -U|--pull) Pull=1;;
+            -j|--nc|--no-cache) NoCache=1;;
+            -D|--po|--plain-output) PlainOutput=1;;
+            -x|--apt-proxy) shift; APT_PROXY="$1";;
+            -z|--timezone) shift; TIMEZONE="$1";;
+            -r|--privareg) shift; PRIVAREG="$1";;
+            -p|--push) Push=1;;
+            -w|--chdir) shift; Chdir="$1";;
+            -v|--verbose) Verbose=1;;
+            --no-use-rslave) UseRslave=;;
+            *) die "$1: option non configurée";;
+            esac
+            shift
+        done
 
-    IMAGENAME=dremgr/rundk
-    if [ -n "$Build" ]; then
         [ "$Config" == none ] && Config=
         if [ -n "$Config" ]; then
             source "$Config" || exit 1
         fi
+        [ -n "$Dist" ] && DIST="$Dist"
         if [ -z "$IMAGE" ]; then
-            [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGENAME" || IMAGE="$REGISTRY/$IMAGENAME"
+            [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGENAME:$DIST" || IMAGE="$REGISTRY/$IMAGENAME:$DIST"
         fi
-        if [ -n "$UnlessExists" -a -n "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$IMAGE" 2>/dev/null)" ]; then
-            exit 0
+        if [ -z "$UnlessExists" -o -z "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$IMAGE" 2>/dev/null)" ]; then
+            eecho "== Building $IMAGE"
+            args=(
+                -f "$MYDIR/Dockerfile.rundk"
+                ${Pull:+--pull}
+                ${NoCache:+--no-cache}
+                ${BuildPlain:+--progress plain}
+                -t "$IMAGE"
+                --build-arg "NDIST=${DIST#d}"
+            )
+            for arg in "${BUILD_ARGS[@]}"; do
+                args+=(--build-arg "$arg=${!arg}")
+            done
+            for arg in "${!PROXY_VARS[@]}"; do
+                args+=(--build-arg "$arg=${PROXY_VARS[$arg]}")
+            done
+            for host in "${HOST_MAPPINGS[@]}"; do
+                args+=(--add-host "$host")
+            done
+            mkdir -p /tmp/rundk-build
+            docker build "${args[@]}" /tmp/rundk-build || exit 1
+
+            if [ -n "$Push" -a -n "$PRIVAREG" ]; then
+                eecho "== Pushing $IMAGE"
+                docker push "$IMAGE" || exit 1
+            fi
         fi
-        args=(
-            -f "$MYDIR/Dockerfile.rundk"
-            ${Pull:+--pull}
-            ${NoCache:+--no-cache}
-            ${BuildPlain:+--progress plain}
-            -t "$IMAGE"
-        )
-        for arg in "${BUILD_ARGS[@]}"; do
-            args+=(--build-arg "$arg=${!arg}")
+        if [ -n "$ComposerInstall" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+            BootstrapOnly=
+            ForcedBootstrap=1
+        fi
+        [ -n "$BootstrapOnly" ] && exit 0
+
+    else
+        SOPTS=+w:v
+        LOPTS=help,chdir:,verbose,no-use-rslave
+        args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
+
+        Chdir=
+        Verbose=
+        while [ $# -gt 0 ]; do
+            case "$1" in
+            --) shift; break;;
+            --help)
+                eecho "\
+rundk: construire l'image docker
+
+USAGE
+    $MYNAME ci|cu|composer
+    $MYNAME --exec [options...] command [args...]
+
+COMMANDES COMPOSER
+    ci
+    cu
+        installer/mettre à jour les dépendances du projet avec composer
+    composer (args...]
+        lancer composer avec les arguments spécifiés.
+
+pour les commandes ci-dessus, l'option --chdir est ignorée: le répertoire
+courant est forcé au répertoire du projet composer
+
+OPTIONS
+    -w, --chdir CHDIR
+        aller dans le répertoire spécifié avant de lancer la commande
+    -v, --verbose
+        afficher plus d'informations"
+                exit 0
+                ;;
+            -w|--chdir) shift; Chdir="$1";;
+            -v|--verbose) Verbose=1;;
+            --no-use-rslave) UseRslave=;;
+            *) die "$1: option non configurée";;
+            esac
+            shift
         done
-        mkdir -p /tmp/dremgr-build
-        docker build "${args[@]}" /tmp/dremgr-build || exit 1
-        if [ -n "$Push" -a -n "$PRIVAREG" ]; then
-            docker push "$IMAGE" || exit 1
+
+        if [ -n "$ComposerInstall" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+            ForcedBootstrap=1
         fi
-        exit 0
-    elif [ -z "$IMAGE" ]; then
-        [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$IMAGENAME" || IMAGE="$REGISTRY/$IMAGENAME"
     fi
+
+    ## Lancer la commande
 
     uid="$(id -u)"
     gid="$(id -g)"
     args=(
         run -it --rm
-        --name dremgr-rundk
+        --name "rundk-$(basename -- "$1")-$$"
         -e _RUNDK_IN_DOCKER=1
         -e _RUNDK_UID="$uid"
         -e _RUNDK_GID="$gid"
     )
+    for arg in "${!PROXY_VARS[@]}"; do
+        args+=(--e "$arg=${PROXY_VARS[$arg]}")
+    done
     for host in "${HOST_MAPPINGS[@]}"; do
         args+=(--add-host "$host")
     done
 
-    # monter le répertoire qui contient $DREMGR
+    # monter le répertoire qui contient $PROJDIR
     mount_composer=
-    if [ "${DREMGR#$HOME/}" != "$DREMGR" -o "$DREMGR" == "$HOME" ]; then
-        # bind mount /home
-        args+=(-v "$HOME:$HOME${UseRslave:+:rslave}" -w "$DREMGR")
-        mounted_home=1
+    if [ "${PROJDIR#$HOME/}" != "$PROJDIR" -o "$PROJDIR" == "$HOME" ]; then
+        # bind mount $HOME
+        args+=(-v "$HOME:$HOME${UseRslave:+:rslave}")
     else
-        # bind mount dremgr
-        args+=(-v "$DREMGR:/rundk" -w /rundk)
+        # bind mount uniquement le répertoire du projet
+        args+=(-v "$PROJDIR:$PROJDIR${UseRslave:+:rslave}")
         mount_composer=1
     fi
-    if [ $uid -eq 0 -a -n "$mount_composer" -a -d "$HOME/.composer" ]; then
-        # si c'est root, monter la configuration de composer
-        args+=(-v "$HOME/.composer:/root/.composer")
+    if [ -n "$mount_composer" -a -d "$HOME/.composer" ]; then
+        # monter la configuration de composer
+        args+=(-v "$HOME/.composer:$HOME/.composer")
     fi
+    args+=(-w "$(pwd)")
 
     # lancer avec l'utilisateur courant
     if [ $uid -ne 0 ]; then
@@ -230,12 +426,16 @@ OPTIONS
 
     args+=(
         "$IMAGE"
-        exec "$MYSELF" -w "$Chdir"
+        exec "$0" ${Chdir:+-w "$Chdir"}
     )
+    [ -n "$ForcedBootstrap" ] && set -- ci
     [ -n "$Verbose" ] && eecho "\$ docker ${args[*]} $*"
     exec docker "${args[@]}" "$@"
 
 else
+    ############################################################################
+    # Lancement depuis l'intérieur du container
+
     # Ajouter les informations utilisateur le cas échéant
     if [ -n "$_RUNDK_USERENT" ]; then
         grep -q "^$_RUNDK_USER:" /etc/passwd || echo "$_RUNDK_USERENT" >>/etc/passwd
@@ -248,26 +448,40 @@ else
         export _RUNDK_USER=
         export _RUNDK_USERENT=
         export _RUNDK_GROUPENT=
-        exec su-exec "$user" "$0" "$@"
+        if in_path su-exec; then
+            exec su-exec "$user" "$0" "$@"
+        else
+            exec runuser -u "$user" -- "$0" "$@"
+        fi
     fi
 
-    # Lancement depuis l'intérieur du container
     SOPTS=+w:
     LOPTS=chdir:
     args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
-    Chdir=
+    chdir=
+    action=
     while [ $# -gt 0 ]; do
         case "$1" in
         --) shift; break;;
-        -w|--chdir) shift; Chdir="$1";;
+        -w|--chdir) shift; chdir="$1";;
         *) die "$1: option non configurée";;
         esac
         shift
     done
 
-    if [ -n "$Chdir" ]; then
-        cd "$Chdir" || die
+    if [ "$1" == ci ]; then
+        eecho "== installing composer dependencies"
+        composer i
+    elif [ "$1" == cu ]; then
+        eecho "== upgrading composer dependencies"
+        composer u
+    elif [ "$1" == composer ]; then
+        "$@"
+    else
+        if [ -n "$chdir" ]; then
+            cd "$chdir" || exit 1
+        fi
+        exec "${@:-bash}"
     fi
-    "${@:-bash}"
 fi

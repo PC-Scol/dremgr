@@ -1,10 +1,12 @@
 # -*- coding: utf-8 mode: dockerfile -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+ARG NDIST=12
 ARG REGISTRY=pubdocker.univ-reunion.fr
+
 FROM $REGISTRY/src/base as base
 FROM $REGISTRY/src/php as php
 
 ################################################################################
-FROM debian:11-slim as builder
+FROM debian:${NDIST}-slim as builder
 COPY --from=base /g/ /g/
 COPY --from=base /src/ /src/
 
@@ -12,7 +14,7 @@ RUN /g/build core lite _builder
 RUN make -C /src/su-exec
 
 ################################################################################
-FROM debian:11-slim
+FROM debian:${NDIST}-slim
 
 COPY --from=builder /src/su-exec/su-exec /g/
 COPY --from=base /g/ /g/
