@@ -124,7 +124,7 @@ psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
 Bien entendu, pour le moment elle ne contient aucune donnée. On peut forcer le
 téléchargement et l'importation:
 ~~~sh
-docker exec prod-dreinst-cron-1 dl-dumps
+./inst -i
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
 définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h45
@@ -223,14 +223,63 @@ psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=test_dre"
 Bien entendu, pour le moment, les bases ne contiennent aucune donnée. On peut
 forcer le téléchargement et l'importation:
 ~~~sh
-# prod
-docker exec prod-dreinst-cron-1 dl-dumps
-~~~
-~~~sh
-# test
-docker exec test-dreinst-cron-1 dl-dumps
+./inst -Ai
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
 définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h45
+
+# Exploitation
+
+## Mise à jour
+
+En cas de mise à jour, cette suite d'opération permet de s'assurer que tout est
+correctement installé:
+~~~sh
+cd dremgr
+# mettre à jour le dépôt
+git pull
+# reconstruire les images
+./build -r
+# redémarrer les bases de données
+./inst -Ar
+# redémarrer le frontal
+./front -r
+~~~
+
+## Branche de développement
+
+La release courante est sur la branche `master`. Pour tester des fonctionnalités
+qui ne sont pas encore stabilisées, il faut basculer sur la branche `develop` ou
+une autre branche qui vous est indiquée.
+
+Par exemple, pour basculer sur la branche `develop`, il faut le considérer comme
+une sorte de mise à jour
+~~~sh
+cd dremgr
+# mettre à jour le dépôt
+git pull
+# s'assurer qu'on est bien sur la bonne branche
+git checkout develop
+# reconstruire les images
+./build -r
+# redémarrer les bases de données
+./inst -Ar
+# redémarrer le frontal
+./front -r
+~~~
+
+La commande `git checkout develop` permet de basculer sur la branche de
+développement. Dans le même ordre d'idée, `git checkout master` permet de
+revenir sur la branche stable, mais attention aux effets de bord si la branche
+`develop` contient des modifications profondes.
+
+En effet, la branche `develop` contient toujours une version égale ou plus
+récente que celle de la branche `master`. Les mises à jour des versions
+anciennes vers une version plus récente sont supportées, mais les mises à jour
+"dans l'autre sens" d'une version récente vers une version plus ancienne ne sont
+à priori pas supportées.
+
+En définitive, basculer sur la branche `develop` ne devrait probablement pas
+être effectué en production.
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

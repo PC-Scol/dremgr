@@ -1,9 +1,10 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(dirname -- "$0")"
-"$MYDIR/sbin/bootstrap" && source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
+"$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
+source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
 DREMGR="$MYDIR"
-source "$DREMGR/sbin/functions.sh" || exit 1
+source "$MYDIR/sbin/functions.sh" || exit 1
 
 function start_dre() {
     local composefile="$DREMGR/inst-docker-compose.yml"
@@ -71,8 +72,8 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -k,--stop action=stop "Arrêter DRE"
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
-    -i,--import action=import "Forcer le lancement de l'import"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -i,--import action=import "Lancer l'import maintenant, au lieu d'attendre la planification"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -91,7 +92,8 @@ if [ "$Profile" == ALL ]; then
     *) args+=("--$action");;
     esac
 
-    read -a profiles <<<"$APP_PROFILES"
+    read -a profiles <<<"${APP_PROFILES//
+/ }"
     for profile in "${profiles[@]}"; do
         etitle "$profile"
         "$MYSELF" --profile "$profile" "${args[@]}" -- "$@"

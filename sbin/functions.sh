@@ -3,6 +3,19 @@ require: template
 
 inspath "$DREMGR/sbin"
 
+# recenser les valeur de proxy
+declare -A PROXY_VARS
+for var in {HTTPS,ALL,NO}_PROXY {http,https,all,no}_proxy; do
+    is_defined "$var" && PROXY_VARS[${var,,}]="${!var}"
+done
+if [ ! -f "$DREMGR/.proxy.env" ]; then
+    # et créer le fichier .proxy.env
+    >"$DREMGR/.proxy.env"
+    for var in "${!PROXY_VARS[@]}"; do
+        echo "$var=${PROXY_VARS[$var]}" >>"$DREMGR/.proxy.env"
+    done
+fi
+
 function dklsnet() {
     docker network ls --no-trunc --format '{{.Name}}' -f name="$1" 2>/dev/null
 }

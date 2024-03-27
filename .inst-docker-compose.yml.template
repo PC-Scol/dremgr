@@ -5,7 +5,9 @@ version: "3.8"
 services:
   db:
     image: @@PRIVAREG@@dremgr/db
-    env_file: @@Profile@@_profile.env
+    env_file:
+      - .proxy.env
+      - @@Profile@@_profile.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
@@ -26,7 +28,9 @@ services:
 
   cron:
     image: @@PRIVAREG@@dremgr/db
-    env_file: @@Profile@@_profile.env
+    env_file:
+      - .proxy.env
+      - @@Profile@@_profile.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre
