@@ -1,3 +1,11 @@
+## Version 0.9.0 du 27/03/2024-22:42
+
+* `3d6308b` Intégration de la branche wip/proxy
+  * `cfc2987` ajouter le support du proxy
+* `0e03d75` maj documentation
+* `8e2bd8c` maj support rundk dans nulib
+* `32adfa9` documenter l'option -i
+
 ## Version 0.8.2 du 21/03/2024-17:16
 
 * `c734cb1` cosmetic
