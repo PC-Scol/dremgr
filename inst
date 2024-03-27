@@ -92,7 +92,8 @@ if [ "$Profile" == ALL ]; then
     *) args+=("--$action");;
     esac
 
-    read -a profiles <<<"$APP_PROFILES"
+    read -a profiles <<<"${APP_PROFILES//
+/ }"
     for profile in "${profiles[@]}"; do
         etitle "$profile"
         "$MYSELF" --profile "$profile" "${args[@]}" -- "$@"

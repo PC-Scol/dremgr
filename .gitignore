@@ -4,6 +4,7 @@
 /.composer.lock
 
 /.env
+/.proxy.env
 /build.env
 /*_profile.env
 /front.env
