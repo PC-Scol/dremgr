@@ -1,3 +1,8 @@
+## Version 0.10.0 du 05/04/2024-18:55
+
+* `1633ff5` Monter les répertoires plutôt que copier les fichiers
+* `0eb1257` Améliorer le support du développement d'addons
+
 ## Version 0.9.0 du 27/03/2024-22:42
 
 * `3d6308b` Intégration de la branche wip/proxy
