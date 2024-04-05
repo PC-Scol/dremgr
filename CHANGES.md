@@ -1,3 +1,7 @@
+## Version 0.10.2 du 05/04/2024-19:43
+
+* `9c5e91f` maj nulib et nur-sery
+
 ## Version 0.10.1 du 05/04/2024-19:34
 
 * `e69f0f6` mentionner la possibilité de forcer le redémarrage
