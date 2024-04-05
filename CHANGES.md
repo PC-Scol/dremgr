@@ -1,3 +1,7 @@
+## Version 0.10.1 du 05/04/2024-19:34
+
+* `e69f0f6` mentionner la possibilité de forcer le redémarrage
+
 ## Version 0.10.0 du 05/04/2024-18:55
 
 * `1633ff5` Monter les répertoires plutôt que copier les fichiers
