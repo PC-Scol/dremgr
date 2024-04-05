@@ -188,8 +188,17 @@ Pour la connexion au service web, éditez les fichiers suivants:
   ~~~conf
   Require user bob alice
   ~~~
-  Consulter la documentation apache pour savoir comment autoriser sur la base
-  par exemple d'attributs fournis par le serveur CAS
+
+  Il est aussi possible d'autoriser sur la base d'attributs fournis par le
+  serveur CAS, cf <https://github.com/apereo/mod_auth_cas>. Par exemple, pour
+  autoriser tous les comptes dont l'attribut `authzApp` vaut `dremgr`, il
+  faudrait une configuration de ce type:
+  ~~~conf
+  Require cas-attribute authzApp:dremgr
+  ~~~
+  Typiquement, on autorisera sur l'appartenance à un groupe via l'attribut
+  `memberOf`. Bien entendu, il faut configurer le serveur CAS pour servir les
+  attributs nécessaires.
 
 Par défaut, le service web sera accessible sur <http://localhost:7081>. Pour
 changer cette valeur, éditer le fichier `front.env` et configurer les variables
@@ -318,5 +327,16 @@ l'importation à chaque fois.
   ~~~sh
   ./inst -i -- -@ 20240504
   ~~~
+
+## Modification du logo
+
+Pour remplacer le logo par celui de votre université, il faut *supprimer* le
+fichier `public/brand.png` puis copier une nouvelle image au format PNG avec le
+nom `brand.png` (la raison pour laquelle il faut supprimer d'abord est que par
+défaut il s'agit d'un lien symbolique. donc, pour être certain de copier un
+nouveau fichier et non de remplacer la cible du lien symbolique, on supprime
+d'abord)
+
+L'image DOIT avoir une hauteur de 50 pixel. la largeur importe peu.
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
