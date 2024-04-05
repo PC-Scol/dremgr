@@ -1,3 +1,8 @@
+## Version 0.11.0 du 05/04/2024-22:05
+
+* `94d37c0` changer utilisateur admin par défaut
+* `9c96510` supprimer fichier parasite
+
 ## Version 0.10.3 du 05/04/2024-20:01
 
 * `46eb809` maj doc: authz CAS et modification du logo
