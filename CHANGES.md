@@ -1,3 +1,7 @@
+## Version 0.11.1 du 05/04/2024-22:16
+
+* `c42fae7` fix pour PGDATABASE
+
 ## Version 0.11.0 du 05/04/2024-22:05
 
 * `94d37c0` changer utilisateur admin par défaut
