@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "a02d25f8d1b1c5949390a63a95a5e37c5b0f8aad"
+                "reference": "9b0a98acc34bee9e5c8b89a7cb4192d1e2422c75"
             },
             "require": {
                 "php": ">=7.4"
@@ -43,7 +43,7 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2024-03-27T17:39:01+00:00"
+            "time": "2024-04-05T14:14:51+00:00"
         },
         {
             "name": "nur/sery",
@@ -51,12 +51,22 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-sery.git",
-                "reference": "4be989ead0dccf1988dc1d6499aa49b320c0a9bb"
+                "reference": "eb988c35cc6293c315a046d802cfbf17187f506c"
             },
             "require": {
-                "nulib/php": "dev-wip",
                 "php": ">=7.4",
                 "symfony/yaml": "^5.0"
+            },
+            "replace": {
+                "nur/base": "dev-wip",
+                "nur/ldap": "dev-wip",
+                "nur/m-oracle": "dev-wip",
+                "nur/m-pdo": "dev-wip",
+                "nur/m-pgsql": "dev-wip",
+                "nur/mapper": "dev-wip",
+                "nur/passwd": "dev-wip",
+                "nur/tests": "dev-master",
+                "nur/v-bs3": "dev-wip"
             },
             "require-dev": {
                 "ext-bcmath": "*",
@@ -64,6 +74,7 @@
                 "ext-fileinfo": "*",
                 "ext-iconv": "*",
                 "ext-json": "*",
+                "ext-ldap": "*",
                 "ext-mbstring": "*",
                 "ext-oci8": "*",
                 "ext-pcntl": "*",
@@ -75,6 +86,17 @@
                 "ext-zip": "*",
                 "nulib/tests": "7.4"
             },
+            "bin": [
+                "nur_bin/compctl.php",
+                "nur_bin/compdep.php",
+                "nur_bin/cachectl.php",
+                "nur_bin/dumpser.php",
+                "nur_bin/datectl.php",
+                "nur_bin/fsvdiff.php",
+                "nur_bin/ldap-delete.php",
+                "nur_bin/ldap-get-infos.php",
+                "nur_bin/ldap-search.php"
+            ],
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -103,20 +125,20 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2024-03-26T10:56:36+00:00"
+            "time": "2024-04-05T15:36:32+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v2.5.2",
+            "version": "v2.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "e8b495ea28c1d97b5e0c121748d6f9b53d075c66"
+                "reference": "80d075412b557d41002320b96a096ca65aa2c98d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/e8b495ea28c1d97b5e0c121748d6f9b53d075c66",
-                "reference": "e8b495ea28c1d97b5e0c121748d6f9b53d075c66",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/80d075412b557d41002320b96a096ca65aa2c98d",
+                "reference": "80d075412b557d41002320b96a096ca65aa2c98d",
                 "shasum": ""
             },
             "require": {
@@ -154,7 +176,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v2.5.2"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v2.5.3"
             },
             "funding": [
                 {
@@ -170,7 +192,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-01-02T09:53:40+00:00"
+            "time": "2023-01-24T14:02:46+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
