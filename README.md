@@ -205,8 +205,10 @@ Ensuite, démarrer les services frontaux
 En cas de changement de configuration, utiliser l'option -r pour redémarrer les
 services concernés
 ~~~sh
-# forcer le redémarrage
+# redémarrge si nécessaire
 ./front -r
+# ou forcer le redémarrage
+./front -R
 ~~~
 
 Visiter <http://localhost:7081> pour connaitre les paramètres de connexion à
