@@ -5,12 +5,14 @@ source /g/init.env || exit 1
 
 : "${APP_DATADIR:=/data/dre}"
 : "${DLDIR:=$APP_DATADIR/downloads}" "${AODIR:=$APP_DATADIR/addons}" "${DOCDIR:=$APP_DATADIR/documentation}"
+export PGDATABASE=dre PGUSER="$POSTGRES_USER"
+unset PGHOST PGPORT
 
 function dl() {
     curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "$DRE_URL/$1"
 }
 function runsql() {
-    quietc psql -d dre -c "$@"
+    quietc psql -c "$@"
 }
 function rundir() {
     local -a files; local file
@@ -20,7 +22,7 @@ function rundir() {
         case "$file" in
         *.sql)
             estep "psql $filename"
-            quietc psql -d dre -f "$file" || die
+            quietc psql -f "$file" || die
             ;;
         *.sh)
             if [ -x "$file" ]; then
@@ -178,7 +180,7 @@ for schema in "${IMPORT_SCHEMAS[@]}"; do
     runsql "drop extension if exists unaccent, pg_trgm cascade;" || die
 
     estep "$schema: import $file"
-    quietc pg_restore -d dre --no-owner --no-acl -Fc <"$file" || die
+    quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
     runsql "\
 grant usage on schema schema_$schema to reader;
 grant select on all tables in schema schema_$schema to reader;
