@@ -43,12 +43,12 @@ function add_schema() {
     IMPORT_SCHEMAS+=("$schema")
 }
 
-force_dlsums=1
+ForceDlSums=
 Timestamp=
 Clean=1
 args=(
     "télécharger les dumps"
-    -n,--no-force-dlsums force_dlsums= "ne pas retélécharger les checksums si le fichier existe déjà"
+    -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
     -g,--no-clean Clean= "Ne pas nettoyer les anciens fichiers à la fin du téléchargement"
 )
@@ -66,7 +66,7 @@ fi
 [ -n "$Timestamp" ] || setx Timestamp=date +%Y%m%d
 
 sums="checksums-$Timestamp"
-if [ ! -f "$sums" -o -n "$force_dlsums" ]; then
+if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
     estep "$sums"
     dl "$sums" || die
 fi
@@ -97,6 +97,10 @@ for aourl in "${aourls[@]}"; do
     [ -n "$aourl" ] || continue
     setx aoname=basename "$aourl"
     aodir="$AODIR/${aoname%.git}"
+    # ajouter le répertoire safe.directory pour pallier les problèmes éventuels d'ownership
+    git config --global --get-all safe.directory | grep -qxF "$aodir" ||
+    git config --global --add safe.directory "$aodir"
+    # cloner ou mettre à jour
     if [ ! -d "$aodir" ]; then
         # Il faut cloner le dépôt
         estep "$aourl --> $aodir"
