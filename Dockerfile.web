@@ -11,10 +11,7 @@ ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=
 RUN /g/build
 
 COPY --from=php /g/ /g/
-RUN /g/build -a @apache-php-cas php-utils && /g/pkg i libapache2-mod-xsendfile
-COPY config/apache/ /apache-config/
-COPY config/php/ /php-config/
-COPY config/ssl/ /ssl-config/
+RUN /g/build -a @apache-php-cas php-utils
 
 EXPOSE 80
 ENTRYPOINT ["/g/entrypoint"]

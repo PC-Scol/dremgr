@@ -282,4 +282,39 @@ anciennes vers une version plus récente sont supportées, mais les mises à jou
 En définitive, basculer sur la branche `develop` ne devrait probablement pas
 être effectué en production.
 
+## Développement d'addons
+
+Lorsqu'on développe un addon (cf
+<https://github.com/PC-Scol/dreaddon-template>), il faut pouvoir tester les
+scripts avant de les envoyer en production. Une façon de faire est d'avoir une
+installation de dremgr sur son poste (via WSL ou autre méthode) et lancer
+l'importation à chaque fois.
+
+* Installer dremgr sur son poste avec la même configuration qu'en prod
+* Il n'est pas forcément possible de télécharger les fichiers depuis le poste du
+  développeur à cause de la restriction sur l'adresse IP. il faut donc récupérer
+  les fichiers depuis le serveur de prod
+  ~~~sh
+  # ici, on récupére les fichiers depuis le serveur monserveur.univ.tld dans le
+  # profil prod, en partant du principe que dremgr est installé dans le
+  # répertoire d'origine de root, et on les copie dans le répertoire courant
+  # dans le profil prod
+  src_dremgr=root@monserveur.univ.tld:dremgr
+  src_profile=prod
+  dest_profile=prod
+
+  rsync -avP "${src_dremgr}/var/${src_profile}-dredata/downloads/" "var/${dest_profile}-dredata/downloads/"
+  ~~~
+* Ensuite, on peut lancer l'imporation des fichiers du jour
+  ~~~sh
+  ./inst -i
+  ~~~
+
+  NB: il est possible de spécifier la date des fichiers à importer avec l'option
+  `-@ YYYYMMDD`. Par exemple, pour importer les fichiers du 04/05/2024, on peut
+  faire ceci (le `--` entre `-i` et `-@` est requis):
+  ~~~sh
+  ./inst -i -- -@ 20240504
+  ~~~
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

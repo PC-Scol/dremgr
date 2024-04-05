@@ -49,6 +49,9 @@ services:
       #@@IF:LBHTTPS@@BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
     volumes:
       - .:/var/www/app
+      - ./config/apache:/apache-config
+      - ./config/php:/php-config
+      - ./config/ssl:/ssl-config
       @@FOR:APP_PROFILES@@- ./var/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
     networks:
       default:
