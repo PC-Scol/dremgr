@@ -1,10 +1,10 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
-MYDIR="$(dirname -- "$0")"
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 "$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
-source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
 DREMGR="$MYDIR"
-source "$MYDIR/sbin/functions.sh" || exit 1
+source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
+source "$DREMGR/sbin/functions.sh" || exit 1
 
 BUILD_ARGS=(
     REGISTRY
@@ -81,7 +81,6 @@ args=(
     "Construire les images pour DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau sbin/bootstrap"
     -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
     -U,--pull Pull=1 "++Forcer le re-téléchargement des images dépendantes"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
@@ -94,7 +93,6 @@ build_check_env || die
 [ "$action" == none ] && exit 0
 
 case "$action" in
-bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
 build) build_images "$@";;
 *) die "$action: action non implémentée";;
 esac

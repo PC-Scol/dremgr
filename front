@@ -1,10 +1,10 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
-MYDIR="$(dirname -- "$0")"
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 "$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
-source "$MYDIR/sbin/vendor/nulib/php/load.sh" || exit 1
 DREMGR="$MYDIR"
-source "$MYDIR/sbin/functions.sh" || exit 1
+source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
+source "$DREMGR/sbin/functions.sh" || exit 1
 
 function start_front() {
     local composefile="$DREMGR/front-docker-compose.yml"
@@ -55,7 +55,6 @@ args=(
     "Gérer cette instance de DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    --bootstrap action=bootstrap "++Mettre à jour les outils en lançant de nouveau lib/sbin/bootstrap"
     -s,--start action=start "Démarrer le frontal DRE"
     -k,--stop action=stop "Arrêter le frontal DRE"
     -r,--refresh action=refresh "(Re)démarrer le frontal DRE si nécessaire"
@@ -75,7 +74,6 @@ inst_check_env || exit 0
 Profile=
 ForceStart=
 case "$action" in
-bootstrap) "$DREMGR/sbin/bootstrap" --force "$@";;
 start) start_front "$@";;
 stop) stop_front "$@";;
 refresh) refresh_front "$@";;
