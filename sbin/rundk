@@ -14,8 +14,10 @@
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 MYNAME="$(basename -- "$0")"
 
-################################################################################
+###############################################################################
 # Modifier les valeurs suivantes si nécessaire
+#SOF:rundk.userconf:ne pas modifier cette ligne
+
 
 # répertoire du projet. ce chemin doit être absolu
 PROJDIR="$(dirname "$MYDIR")"
@@ -38,7 +40,10 @@ DIST=d11
 # Nom de base de l'image (sans le registry)
 IMAGENAME=dremgr/rundk
 
+
+#EOF:rundk.userconf:ne pas modifier cette ligne
 ################################################################################
+
 # Ne pas modifier à partir d'ici
 
 [ -n "$PROJDIR" ] || PROJDIR="$(dirname -- "$MYDIR")"
