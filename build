@@ -56,7 +56,7 @@ function build_images() {
             [ -z "$ForceBuild" ] && args+=(--unless-exists)
             [ -n "$Pull" ] && args+=(--pull)
             [ -n "$NoCache" ] && args+=(--no-cache)
-            "$DREMGR/sbin/rundk" "${args[@]}"
+            "$DREMGR/sbin/rundk" "${args[@]}" || die
             ;;
         *)
             if [ -z "$sourced" ]; then
