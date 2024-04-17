@@ -1,3 +1,8 @@
+## Version 0.11.2 du 17/04/2024-10:03
+
+* `2bed522` bug connexion depuis cron
+* `8ae838e` maj upstream
+
 ## Version 0.11.1 du 05/04/2024-22:16
 
 * `c42fae7` fix pour PGDATABASE
