@@ -1,3 +1,7 @@
+## Version 0.11.3 du 17/04/2024-10:16
+
+* `116c761` exit en cas d'erreur de build
+
 ## Version 0.11.2 du 17/04/2024-10:03
 
 * `2bed522` bug connexion depuis cron
