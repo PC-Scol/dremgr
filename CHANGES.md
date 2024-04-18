@@ -1,3 +1,7 @@
+## Version 0.11.4 du 18/04/2024-09:23
+
+* `9a4b66b` faire une copie de cron-config pour éviter les interactions hasardeuses
+
 ## Version 0.11.3 du 17/04/2024-10:16
 
 * `116c761` exit en cas d'erreur de build
