@@ -43,7 +43,7 @@ services:
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
       - ./var/@@Profile@@-dredata:/data/dre
-      - ./config/cron:/cron-config
+      - ./var/@@Profile@@-dredata/cron-config:/cron-config
       - ./bin/dl-dumps:/usr/local/bin/dl-dumps
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@

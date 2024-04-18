@@ -16,8 +16,10 @@ function start_dre() {
         return
     fi
 
-    "$MYDIR/build" ${Rebuild:+--rebuild} || die
+    "$DREMGR/build" ${Rebuild:+--rebuild} || die
+
     estep "Démarrage de DRE [$Profile]"
+    rsync -rlpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
     docker compose -f "$composefile" up -d --wait || die
 }
 
@@ -105,15 +107,14 @@ Profile="${Profile%_profile.env}"
 envfile="$DREMGR/${Profile}_profile.env"
 
 inst_check_env || exit 0
-if [ -f "$envfile" ]; then
-    dredata="$MYDIR/var/${Profile}-dredata"
-    for dir in addons downloads; do
-        mkdir -p "$dredata/$dir"
-    done
-fi
-[ "$action" == auto ] && action=start
+[ -f "$envfile" ] || die "$Profile: profil invalide (${envfile#$DREMGR/}: fichier de profil introuvable)"
 
-[ -f "$envfile" ] || die "$Profile: profil invalide (${Profile}-profile.env: fichier de profil introuvable)"
+DREDATA="$DREMGR/var/${Profile}-dredata"
+for dir in addons downloads; do
+    mkdir -p "$DREDATA/$dir"
+done
+
+[ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
 ForceStart=
