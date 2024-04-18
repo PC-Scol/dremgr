@@ -20,6 +20,7 @@ function start_front() {
     #dcrunning "$composefile" && reload=1
 
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
+
     estep "Démarrage du frontal DRE"
     docker compose -f "$composefile" up -d --wait || die
 
