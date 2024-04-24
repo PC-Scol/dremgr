@@ -53,6 +53,17 @@ function import_dumps() {
     fi
 }
 
+function psql_prompt() {
+    local composefile="$DREMGR/inst-docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Invite psql [$Profile]"
+        docker compose -f "$composefile" exec db psql "$@" || die
+    else
+        eerror "Impossible de lancer l'invite psql: DRE [$Profile] est arrêté"
+    fi
+}
+
 case "$MYNAME" in
 *_inst) Profile="${MYNAME%_inst}";;
 *) Profile=prod;;
@@ -75,6 +86,7 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -i,--import action=import "Lancer l'import maintenant, au lieu d'attendre la planification"
+    -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -124,5 +136,6 @@ stop) stop_dre "$@";;
 refresh) refresh_dre "$@";;
 restart) restart_dre "$@";;
 import) import_dumps "$@";;
+psql) psql_prompt "$@";;
 *) die "$action: action non implémentée";;
 esac

@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "df391263d40a0ccbae88bafa370824e9c2bfc3ce"
+                "reference": "451b2768e6f0699b0c53497dcc71421bca28565b"
             },
             "require": {
                 "php": ">=7.4"
@@ -43,7 +43,7 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2024-04-08T14:46:01+00:00"
+            "time": "2024-04-24T10:56:09+00:00"
         },
         {
             "name": "nur/sery",
@@ -51,7 +51,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-sery.git",
-                "reference": "b28cbd70995dbee5c5b578bf7ffb6c15f386092a"
+                "reference": "52631cc977f2337439c7741f133df02f145cfa8d"
             },
             "require": {
                 "php": ">=7.4",
@@ -125,7 +125,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2024-04-06T07:32:25+00:00"
+            "time": "2024-04-23T13:41:15+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
