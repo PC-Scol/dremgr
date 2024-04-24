@@ -1,3 +1,8 @@
+## Version 0.12.0 du 24/04/2024-15:56
+
+* `c9e533a` dl-dumps: possibilité de réinstaller un addon
+* `7b06641` ajouter inst --psql
+
 ## Version 0.11.4 du 18/04/2024-09:23
 
 * `9a4b66b` faire une copie de cron-config pour éviter les interactions hasardeuses
