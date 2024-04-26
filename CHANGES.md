@@ -1,3 +1,7 @@
+## Version 0.12.1 du 26/04/2024-12:24
+
+* `1d18c73` bug
+
 ## Version 0.12.0 du 24/04/2024-15:56
 
 * `c9e533a` dl-dumps: possibilité de réinstaller un addon

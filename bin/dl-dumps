@@ -101,6 +101,7 @@ if [ -n "$step_dl" ]; then
         qstep "dl $sums"
         dl "$sums" || die
     fi
+    eval "$(sed 's/^/add_schema /' "$sums")"
 
     if [ ! -f "$version" ]; then
         qstep "dl $version"
@@ -116,8 +117,9 @@ if [ -n "$step_dl" ]; then
 
     qstep "Vérifications des sommes de contrôle"
     sha256sum --status -c "$sums" || die
+else
+    eval "$(sed 's/^/add_schema /' "$sums")"
 fi
-eval "$(sed 's/^/add_schema /' "$sums")"
 
 estep "Calcul de la version"
 eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
