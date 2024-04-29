@@ -1,3 +1,7 @@
+## Version 0.12.2 du 29/04/2024-19:30
+
+* `d635655` améliorer la synchro de la documentation
+
 ## Version 0.12.1 du 26/04/2024-12:24
 
 * `1d18c73` bug
