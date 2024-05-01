@@ -4,15 +4,15 @@ namespace app\vp;
 use app\app\ANavigablePage;
 use app\q\tools;
 use Exception;
-use nur\A;
-use nur\F;
+use nur\json;
 use nur\m\pgsql\PgsqlConn;
+use nur\md;
 use nur\path;
 use nur\shutils;
-use nur\txt;
+use nur\v\bs3\Bs3IconManager;
 use nur\v\bs3\vc\CListGroup;
-use nur\v\bs3\vc\CNavTabs;
 use nur\v\bs3\vc\CVerticalTable;
+use nur\v\icon;
 use nur\v\page;
 use nur\v\v;
 use nur\v\vo;
@@ -36,13 +36,41 @@ class IndexPage extends ANavigablePage {
     "password" => "POSTGRES_PASSWORD",
   ];
 
+  const url_SCHEMA = [
+    "url" => "string",
+    "title" => "?string",
+    "target" => "?string",
+  ];
+
   function setup(): void {
     $this->resolveProfiles();
     $profile = $this->profile;
 
     $this->docdir = $docdir = path::join("/data", $profile, "documentation");
-    $this->docs = $docs = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    $tmpdocs = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    $docs = [];
+    foreach ($tmpdocs as $doc) {
+      if (fnmatch("*.url", $doc)) {
+        try {
+          $data = json::load(path::join($docdir, $doc));
+          md::ensure_schema($data, self::url_SCHEMA);
+          $url = $data["url"];
+          $title = $data["title"]?? $doc;
+          $target = $data["target"]?? "_blank";
+          $doc = [
+            "name" => $doc,
+            "url" => $url,
+            "title" => $title,
+            "target" => $target,
+          ];
+        } catch (Exception $e) {
+        }
+      }
+      if (is_array($doc)) $docs[$doc["name"]] = $doc;
+      else $docs[$doc] = $doc;
+    }
     if ($this->download($docdir, $docs)) return;
+    $this->docs = $docs;
 
     $this->conninfo = tools::get_profile_vars(self::FE_VARS, $profile);
 
@@ -95,12 +123,22 @@ class IndexPage extends ANavigablePage {
       new CListGroup($docs, [
         "container" => "div",
         "map_func" => function ($file) {
+          if (is_array($file)) {
+            $name = $file["name"];
+            $title = icon::new_window($file["title"]);
+            $target = $file["target"];
+          } else {
+            $name = $file;
+            $title = $file;
+            $target = null;
+          }
           return [
             "href" => page::bu("", [
               "p" => $this->profile,
-              "dl" => $file,
+              "dl" => $name,
             ]),
-            $file,
+            "target" => $target,
+            $title,
           ];
         },
         "autoprint" => true,

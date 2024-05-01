@@ -74,7 +74,7 @@ args=(
     "Gérer cette instance de DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    -g:,--profile Profile= "\
+    -g:,--profile:PROFILE Profile= "\
 ++Spécifier le profil. Un fichier de configuration PROFILE_profile.env doit exister.
 Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
     -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans front.env"

@@ -64,14 +64,20 @@ class ANavigablePage extends NavigablePage {
     if (!$dl) return false;
     # télécharger un fichier
     $dl = path::filename($dl);
-    if (in_array($dl, $files)) {
+    if (!array_key_exists($dl, $files)) {
+      throw new Exception("$dl: fichier invalide");
+    }
+    $dl = $files[$dl];
+    if (is_array($dl)) {
+      # c'est un lien
+      http::redirect($dl["url"], false);
+    } else {
+      # c'est un fichier
       header("x-sendfile: $dldir/$dl");
       http::content_type();
       http::download_as($dl);
-      $this->haveContent = false;
-    } else {
-      throw new Exception("$dl: fichier invalide");
     }
+    $this->haveContent = false;
     return true;
   }
 }
