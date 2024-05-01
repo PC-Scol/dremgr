@@ -125,11 +125,7 @@ class IndexPage extends ANavigablePage {
         "map_func" => function ($file) {
           if (is_array($file)) {
             $name = $file["name"];
-            $title = [
-              icon::new_window(),
-              " ",
-              $file["title"],
-            ];
+            $title = icon::new_window($file["title"]);
             $target = $file["target"];
           } else {
             $name = $file;
