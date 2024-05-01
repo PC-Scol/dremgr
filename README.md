@@ -295,11 +295,10 @@ En définitive, basculer sur la branche `develop` ne devrait probablement pas
 
 ## Développement d'addons
 
-Lorsqu'on développe un addon (cf
-<https://github.com/PC-Scol/dreaddon-template>), il faut pouvoir tester les
-scripts avant de les envoyer en production. Une façon de faire est d'avoir une
-installation de dremgr sur son poste (via WSL ou autre méthode) et lancer
-l'importation à chaque fois.
+Lorsqu'on développe un addon (cf <https://github.com/PC-Scol/dreaddon-template>),
+il faut pouvoir tester les scripts avant de les envoyer en production. Une façon
+de faire est d'avoir une installation de dremgr sur son poste (via WSL ou autre
+méthode) et lancer l'importation à chaque fois.
 
 * Installer dremgr sur son poste avec la même configuration qu'en prod
 * Il n'est pas forcément possible de télécharger les fichiers depuis le poste du
@@ -327,6 +326,20 @@ l'importation à chaque fois.
   ~~~sh
   ./inst -i -- -@ 20240504
   ~~~
+
+La méthode ci-dessus réimporte TOUS les dumps et TOUS les addons, ce qui permet
+de vérifier que l'import quotidien fonctionnera correctement une fois en
+production, mais ça peut prendre un certain temps en fonction du nombre
+d'addons.
+
+Si on veut uniquement réimporter l'addon sur lequel on travaille, il est
+possible de le faire avec les options `--runao` et `-o`, e.g:
+~~~sh
+./inst -i -- --runao -o documentation
+~~~
+Dans cet exemple, seul l'addon `dreaddon-documentation` est réimporté, ce qui
+permet de vérifier que les fichiers de documentation proposés sont bien ceux
+attendus.
 
 ## Modification du logo
 
