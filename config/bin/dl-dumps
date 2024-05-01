@@ -129,7 +129,11 @@ if [ -n "$step_checkao" ]; then
 
     setx -a aourls=echo "$ADDON_URLS"
     for aourl in "${aourls[@]}"; do
+        # ignorer lignes vides
         [ -n "$aourl" ] || continue
+        # et commentaires
+        [ "${aourl#\#}" == "$aourl" ] || continue
+
         setx aoname=basename "$aourl"
         aodir="$AODIR/${aoname%.git}"
         # ajouter le répertoire safe.directory pour pallier les problèmes éventuels d'ownership
