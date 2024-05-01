@@ -294,8 +294,10 @@ grant select on all tables in schema $schema to reader;
         eend
     done
 
-    estep "Installation de la documentation"
-    rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
+    if [ -d "$WORKDIR/documentation" ]; then
+        estep "Installation de la documentation"
+        rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
+    fi
 
     rm -rf "$WORKDIR"
     eend
