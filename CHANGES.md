@@ -1,3 +1,11 @@
+## Version 0.13.0 du 01/05/2024-10:09
+
+* `1aa3b86` cosmetic
+* `12ad603` support des fichiers .url dans la documentation
+* `f80483c` ADDON_URLS: ignorer les commentaires
+* `cb783f9` cosmetic
+* `a1d3712` déplacer bin/ qui n'est pas fait pour l'utilisateur
+
 ## Version 0.12.2 du 29/04/2024-19:30
 
 * `d635655` améliorer la synchro de la documentation
