@@ -108,6 +108,17 @@ variables suivantes doivent être configurées le cas échéant:
   D'autres add-ons peuvent être spécifiés au fur et à mesure qu'ils sont rendus
   disponibles.
 
+  NB: le préfixe `https://github.com/` est rajouté automatiquement aux URLs de
+  la forme `user/repo`. Par exemple, `PC-Scol/dreaddon-documentation.git` est
+  strictement équivalent à `https://github.com/PC-Scol/dreaddon-documentation.git`
+  mentionné ci-dessus.
+  Bien entendu, il est possible d'utiliser des URLs d'un serveur privé ou d'un
+  autre opérateur.
+
+  Par défaut, la branche `master` du dépôt est attaquée. Il est possible de
+  sélectionner une autre branche avec le suffixe `#branch` ou de désigner un tag
+  ou un commit précis avec le suffixe `^commitId`
+
 Il y a d'autres paramètres, consulter le fichier pour la liste complète
 
 Une fois le fichier configuré, l'instance peut être démarrée
