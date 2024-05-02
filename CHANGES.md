@@ -1,3 +1,8 @@
+## Version 0.14.0 du 02/05/2024-23:02
+
+* `f1da911` possiblité de désigner une branche ou un commit
+* `e7c4a82` maj doc sur le développement d'addon
+
 ## Version 0.13.0 du 01/05/2024-10:09
 
 * `1aa3b86` cosmetic
