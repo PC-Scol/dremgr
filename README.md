@@ -108,6 +108,17 @@ variables suivantes doivent être configurées le cas échéant:
   D'autres add-ons peuvent être spécifiés au fur et à mesure qu'ils sont rendus
   disponibles.
 
+  NB: le préfixe `https://github.com/` est rajouté automatiquement aux URLs de
+  la forme `user/repo`. Par exemple, `PC-Scol/dreaddon-documentation.git` est
+  strictement équivalent à `https://github.com/PC-Scol/dreaddon-documentation.git`
+  mentionné ci-dessus.
+  Bien entendu, il est possible d'utiliser des URLs d'un serveur privé ou d'un
+  autre opérateur.
+
+  Par défaut, la branche `master` du dépôt est attaquée. Il est possible de
+  sélectionner une autre branche avec le suffixe `#branch` ou de désigner un tag
+  ou un commit précis avec le suffixe `^commitId`
+
 Il y a d'autres paramètres, consulter le fichier pour la liste complète
 
 Une fois le fichier configuré, l'instance peut être démarrée
@@ -295,11 +306,10 @@ En définitive, basculer sur la branche `develop` ne devrait probablement pas
 
 ## Développement d'addons
 
-Lorsqu'on développe un addon (cf
-<https://github.com/PC-Scol/dreaddon-template>), il faut pouvoir tester les
-scripts avant de les envoyer en production. Une façon de faire est d'avoir une
-installation de dremgr sur son poste (via WSL ou autre méthode) et lancer
-l'importation à chaque fois.
+Lorsqu'on développe un addon (cf <https://github.com/PC-Scol/dreaddon-template>),
+il faut pouvoir tester les scripts avant de les envoyer en production. Une façon
+de faire est d'avoir une installation de dremgr sur son poste (via WSL ou autre
+méthode) et lancer l'importation à chaque fois.
 
 * Installer dremgr sur son poste avec la même configuration qu'en prod
 * Il n'est pas forcément possible de télécharger les fichiers depuis le poste du
@@ -327,6 +337,20 @@ l'importation à chaque fois.
   ~~~sh
   ./inst -i -- -@ 20240504
   ~~~
+
+La méthode ci-dessus réimporte TOUS les dumps et TOUS les addons, ce qui permet
+de vérifier que l'import quotidien fonctionnera correctement une fois en
+production, mais ça peut prendre un certain temps en fonction du nombre
+d'addons.
+
+Si on veut uniquement réimporter l'addon sur lequel on travaille, il est
+possible de le faire avec les options `--runao` et `-o`, e.g:
+~~~sh
+./inst -i -- --runao -o documentation
+~~~
+Dans cet exemple, seul l'addon `dreaddon-documentation` est réimporté, ce qui
+permet de vérifier que les fichiers de documentation proposés sont bien ceux
+attendus.
 
 ## Modification du logo
 

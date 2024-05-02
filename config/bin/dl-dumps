@@ -117,8 +117,10 @@ if [ -n "$step_dl" ]; then
 
     qstep "Vérifications des sommes de contrôle"
     sha256sum --status -c "$sums" || die
-else
+elif [ -f "$sums" ]; then
     eval "$(sed 's/^/add_schema /' "$sums")"
+else
+    die "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
 fi
 
 estep "Calcul de la version"
@@ -134,21 +136,53 @@ if [ -n "$step_checkao" ]; then
         # et commentaires
         [ "${aourl#\#}" == "$aourl" ] || continue
 
+        # si pas d'url ni de chemin, rajouter le préfixe https://github.com/
+        if [[ "$aourl" == *://* ]]; then : # url
+        elif [ "${aourl#/}" != "$aourl" ]; then : # chemin absolu
+        else aourl="https://github.com/$aourl"
+        fi
+        # récupérer la branche ou le commit
+        if [[ "$aourl" == *#* ]]; then
+            branch="${aourl##*#}"
+            aourl="${aourl%#*}"
+            commit=
+        elif [[ "$aourl" == *^* ]]; then
+            branch=
+            commit="${aourl##*^}"
+            aourl="${aourl%^*}"
+        else
+            branch=
+            commit=
+        fi
+
         setx aoname=basename "$aourl"
         aodir="$AODIR/${aoname%.git}"
         # ajouter le répertoire safe.directory pour pallier les problèmes éventuels d'ownership
         git config --global --get-all safe.directory | grep -qxF "$aodir" ||
             git config --global --add safe.directory "$aodir"
         # cloner ou mettre à jour
+        origUpdateAo="$UpdateAo"
         if [ ! -d "$aodir" ]; then
             # Il faut cloner le dépôt
-            qstep "clone $aourl --> $aodir"
-            quietc git clone "$aourl" "$aodir" || continue
-        elif [ -n "$UpdateAo" ]; then
+            qstep "clone $aourl${branch:+#$branch} --> $aodir"
+            quietc git clone "$aourl${branch:+#$branch}" "$aodir" || continue
+            # si un commit est spécifié, forcer une mise à jour
+            [ -n "$commit" ] && UpdateAo=1
+        fi
+        if [ -n "$UpdateAo" ]; then
             # il faut mettre à jour le dépôt
             qstep "update $aodir"
-            (cd "$aodir"; quietc git fetch && quietc git reset --hard origin/master)
+            (
+                cd "$aodir"
+                quietc git fetch || exit 1
+                if [ -n "$commit" ]; then
+                    quietc git reset --hard "$commit"
+                else
+                    quietc git reset --hard "origin/${branch:-master}"
+                fi
+            )
         fi
+        UpdateAo="$origUpdateAo"
     done
 
     if [ -n "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
