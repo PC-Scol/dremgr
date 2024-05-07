@@ -93,7 +93,7 @@ variables suivantes doivent être configurées le cas échéant:
 : mot de passe de l'utilisateur en lecture seule de la base de données
 
 `ADDON_URLS`
-: Liste d'URLs de dépôts git contenant des "add-ons" de dremgr. Par défaut, les
+: Liste d'URLs de dépôts git contenant des "addons" de dremgr. Par défaut, les
   deux URLs suivants sont listés:
   * `https://github.com/PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
@@ -101,23 +101,11 @@ variables suivantes doivent être configurées le cas échéant:
     schéma "pilotage" développé par l'UPHF, base de l'univers BO livré aussi par
     l'UPHF
 
-  Si ces URLs ne sont pas en accès public, il suffit de spécifier un compte
-  autorisé et son mot de passe e.g
-  `https://LOGIN:PASSWORD@github.com/PC-Scol/dreaddon-pilotage.git`
-
   D'autres add-ons peuvent être spécifiés au fur et à mesure qu'ils sont rendus
   disponibles.
 
-  NB: le préfixe `https://github.com/` est rajouté automatiquement aux URLs de
-  la forme `user/repo`. Par exemple, `PC-Scol/dreaddon-documentation.git` est
-  strictement équivalent à `https://github.com/PC-Scol/dreaddon-documentation.git`
-  mentionné ci-dessus.
-  Bien entendu, il est possible d'utiliser des URLs d'un serveur privé ou d'un
-  autre opérateur.
-
-  Par défaut, la branche `master` du dépôt est attaquée. Il est possible de
-  sélectionner une autre branche avec le suffixe `#branch` ou de désigner un tag
-  ou un commit précis avec le suffixe `^commitId`
+  Cf [la documentation de dreaddons](documentation/dreaddons.md) pour les
+  détails
 
 Il y a d'autres paramètres, consulter le fichier pour la liste complète
 
