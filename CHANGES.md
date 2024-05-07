@@ -1,3 +1,7 @@
+## Version 0.14.1 du 07/05/2024-13:37
+
+* `17612c3` ajouter la documentation de dreaddons
+
 ## Version 0.14.0 du 02/05/2024-23:02
 
 * `f1da911` possiblité de désigner une branche ou un commit
