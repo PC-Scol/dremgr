@@ -170,7 +170,7 @@ Attention! si l'instance de prod en mode simple avait déjà été démarrée, i
 faut la remplacer par les nouvelles instances, i.e
 ~~~sh
 # forcer le redémarrage
-./inst -Ar
+./inst -AR
 ~~~
 Notez aussi que les comptes ne sont pas recréés si l'instance de prod en mode
 simple avait déjà été démarrée.
@@ -210,12 +210,10 @@ Ensuite, démarrer les services frontaux
 ~~~sh
 ./front
 ~~~
-En cas de changement de configuration, utiliser l'option -r pour redémarrer les
+En cas de changement de configuration, utiliser l'option -R pour redémarrer les
 services concernés
 ~~~sh
-# redémarrge si nécessaire
-./front -r
-# ou forcer le redémarrage
+# forcer le redémarrage
 ./front -R
 ~~~
 
