@@ -1,3 +1,7 @@
+## Version 0.15.1 du 23/05/2024-07:10
+
+* `246c51b` maj doc
+
 ## Version 0.15.0 du 23/05/2024-06:56
 
 * `2d2bda7` possibilité de désactiver la planification
