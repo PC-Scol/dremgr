@@ -39,6 +39,7 @@ services:
       UPDATE_CRON_VARS: >
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
+        CRON_DISABLE
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
