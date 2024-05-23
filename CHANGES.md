@@ -1,3 +1,7 @@
+## Version 0.15.0 du 23/05/2024-06:56
+
+* `2d2bda7` possibilité de désactiver la planification
+
 ## Version 0.14.1 du 07/05/2024-13:37
 
 * `17612c3` ajouter la documentation de dreaddons
