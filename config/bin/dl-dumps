@@ -27,7 +27,7 @@ function rundir() {
         *.sh)
             if [ -x "$file" ]; then
                 estep "exec $filename"
-                "$file" || die
+                quietc "$file" || die
             fi
             ;;
         esac
@@ -47,7 +47,7 @@ function add_schema() {
         schema="$file"
         schema="${schema%.bin}"
         schema="${schema##*-$Timestamp-}"
-        DROP_BIN_SCHEMAS+=("$schema")
+        DROP_BIN_SCHEMAS+=("schema_$schema")
         IMPORT_BIN_SCHEMAS+=("$schema")
     elif [[ "$file" == *.json ]]; then
         schema="$file"
@@ -56,7 +56,7 @@ function add_schema() {
         collection="${schema#*-}"
         schema="${schema%%-*}"
         if ! array_contains IMPORT_JSON_SCHEMAS "$schema"; then
-            DROP_JSON_SCHEMAS+=("$schema")
+            DROP_JSON_SCHEMAS+=("schema_$schema")
             IMPORT_JSON_SCHEMAS+=("$schema")
         fi
         IMPORT_JSON_COLLECTIONS+=("$schema:$collection")
@@ -277,7 +277,7 @@ if [ -n "$step_import" ]; then
     schema_list=
     for schema in "${DROP_BIN_SCHEMAS[@]}" "${DROP_JSON_SCHEMAS[@]}"; do
         qstep "$schema"
-        schema_list="${schema_list}${schema_list:+, }schema_${schema}"
+        schema_list="${schema_list}${schema_list:+, }${schema}"
     done
     runsql "drop schema if exists $schema_list cascade;" || die
     eend
@@ -287,6 +287,7 @@ if [ -n "$step_import_bin" ]; then
     etitle "Importation des schémas (pgsql)"
     for schema in "${IMPORT_BIN_SCHEMAS[@]}"; do
         file="${DRE_PREFIX}-$Timestamp-$schema.bin"
+        schema="schema_$schema"
 
         qstep "$schema: drop extensions"
         runsql "drop extension if exists unaccent, pg_trgm cascade;" || die
@@ -294,8 +295,8 @@ if [ -n "$step_import_bin" ]; then
         qstep "$schema: import $file"
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
         runsql "\
-grant usage on schema schema_$schema to reader;
-grant select on all tables in schema schema_$schema to reader;
+grant usage on schema $schema to reader;
+grant select on all tables in schema $schema to reader;
 " || die
     done
     eend
@@ -304,9 +305,11 @@ fi
 if [ -n "$step_import_json" ]; then
     etitle "Création des schémas (json)"
     for schema in "${IMPORT_JSON_SCHEMAS[@]}"; do
+        schema="schema_$schema"
+
         qstep "$schema"
         runsql "\
-create schema if not exists schema_$schema;
+create schema if not exists $schema;
 " || die
     done
     eend
@@ -315,20 +318,23 @@ create schema if not exists schema_$schema;
     for schema_collection in "${IMPORT_JSON_COLLECTIONS[@]}"; do
         splitpair "$schema_collection" schema collection
         file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
+        schema="schema_$schema"
 
         qstep "$schema: $collection: import $file"
         runsql "
-create table if not exists schema_$schema.$collection (source_json jsonb);
+create table if not exists $schema.$collection (source_json jsonb);
 " || die
         <"$file" runsql "
-copy schema_$schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
+copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
 " || die
     done
     for schema in "${IMPORT_JSON_SCHEMAS[@]}"; do
+        schema="schema_$schema"
+
         qstep "$schema: maj authnz"
         runsql "\
-grant usage on schema schema_$schema to reader;
-grant select on all tables in schema schema_$schema to reader;
+grant usage on schema $schema to reader;
+grant select on all tables in schema $schema to reader;
 " || die
     done
     eend
@@ -354,29 +360,31 @@ if [ -n "$step_runao" ]; then
             # Les scripts de préparation peuvent créer les schémas nécessaires ou
             # faire toute autre opération utile
             rundir "$aodir/prepare"
-            # S'assurer tout de même que les schémas mentionnés existent
-            for schema in "${SCHEMAS[@]}"; do
-                runsql "create schema if not exists $schema;" || die
-            done
         fi
+        # S'assurer tout de même que les schémas mentionnés existent
+        for schema in "${SCHEMAS[@]}"; do
+            qstep "$schema: create schema"
+            runsql "create schema if not exists $schema;" || die
+        done
+
         have_vxx=
         if [ -n "$vxx" -a -d "$aodir/$vxx" ]; then
             have_vxx=1
             rundir "$aodir/$vxx"
         fi
+
         if [ -d "$aodir/updates" ]; then
             [ -z "$have_vxx" ] && estep "Mises à jour"
-            # Donner un accès complet en lecture au compte reader
-            for schema in "${SCHEMAS[@]}"; do
-                runsql "\
+            rundir "$aodir/updates"
+        fi
+        # Donner un accès complet en lecture au compte reader
+        for schema in "${SCHEMAS[@]}"; do
+            qstep "$schema: maj authnz"
+            runsql "\
 grant usage on schema $schema to reader;
 grant select on all tables in schema $schema to reader;
 " || die
-            done
-            # Les scripts de finalisation peuvent influer sur ce comportement par
-            # défaut si nécessaire
-            rundir "$aodir/updates"
-        fi
+        done
 
         if [ -d "$aodir/documentation" ]; then
             estep "Documentation générale"
