@@ -34,15 +34,35 @@ function rundir() {
     done
 }
 
-DROP_SCHEMAS=()
-IMPORT_SCHEMAS=()
+DL_FILES=()
+DROP_BIN_SCHEMAS=()
+IMPORT_BIN_SCHEMAS=()
+DROP_JSON_SCHEMAS=()
+IMPORT_JSON_SCHEMAS=()
+IMPORT_JSON_COLLECTIONS=()
 function add_schema() {
     local sum="$1" file="$2" schema
-    schema="$file"
-    schema="${schema%.bin}"
-    schema="${schema##*-$Timestamp-}"
-    DROP_SCHEMAS+=("$schema")
-    IMPORT_SCHEMAS+=("$schema")
+    DL_FILES+=("$file")
+    if [[ "$file" == *.bin ]]; then
+        schema="$file"
+        schema="${schema%.bin}"
+        schema="${schema##*-$Timestamp-}"
+        DROP_BIN_SCHEMAS+=("$schema")
+        IMPORT_BIN_SCHEMAS+=("$schema")
+    elif [[ "$file" == *.json ]]; then
+        schema="$file"
+        schema="${schema%.json}"
+        schema="${schema##*-$Timestamp-}"
+        collection="${schema#*-}"
+        schema="${schema%%-*}"
+        if ! array_contains IMPORT_JSON_SCHEMAS "$schema"; then
+            DROP_JSON_SCHEMAS+=("$schema")
+            IMPORT_JSON_SCHEMAS+=("$schema")
+        fi
+        IMPORT_JSON_COLLECTIONS+=("$schema:$collection")
+    else
+        ewarn "$file: format non reconnu. le fichier sera ignoré"
+    fi
 }
 
 step_dl=
@@ -51,6 +71,8 @@ ForceDlSums=
 step_checkao=
 UpdateAo=1
 step_import=
+step_import_bin=
+step_import_json=
 step_runao=
 SelectAo=
 step_cleanup=
@@ -62,7 +84,9 @@ args=(
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     --checkao step_checkao=1 "++Vérifier les addons"
     -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
-    --import step_import=1 "++Importer les dumps"
+    --import step_import=1 "++Importer tous les dumps"
+    --import-bin step_import_bin=1 "++Importer seulement les dumps .bin et le fichier DRE_VERSION"
+    --import-json step_import_json=1 "++Importer seulement les dumps .json"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
     --cleanup step_cleanup=1 "++Supprimer les fichiers de dumps obsolètes"
@@ -71,14 +95,17 @@ args=(
 parse_args "$@"; set -- "${args[@]}"
 
 keep_import_log=1
-if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import" -a -z "$step_runao" -a -z "$step_cleanup" ]; then
+[ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
+if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_cleanup" ]; then
     keep_import_log=
     step_dl=1
     step_checkao=1
-    step_import=1
+    step_import_bin=1
+    step_import_json=1
     step_runao=1
     step_cleanup=1
 fi
+[ -n "$step_import_bin" -o -n "$step_import_json" ] && step_import=1
 [ -n "$step_runao" ] && step_checkao=1
 
 quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
@@ -107,8 +134,7 @@ if [ -n "$step_dl" ]; then
         qstep "dl $version"
         dl "$version" || die
     fi
-    for schema in "${IMPORT_SCHEMAS[@]}"; do
-        file="${DRE_PREFIX}-$Timestamp-$schema.bin"
+    for file in "${DL_FILES[@]}"; do
         if [ ! -f "$file" ]; then
             qstep "dl $file"
             dl "$file" || die
@@ -218,7 +244,7 @@ if [ -n "$step_checkao" ]; then
             fi
         done
 
-        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
+        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_BIN_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
         if [ "$vxx" == all ]; then
             vxx=
         else
@@ -247,15 +273,19 @@ if [ -n "$step_checkao" ]; then
 fi
 
 if [ -n "$step_import" ]; then
-    qstep "Suppression des anciens schémas"
+    etitle "Suppression des anciens schémas"
     schema_list=
-    for schema in "${DROP_SCHEMAS[@]}"; do
+    for schema in "${DROP_BIN_SCHEMAS[@]}" "${DROP_JSON_SCHEMAS[@]}"; do
+        qstep "$schema"
         schema_list="${schema_list}${schema_list:+, }schema_${schema}"
     done
     runsql "drop schema if exists $schema_list cascade;" || die
+    eend
+fi
 
-    etitle "Importation des schémas"
-    for schema in "${IMPORT_SCHEMAS[@]}"; do
+if [ -n "$step_import_bin" ]; then
+    etitle "Importation des schémas (pgsql)"
+    for schema in "${IMPORT_BIN_SCHEMAS[@]}"; do
         file="${DRE_PREFIX}-$Timestamp-$schema.bin"
 
         qstep "$schema: drop extensions"
@@ -266,8 +296,39 @@ if [ -n "$step_import" ]; then
         runsql "\
 grant usage on schema schema_$schema to reader;
 grant select on all tables in schema schema_$schema to reader;
--- alter table if exists __provisionning_changelog_lock set schema schema_$schema;
--- alter table if exists __provisionning_changelog set schema schema_$schema;
+" || die
+    done
+    eend
+fi
+
+if [ -n "$step_import_json" ]; then
+    etitle "Création des schémas (json)"
+    for schema in "${IMPORT_JSON_SCHEMAS[@]}"; do
+        qstep "$schema"
+        runsql "\
+create schema if not exists schema_$schema;
+" || die
+    done
+    eend
+
+    etitle "Importation des collections (json)"
+    for schema_collection in "${IMPORT_JSON_COLLECTIONS[@]}"; do
+        splitpair "$schema_collection" schema collection
+        file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
+
+        qstep "$schema: $collection: import $file"
+        runsql "
+create table if not exists schema_$schema.$collection (source_json jsonb);
+" || die
+        <"$file" runsql "
+copy schema_$schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
+" || die
+    done
+    for schema in "${IMPORT_JSON_SCHEMAS[@]}"; do
+        qstep "$schema: maj authnz"
+        runsql "\
+grant usage on schema schema_$schema to reader;
+grant select on all tables in schema schema_$schema to reader;
 " || die
     done
     eend
@@ -337,7 +398,7 @@ grant select on all tables in schema $schema to reader;
     eend
 fi
 
-if [ -n "$step_import" ]; then
+if [ -n "$step_import_bin" ]; then
     estep "Maj version"
     runsql "\
 create table if not exists version (majeure int, mineure int, patch int, prerelease varchar(8), timestamp varchar(8));
