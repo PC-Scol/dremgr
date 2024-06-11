@@ -35,11 +35,11 @@ function rundir() {
 }
 
 DL_FILES=()
-DROP_BIN_SCHEMAS=()
-IMPORT_BIN_SCHEMAS=()
-DROP_JSON_SCHEMAS=()
-IMPORT_JSON_SCHEMAS=()
-IMPORT_JSON_COLLECTIONS=()
+DROP_SCHEMA_SCHEMAS=()
+IMPORT_SCHEMA_SCHEMAS=()
+DROP_MONGO_SCHEMAS=()
+IMPORT_MONGO_SCHEMAS=()
+IMPORT_MONGO_COLLECTIONS=()
 function add_schema() {
     local sum="$1" file="$2" schema
     DL_FILES+=("$file")
@@ -47,19 +47,19 @@ function add_schema() {
         schema="$file"
         schema="${schema%.bin}"
         schema="${schema##*-$Timestamp-}"
-        DROP_BIN_SCHEMAS+=("schema_$schema")
-        IMPORT_BIN_SCHEMAS+=("$schema")
+        DROP_SCHEMA_SCHEMAS+=("schema_$schema")
+        IMPORT_SCHEMA_SCHEMAS+=("$schema")
     elif [[ "$file" == *.json ]]; then
         schema="$file"
         schema="${schema%.json}"
         schema="${schema##*-$Timestamp-}"
         collection="${schema#*-}"
         schema="${schema%%-*}"
-        if ! array_contains IMPORT_JSON_SCHEMAS "$schema"; then
-            DROP_JSON_SCHEMAS+=("schema_$schema")
-            IMPORT_JSON_SCHEMAS+=("$schema")
+        if ! array_contains IMPORT_MONGO_SCHEMAS "$schema"; then
+            DROP_MONGO_SCHEMAS+=("mongo_$schema")
+            IMPORT_MONGO_SCHEMAS+=("$schema")
         fi
-        IMPORT_JSON_COLLECTIONS+=("$schema:$collection")
+        IMPORT_MONGO_COLLECTIONS+=("$schema:$collection")
     else
         ewarn "$file: format non reconnu. le fichier sera ignoré"
     fi
@@ -244,7 +244,7 @@ if [ -n "$step_checkao" ]; then
             fi
         done
 
-        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_BIN_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
+        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMA_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
         if [ "$vxx" == all ]; then
             vxx=
         else
@@ -275,7 +275,7 @@ fi
 if [ -n "$step_import" ]; then
     etitle "Suppression des anciens schémas"
     schema_list=
-    for schema in "${DROP_BIN_SCHEMAS[@]}" "${DROP_JSON_SCHEMAS[@]}"; do
+    for schema in "${DROP_SCHEMA_SCHEMAS[@]}" "${DROP_MONGO_SCHEMAS[@]}"; do
         qstep "$schema"
         schema_list="${schema_list}${schema_list:+, }${schema}"
     done
@@ -285,7 +285,7 @@ fi
 
 if [ -n "$step_import_bin" ]; then
     etitle "Importation des schémas (pgsql)"
-    for schema in "${IMPORT_BIN_SCHEMAS[@]}"; do
+    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
         file="${DRE_PREFIX}-$Timestamp-$schema.bin"
         schema="schema_$schema"
 
@@ -304,8 +304,8 @@ fi
 
 if [ -n "$step_import_json" ]; then
     etitle "Création des schémas (json)"
-    for schema in "${IMPORT_JSON_SCHEMAS[@]}"; do
-        schema="schema_$schema"
+    for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
+        schema="mongo_$schema"
 
         qstep "$schema"
         runsql "\
@@ -315,10 +315,10 @@ create schema if not exists $schema;
     eend
 
     etitle "Importation des collections (json)"
-    for schema_collection in "${IMPORT_JSON_COLLECTIONS[@]}"; do
+    for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
         splitpair "$schema_collection" schema collection
         file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
-        schema="schema_$schema"
+        schema="mongo_$schema"
 
         qstep "$schema: $collection: import $file"
         runsql "
@@ -328,8 +328,8 @@ create table if not exists $schema.$collection (source_json jsonb);
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
 " || die
     done
-    for schema in "${IMPORT_JSON_SCHEMAS[@]}"; do
-        schema="schema_$schema"
+    for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
+        schema="mongo_$schema"
 
         qstep "$schema: maj authnz"
         runsql "\
