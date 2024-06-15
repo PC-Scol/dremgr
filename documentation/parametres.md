@@ -1,0 +1,342 @@
+# Paramètres dremgr
+
+`build` a besoin de certains paramètres pour pouvoir construire les images nécessaires à dremgr
+
+`inst` et `front` ont besoin de certains paramètres pour démarrer les services associés
+
+Ces paramètres sont cherchés dans des fichiers dont le nom est normalisés
+
+## Paramètres communs
+
+Chaque instance correspond à un profil nommé. Les paramètres de chaque instance
+sont lus dans un fichier de la forme `<profil>_profile.env`
+
+Dans le mode simple, le nom du profil est fixé: c'est `prod`, ainsi les
+paramètres sont lus dans le fichier `prod_profile.env`
+
+**Récupération des données chez PC-SCOL**
+
+`DRE_URL`
+: Adresse du serveur des dumps DRE e.g https://dre-dump.DOMAINEETAB.pc-scol.fr
+
+`DRE_USER`
+`DRE_PASSWORD`
+: utilisateur et mot de passe pour accéder au serveur des dumps DRE
+
+**Configuration du service postgresql**
+
+`POSTGRES_HOST`
+: nom d'hôte du serveur BDD (dans le réseau interne docker). ne pas modifier
+
+`POSTGRES_USER`
+: utilisateur administrateur de la BDD
+
+`POSTGRES_PASSWORD`
+: mot de passe administrateur de la BDD. Une valeur aléatoire est généré lors de
+  l'installation. Elle peut être modifiée *avant* le premier démarrage de
+  l'instance de la base de données. Si l'instance a déjà démarré, modifier ce
+  paramètre n'a plus aucun effet.
+
+**Adresse et port d'écoute de l'instance**
+
+`INST_VIP`
+`INST_PORT`
+: Adresse et port d'écoute de l'instance.
+
+  Si `INST_VIP` est vide ou contient une adresse telle que `0.0.0.0`, l'instance
+  est accessible sur toutes les interfaces réseaux. La valeur par défaut
+  `127.0.0.1` n'autorise la connexion que depuis l'hôte local.
+
+  Si `INST_PORT` est vide, l'écoute directe est désactivée (utilisé uniquement
+  dans le mode avancé)
+
+**Informations à afficher à l'utilisateur**
+
+Ces paramètres sont utilisés par l'application web pour afficher des
+informations à l'utilisateur.
+
+`FE_HOST`
+`FE_PORT`
+: Nom d'hôte sur lequel est accessible la BDD (sur le réseau externe), et port
+  d'écoute.
+
+`FE_DBNAME`
+: nom de la BDD créée pour contenir les données DRE
+
+`FE_USER`
+: utilisateur avec accès en lecture universel (il a accès en lecture à TOUTES
+  les données). S'il faut créer des utilisateurs supplémentaires, il faut passer
+  par un addon
+
+`FE_PASSWORD`
+: mot de passe de l'utilisateur avec accès en lecture universel. Une valeur
+  aléatoire est généré lors de l'installation. Elle peut être modifiée *avant*
+  le premier démarrage de l'instance de la base de données. Si l'instance a déjà
+  démarré, modifier ce paramètre n'a plus aucun effet.
+
+**Autres données**
+
+`ADDON_URLS`
+: Liste d'addons à installer et/ou mettre à jour lors de chaque import
+  journalier, un par ligne. Le préfixe https://github.com/ est rajouté
+  automatiquement le cas échéant
+  
+  Ajouter un suffixe '#branch' pour spécifier une branche ou '^rev' pour
+  spécifier un tag ou un id de commit, e.g PC-Scol/dreaddon.git#develop pour
+  utiliser la branche develop
+
+  Cf [Installation d'addons](dreaddons.md) pour les détails
+
+`CRON_PLAN`
+: Planification cron pour le script d'import
+
+  Les fichiers sont générés à 4h GMT, soit 5h heure de Paris. on planifie à 5h45
+  par défaut pour laisser le temps à l'export de se terminer
+
+`CRON_DISABLE`
+: Indiquer une valeur quelconque pour désactiver les imports automatiques. La
+  base de données est laisée en l'état et plus aucune mise à jour n'est lancée
+  automatiquement
+
+`HOST_MAPPINGS`
+: Liste de mappings d'hôte à installer dans le container, un par ligne
+
+  Les mappings sont au format docker, i.e `cas.univ.tld:10.50.20.30`
+
+**Paramètres partagés**
+
+Le fichier livré contient des définitions permettant de changer en une seule
+fois certains paramètres:
+~~~sh
+DBNET=
+DBVIP=127.0.0.1
+DBHOST=localhost
+DBPORT=5432
+DBNAME=dre
+LBNET=
+LBHTTP=7081
+LBHTTPS=
+~~~
+
+Les valeurs partagées sont ensuite réutilisées ailleurs dans la configuration.
+En temps normal, il n'est pas nécessaire de modifier ces valeurs:
+~~~sh
+LBVIP="$DBVIP"
+LBHOST="$DBHOST"
+INST_VIP="$DBVIP"
+INST_PORT="$DBPORT"
+FE_HOST="$DBHOST"
+FE_PORT="$DBPORT"
+FE_DBNAME="$DBNAME"
+~~~
+
+`DBNET`
+: nom d'un réseau docker dans lequel doit tourner l'instance de la base de
+  données
+
+  en mode simple, c'est une valeur vide parce que c'est inutile. cf ci-dessous
+  pour la valeur par défaut pour le mode avancé
+
+`DBVIP`
+: adresse d'écoute de la base de données
+
+  la valeur par défaut ne permet l'accès que depuis l'hôte local, ce qui est
+  approprié pour une utilisation personnelle à des fins de développement. pour
+  un serveur de production, il faut laisser le champ vide pour écouter sur
+  toutes les interfaces, ou indiquer une adresse IP spécifique
+  
+`DBHOST`
+`DBPORT`
+`DBNAME`
+: nom d'hôte, port, et nom de la base de données pour la connexion. ces
+  informations sont affichées à l'utilisateur par l'application web frontal
+
+`LBNET`
+: nom d'un réseau docker dans lequel doit tourner l'application web frontal
+
+  en mode simple, c'est une valeur vide parce que ce n'est pas utilisé. cf
+  ci-dessous pour la valeur par défaut pour le mode avancé
+
+`LBVIP`
+: adresse d'écoute de l'application web frontal
+
+  la valeur par défaut est `$DBVIP`, mais on peut décider de mettre une valeur
+  différente pour par exemple ne rendre accessible *que* l'application web
+
+`LBHOST`
+: nom d'hôte pour le serveur web frontal. c'est important surtout pour
+  l'authentication CAS qui a besoin de connaitre l'adresse officielle du serveur
+  web.
+
+  la valeur par défaut `$DBHOST` est généralement un choix approprié
+
+`LBHTTP`
+: port d'écoute pour le serveur web frontal, pour l'accès en clair en http://
+
+  la valeur par défaut est 7081, mais en production, on peut choisir de mettre
+  une valeur standard comme 80
+
+`LBHTTPS`
+: port d'écoute pour le serveur web frontal, pour l'accès sécurisé en https://
+
+  si on met une valeur, comme la valeur standard 443, il y a un certain nombre
+  d'actions supplémentaires à faire pour configurer l'accès.
+  ces actions ne sont pas encore documentées, envoyer un message sur le forum
+  pour avoir le détail.
+
+**Paramètres privés non documentés**
+
+`PGDATABASE`
+`PGUSER`
+`APP_PROFILES`
+`APP_PROFILE_VARS`
+`POSTGRES_PROFILES`
+: Dans le mode simple, ne pas modifier ni supprimer la valeur de ces paramètres
+
+## Paramètres du mode avancé
+
+Dans le mode avancé, le fichier `front.env` contient le paramètrage des
+profils. Ce même fichier peut regrouper les configurations de tous les profils,
+et ainsi les fichiers de profils peuvent être des liens symboliques vers
+front.env
+
+Dans l'exemple suivant, `front.env` contient la configuration pour les profils
+`prod` et `test`:
+~~~sh
+ln -s front.env prod_profile.env
+ln -s front.env test_profile.env
+~~~
+
+**Paramètres courants**
+
+`APP_PROFILES`
+: Liste des profils suportés. Chaque profil permet de piloter une instance de
+  base de données
+
+  pour chacune des variables listées dans `APP_PROFILE_VARS`, et pour chaque
+  profil, un calcul est effectuée pour déterminer la valeur effective.
+
+  prenons par exemple une variable nommé `MAVAR`, et le profil `prod`
+  * si la variable `prod_MAVAR` existe, c'est cette valeur qui est sélectionnée
+  * sinon, c'est la valeur de la variable `MAVAR` qui est sélectionnée
+
+**Paramètres partagés**
+
+Le fichier livré contient des définitions permettant de changer en une seule
+fois certains paramètres:
+~~~sh
+DBNET=dremgr_db
+DBVIP=127.0.0.1
+DBHOST=localhost
+DBPORT=5432
+DBNAME=dre
+LBNET=
+LBHTTP=7081
+LBHTTPS=
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=XXX
+FE_USER=reader
+FE_PASSWORD=YYY
+~~~
+
+Les valeurs partagées sont ensuite réutilisées ailleurs dans la configuration.
+En temps normal, il n'est pas nécessaire de modifier ces valeurs:
+~~~sh
+LBVIP="$DBVIP"
+LBHOST="$DBHOST"
+<profil>_INST_VIP="$DBVIP"
+<profil>_INST_PORT=
+<profil>_FE_HOST="$DBHOST"
+<profil>_FE_PORT="$DBPORT"
+<profil>_FE_DBNAME="<profil>_$DBNAME"
+PGBOUNCER_DBS="$DBNAME"
+PGBOUNCER_USERS="${FE_USER}:${FE_PASSWORD}"
+PGADMIN_USER="$FE_USER"
+PGADMIN_PASSWORD="$FE_PASSWORD"
+ADMINER_USER="$FE_USER"
+ADMINER_PASSWORD="$FE_PASSWORD"
+ADMINER_DB="$DBNAME"
+~~~
+
+Les descriptions sont les mêmes que dans la section ci-dessus, avec les
+précisions suivantes:
+
+`DBNET`
+: nom du réseau docker dans lequel doivent tourner les instances des bases de
+  données. la valeur par défaut est dremgr_db
+
+  l'application web est aussi placée dans ce réseau afin de pouvoir afficher la
+  version et la date de la dernière importation de la base de données
+
+`LBNET`
+: nom d'un réseau docker dans lequel doit tourner l'application web frontal
+
+  il n'y a généralement pas de raison de mettre l'application dans un réseau
+  spécifique, sauf si elle doit être placée derrière un frontal tel que traefik
+
+`<profil>_INST_PORT`
+: Cette variable est vide parce que les instances sont accédées via le proxy
+  pgbouncer. Il n'y a donc généralement pas de raison pour activer un accès
+  direct à l'instance.
+
+`POSTGRES_USER`
+`POSTGRES_PASSWORD`
+`FE_USER`
+`FE_PASSWORD`
+: Dans la configuration par défaut, ces valeurs sont partagées par toutes les
+  instances. La raison est que le proxy pgbouncer requière que le même mot de
+  passe soit utilisé par tous les backend pour un même nom d'utilisateur.
+
+  S'il faut définir un mot de passe différent suivant le profil, il faudra aussi
+  définir des noms différents pour les comptes, e.g
+  ~~~sh
+  prod_POSTGRES_USER=prod_admin
+  prod_POSTGRES_PASSWORD=XXX
+  prod_FE_USER=prod_reader
+  prod_FE_PASSWORD=YYY
+  test_POSTGRES_USER=test_admin
+  test_POSTGRES_PASSWORD=ZZZ
+  test_FE_USER=test_reader
+  test_FE_PASSWORD=TTT
+  ~~~
+
+**Paramètres privés non documentés**
+
+`PGDATABASE`
+`PGUSER`
+`APP_PROFILE_VARS`
+`POSTGRES_PROFILES`
+: Dans le mode avancé, ne pas modifier ni supprimer la valeur de ces paramètres
+
+## Paramètres pour la construction des images
+
+Ces paramètres sont lus à partir du fichier `build.env` qui est créé en copiant
+le fichier `.build.env.dist`
+~~~sh
+cp .build.env.dist build.env
+~~~
+Il FAUT consulter `build.env` et l'éditer AVANT de chercher à construire les
+images.
+
+`APT_PROXY`
+: proxy pour l'installation des paquets Debian, e.g `http://monproxy.tld:3142`
+
+`APT_MIRROR`
+`SEC_MIRROR`
+: miroirs à utiliser. Il n'est généralement pas nécessaire de modifier ces
+  valeurs
+
+`TIMEZONE`
+: Fuseau horaire, si vous n'êtes pas en France métropolitaine, e.g
+  `Indian/Reunion`
+
+`PRIVAREG`
+: nom d'un registry docker interne vers lequel les images pourraient être
+  poussées. Il n'est pas nécessaire de modifier ce paramètre.
+
+  Si PRIVAREG est utilisé, `build -p` pousse les images vers ce dépôt après les
+  avoir construites. Ensuite, si un autre poste est configuré avec la bonne
+  valeur de PRIVAREG, les images seront téléchargées et n'ont pas besoin d'être
+  reconstruites
+
+-*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
