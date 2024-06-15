@@ -332,11 +332,27 @@ d'addons.
 Si on veut uniquement réimporter l'addon sur lequel on travaille, il est
 possible de le faire avec les options `--runao` et `-o`, e.g:
 ~~~sh
+# on ne peut importer que ce qui a été enregistré et poussé
+cd ~/path/to/dreaddon-documentation
+git commit -am "mes modifications" && git push
+
+# puis importer les modifications
+cd ~/path/to/dremgr
 ./inst -i -- --runao -o documentation
 ~~~
 Dans cet exemple, seul l'addon `dreaddon-documentation` est réimporté, ce qui
 permet de vérifier que les fichiers de documentation proposés sont bien ceux
 attendus.
+
+Pour faciliter le développement, l'option -I permet de synchroniser le contenu
+du répertoire d'addon puis lancer l'import de l'addon spécifié, e.g:
+~~~sh
+./inst -I ~/path/to/dreaddon-documentation
+
+# la commande ci-dessus est équivalente à:
+rsync -rlp --delete ~/path/to/dreaddon-documentation/ var/prod-dredata/addons/dreaddon-documentation/
+./inst -i -- --no-updateao --runao -o dreaddon-documentation
+~~~
 
 ## Modification du logo
 
