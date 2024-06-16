@@ -122,10 +122,10 @@ sur son poste (via WSL ou autre méthode) et lancer l'importation à chaque fois
   ~~~
 
   NB: il est possible de spécifier la date des fichiers à importer avec l'option
-  `-@ YYYYMMDD`. Par exemple, pour importer les fichiers du 04/05/2024, on peut
+  `-@ YYYYMMDD`. Par exemple, pour importer les fichiers du 15/06/2024, on peut
   faire ceci (le `--` entre `-i` et `-@` est requis):
   ~~~sh
-  ./inst -i -- -@ 20240504
+  ./inst -i -- -@ 20240615
   ~~~
 
 La méthode ci-dessus réimporte TOUS les dumps et TOUS les addons, ce qui permet
@@ -149,13 +149,15 @@ permet de vérifier que les fichiers de documentation proposés sont bien ceux
 attendus.
 
 Pour faciliter le développement, l'option -I de `inst` permet de synchroniser le
-contenu du répertoire d'addon puis lancer l'import de l'addon spécifié, e.g:
+contenu du répertoire local d'addon puis de lancer son import, e.g:
+
 ~~~sh
 ./inst -I ~/path/to/dreaddon-documentation
 
 # la commande ci-dessus est grossièrement équivalente à:
 rsync -rlp --delete ~/path/to/dreaddon-documentation/ var/prod-dredata/addons/dreaddon-documentation/
-./inst -i -- --no-updateao --runao -o dreaddon-documentation
+./inst -i -- --no-updateao --runao -o dreaddon-documentation -@ latest
+less var/prod-dredata/import.log
 ~~~
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

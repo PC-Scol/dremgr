@@ -65,6 +65,7 @@ function add_schema() {
     fi
 }
 
+clean_import_log=
 step_dl=
 Timestamp=
 ForceDlSums=
@@ -79,6 +80,8 @@ step_cleanup=
 Clean=1
 args=(
     "télécharger les dumps"
+    --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
+    --keep-import-log clean_import_log=no "++Interdire le vidage du fichier import.log avant de démarrer"
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
@@ -108,6 +111,11 @@ fi
 [ -n "$step_import_bin" -o -n "$step_import_json" ] && step_import=1
 [ -n "$step_runao" ] && step_checkao=1
 
+case "$clean_import_log" in
+yes) keep_import_log=;;
+no) keep_import_log=1;;
+esac
+
 quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
 ================================================================================"
 qstep "Début de l'import le $(date +"%F %T")"
@@ -118,11 +126,18 @@ if [ -z "$DRE_PREFIX" ]; then
     DRE_PREFIX="${DRE_PREFIX%/*}"
     DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
 fi
+
+cd "$DLDIR"
+if [ "$Timestamp" == latest ]; then
+    # prendre le dernier fichier checksums. utile pour --runao
+    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
+    Timestamp="${latest#checksums-}"
+    enote "Autosélection de -@ $Timestamp"
+fi
 [ -n "$Timestamp" ] || setx Timestamp=date +%Y%m%d
 sums="checksums-$Timestamp"
 version="DRE_VERSION_$Timestamp"
 
-cd "$DLDIR"
 if [ -n "$step_dl" ]; then
     if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
         qstep "dl $sums"

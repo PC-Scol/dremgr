@@ -59,13 +59,16 @@ function import_dreaddon() {
     [ -d "$srcdir" ] || die "$srcdir: répertoire d'addon introuvable"
 
     local name="$(basename "$srcdir")"
+    local importlog="$DREMGR/var/${Profile}-dredata/import.log"
     local destdir="$DREMGR/var/${Profile}-dredata/addons/$name"
 
     estep "Copie des fichiers vers ${destdir#$DREMGR/}"
     [ "$(id -u)" == 0 ] && sudo= || sudo=sudo
     $sudo rsync -rlp --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
 
-    import_dumps --no-updateao --runao -o "$name"
+    import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" "$@"
+
+    less -EF "$importlog"
 }
 
 function psql_prompt() {
