@@ -19,6 +19,7 @@ use nur\v\bs3\vc\CTable;
 use nur\v\http;
 use nur\v\js;
 use nur\v\page;
+use nur\v\plugins\showmorePlugin;
 use nur\v\v;
 use nur\v\vo;
 
