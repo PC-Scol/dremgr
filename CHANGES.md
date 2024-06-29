@@ -1,3 +1,7 @@
+## Version 0.16.1 du 29/06/2024-08:07
+
+* `e9b44b5` maj documentation
+
 ## Version 0.16.0 du 29/06/2024-07:23
 
 * `d099bc6` Simplifier la page d'accueil de l'application web
