@@ -9,16 +9,17 @@ use nur\m\pgsql\PgsqlConn;
 use nur\md;
 use nur\path;
 use nur\shutils;
-use nur\v\bs3\Bs3IconManager;
 use nur\v\bs3\vc\CListGroup;
 use nur\v\bs3\vc\CVerticalTable;
 use nur\v\icon;
 use nur\v\page;
+use nur\v\plugins\showmorePlugin;
 use nur\v\v;
 use nur\v\vo;
 
 class IndexPage extends ANavigablePage {
   const TITLE = "DRE - Données PEGASE";
+  const PLUGINS = [showmorePlugin::class];
 
   const FE_VARS = [
     "host" => "FE_HOST",
@@ -113,6 +114,27 @@ class IndexPage extends ANavigablePage {
       ]);
     }
 
+    //vo::h1("Accès en ligne");
+    vo::p([
+      "Vous pouvez vous connecter à la base DRE avec un outil en ligne",
+    ]);
+    new CListGroup([
+      "pgAdmin" => ["/pgadmin/", "Un outil simple et ergonomique"],
+      "Adminer" => ["/adminer/", "Une alternative préférée par certains informaticiens"],
+    ], [
+      "container" => "div",
+      "map_func" => function ($item, $title) {
+        [$url, $desc] = $item;
+        return [
+          "href" => $url,
+          $title,
+          " -- ",
+          $desc,
+        ];
+      },
+      "autoprint" => true,
+    ]);
+
     vo::h1("Documentation");
     $docs = $this->docs;
     if ($docs) {
@@ -149,9 +171,14 @@ class IndexPage extends ANavigablePage {
       ]);
     }
 
-    vo::h1("Accès à la base de données");
+    $sm = new showmorePlugin();
+    $sm->printStartc();
+    vo::h2("Connexion postgresql");
+    $sm->printInvite("Afficher les informations de connexion à postgresql...");
+
+    $sm->printStartp();
     vo::p([
-      "Vous pouvez vous connecter directement à la base de données avec les informations suivantes",
+      "Pour vous connecter directement à la base de données, utilisez les informations suivantes",
     ]);
     $conninfo = $this->conninfo;
     new CVerticalTable([[
@@ -194,26 +221,6 @@ class IndexPage extends ANavigablePage {
         $connstring,
       ]),
     ]);
-
-    vo::h2("Accès en ligne");
-    vo::p([
-      "Vous avez aussi la possibilité de vous connecter avec un outil en ligne",
-    ]);
-    new CListGroup([
-      "pgAdmin" => ["/pgadmin/", "Un outil simple et ergonomique"],
-      "Adminer" => ["/adminer/", "Une alternative préférée par certains informaticiens"],
-    ], [
-      "container" => "div",
-      "map_func" => function ($item, $title) {
-        [$url, $desc] = $item;
-        return [
-          "href" => $url,
-          $title,
-          " -- ",
-          $desc,
-        ];
-      },
-      "autoprint" => true,
-    ]);
+    $sm->printEnd();
   }
 }

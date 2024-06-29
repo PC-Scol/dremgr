@@ -53,6 +53,24 @@ function import_dumps() {
     fi
 }
 
+function import_dreaddon() {
+    local srcdir="$1"; shift
+    [ -n "$srcdir" ] || die "Vous devez spécifier le répertoire source de l'addon à importer"
+    [ -d "$srcdir" ] || die "$srcdir: répertoire d'addon introuvable"
+
+    local name="$(basename "$srcdir")"
+    local importlog="$DREMGR/var/${Profile}-dredata/import.log"
+    local destdir="$DREMGR/var/${Profile}-dredata/addons/$name"
+
+    estep "Copie des fichiers vers ${destdir#$DREMGR/}"
+    [ "$(id -u)" == 0 ] && sudo= || sudo=sudo
+    $sudo rsync -rlp --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
+
+    import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" "$@"
+
+    less -EF "$importlog"
+}
+
 function psql_prompt() {
     local composefile="$DREMGR/inst-docker-compose.yml"
     [ -f "$composefile" ] || return 0
@@ -85,7 +103,12 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
-    -i,--import action=import "Lancer l'import maintenant, au lieu d'attendre la planification"
+    -i,--import-dumps action=import_dumps "Lancer l'import maintenant, au lieu d'attendre la planification"
+    -I,--import-dreaddon action=import_dreaddon "++Importer un addon en mode développement:
+- le contenu du répertoire de l'addon est synchronisé vers le répertoire correspondant du conteneur
+- puis l'addon est importé comme si cette commande avait été lancée avec les options suivantes:
+    -i -- --no-updateao --runao -o DREADDON \"\$@\"
+  cf README.md pour les détails"
     -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
 )
 parse_args "$@"; set -- "${args[@]}"
@@ -135,7 +158,8 @@ start) start_dre "$@";;
 stop) stop_dre "$@";;
 refresh) refresh_dre "$@";;
 restart) restart_dre "$@";;
-import) import_dumps "$@";;
+import_dumps) import_dumps "$@";;
+import_dreaddon) import_dreaddon "$@";;
 psql) psql_prompt "$@";;
 *) die "$action: action non implémentée";;
 esac

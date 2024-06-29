@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "cbe26be1dcb5fc7de562bb03d75702412e32119b"
+                "reference": "13de7abd4015ec0caee042cfd5aeb7418145928f"
             },
             "require": {
                 "php": ">=7.4"
@@ -26,14 +26,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "nulib\\": "php/src_base",
-                    "nulib\\ref\\": "php/src_ref",
-                    "nulib\\php\\": "php/src_php",
-                    "nulib\\values\\": "php/src_values",
-                    "nulib\\output\\": "php/src_output",
-                    "nulib\\os\\": "php/src_os",
-                    "nulib\\file\\": "php/src_file",
-                    "nulib\\web\\": "php/src_web"
+                    "nulib\\": "php/src"
                 }
             },
             "autoload-dev": {
@@ -48,7 +41,7 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2024-04-26T16:49:09+00:00"
+            "time": "2024-06-09T08:30:03+00:00"
         },
         {
             "name": "nur/sery",
@@ -56,7 +49,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-sery.git",
-                "reference": "54ce0ee270153d143e2804eb7a604fa374da0ad2"
+                "reference": "98fcd799c74c31d1f330f1f6e58c5da71ab44553"
             },
             "require": {
                 "php": ">=7.4",
@@ -89,9 +82,12 @@
                 "ext-sqlite3": "*",
                 "ext-tidy": "*",
                 "ext-zip": "*",
-                "nulib/tests": "7.4"
+                "lib/spout": "dev-master",
+                "nulib/tests": "7.4",
+                "phpoffice/phpspreadsheet": "^1.0"
             },
             "bin": [
+                "lib/_launch.php",
                 "nur_bin/compctl.php",
                 "nur_bin/compdep.php",
                 "nur_bin/cachectl.php",
@@ -100,7 +96,9 @@
                 "nur_bin/fsvdiff.php",
                 "nur_bin/ldap-delete.php",
                 "nur_bin/ldap-get-infos.php",
-                "nur_bin/ldap-search.php"
+                "nur_bin/ldap-search.php",
+                "nur_bin/sqlite-storage.php",
+                "nur_bin/mysql-storage.php"
             ],
             "type": "library",
             "autoload": {
@@ -130,7 +128,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2024-05-01T06:00:45+00:00"
+            "time": "2024-06-16T04:02:18+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -280,16 +278,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v5.4.39",
+            "version": "v5.4.40",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "bc780e16879000f77a1022163c052f5323b5e640"
+                "reference": "81cad0ceab3d61fe14fe941ff18a230ac9c80f83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/bc780e16879000f77a1022163c052f5323b5e640",
-                "reference": "bc780e16879000f77a1022163c052f5323b5e640",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/81cad0ceab3d61fe14fe941ff18a230ac9c80f83",
+                "reference": "81cad0ceab3d61fe14fe941ff18a230ac9c80f83",
                 "shasum": ""
             },
             "require": {
@@ -335,7 +333,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v5.4.39"
+                "source": "https://github.com/symfony/yaml/tree/v5.4.40"
             },
             "funding": [
                 {
@@ -351,7 +349,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-04-23T11:57:27+00:00"
+            "time": "2024-05-31T14:33:22+00:00"
         }
     ],
     "packages-dev": [],

@@ -1,3 +1,17 @@
+## Version 0.16.0 du 29/06/2024-07:23
+
+* `d099bc6` Simplifier la page d'accueil de l'application web
+* `f8164fe` afficher les logs après l'import
+* `959ba64` Mettre à jour et réorganiser la documentation
+* `eca3f08` cosmetic
+* `718618a` meilleur support du développement d'addons
+* `9f1fbf9` maj version pgadmin
+* `62d776f` corriger le grant pour les sequences: reader doit rester en lecture seule
+* `13e0676` rajouter aussi l'accès aux séquences par défaut
+* `8896085` identifier clairement les schéma importés depuis mongoDB
+* `cfc8b1f` bug addons
+* `3c1d27e` support importation collections json
+
 ## Version 0.15.1 du 23/05/2024-07:10
 
 * `246c51b` maj doc

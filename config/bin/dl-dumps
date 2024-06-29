@@ -27,42 +27,69 @@ function rundir() {
         *.sh)
             if [ -x "$file" ]; then
                 estep "exec $filename"
-                "$file" || die
+                quietc "$file" || die
             fi
             ;;
         esac
     done
 }
 
-DROP_SCHEMAS=()
-IMPORT_SCHEMAS=()
+DL_FILES=()
+DROP_SCHEMA_SCHEMAS=()
+IMPORT_SCHEMA_SCHEMAS=()
+DROP_MONGO_SCHEMAS=()
+IMPORT_MONGO_SCHEMAS=()
+IMPORT_MONGO_COLLECTIONS=()
 function add_schema() {
     local sum="$1" file="$2" schema
-    schema="$file"
-    schema="${schema%.bin}"
-    schema="${schema##*-$Timestamp-}"
-    DROP_SCHEMAS+=("$schema")
-    IMPORT_SCHEMAS+=("$schema")
+    DL_FILES+=("$file")
+    if [[ "$file" == *.bin ]]; then
+        schema="$file"
+        schema="${schema%.bin}"
+        schema="${schema##*-$Timestamp-}"
+        DROP_SCHEMA_SCHEMAS+=("schema_$schema")
+        IMPORT_SCHEMA_SCHEMAS+=("$schema")
+    elif [[ "$file" == *.json ]]; then
+        schema="$file"
+        schema="${schema%.json}"
+        schema="${schema##*-$Timestamp-}"
+        collection="${schema#*-}"
+        schema="${schema%%-*}"
+        if ! array_contains IMPORT_MONGO_SCHEMAS "$schema"; then
+            DROP_MONGO_SCHEMAS+=("mongo_$schema")
+            IMPORT_MONGO_SCHEMAS+=("$schema")
+        fi
+        IMPORT_MONGO_COLLECTIONS+=("$schema:$collection")
+    else
+        ewarn "$file: format non reconnu. le fichier sera ignoré"
+    fi
 }
 
+clean_import_log=
 step_dl=
 Timestamp=
 ForceDlSums=
 step_checkao=
 UpdateAo=1
 step_import=
+step_import_bin=
+step_import_json=
 step_runao=
 SelectAo=
 step_cleanup=
 Clean=1
 args=(
     "télécharger les dumps"
+    --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
+    --keep-import-log clean_import_log=no "++Interdire le vidage du fichier import.log avant de démarrer"
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     --checkao step_checkao=1 "++Vérifier les addons"
     -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
-    --import step_import=1 "++Importer les dumps"
+    --import step_import=1 "++Importer tous les dumps"
+    --import-bin step_import_bin=1 "++Importer seulement les dumps .bin et le fichier DRE_VERSION"
+    --import-json step_import_json=1 "++Importer seulement les dumps .json"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
     --cleanup step_cleanup=1 "++Supprimer les fichiers de dumps obsolètes"
@@ -71,15 +98,23 @@ args=(
 parse_args "$@"; set -- "${args[@]}"
 
 keep_import_log=1
-if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import" -a -z "$step_runao" -a -z "$step_cleanup" ]; then
+[ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
+if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_cleanup" ]; then
     keep_import_log=
     step_dl=1
     step_checkao=1
-    step_import=1
+    step_import_bin=1
+    step_import_json=1
     step_runao=1
     step_cleanup=1
 fi
+[ -n "$step_import_bin" -o -n "$step_import_json" ] && step_import=1
 [ -n "$step_runao" ] && step_checkao=1
+
+case "$clean_import_log" in
+yes) keep_import_log=;;
+no) keep_import_log=1;;
+esac
 
 quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
 ================================================================================"
@@ -91,11 +126,18 @@ if [ -z "$DRE_PREFIX" ]; then
     DRE_PREFIX="${DRE_PREFIX%/*}"
     DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
 fi
+
+cd "$DLDIR"
+if [ "$Timestamp" == latest ]; then
+    # prendre le dernier fichier checksums. utile pour --runao
+    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
+    Timestamp="${latest#checksums-}"
+    enote "Autosélection de -@ $Timestamp"
+fi
 [ -n "$Timestamp" ] || setx Timestamp=date +%Y%m%d
 sums="checksums-$Timestamp"
 version="DRE_VERSION_$Timestamp"
 
-cd "$DLDIR"
 if [ -n "$step_dl" ]; then
     if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
         qstep "dl $sums"
@@ -107,8 +149,7 @@ if [ -n "$step_dl" ]; then
         qstep "dl $version"
         dl "$version" || die
     fi
-    for schema in "${IMPORT_SCHEMAS[@]}"; do
-        file="${DRE_PREFIX}-$Timestamp-$schema.bin"
+    for file in "${DL_FILES[@]}"; do
         if [ ! -f "$file" ]; then
             qstep "dl $file"
             dl "$file" || die
@@ -218,7 +259,7 @@ if [ -n "$step_checkao" ]; then
             fi
         done
 
-        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
+        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMA_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
         if [ "$vxx" == all ]; then
             vxx=
         else
@@ -247,16 +288,21 @@ if [ -n "$step_checkao" ]; then
 fi
 
 if [ -n "$step_import" ]; then
-    qstep "Suppression des anciens schémas"
+    etitle "Suppression des anciens schémas"
     schema_list=
-    for schema in "${DROP_SCHEMAS[@]}"; do
-        schema_list="${schema_list}${schema_list:+, }schema_${schema}"
+    for schema in "${DROP_SCHEMA_SCHEMAS[@]}" "${DROP_MONGO_SCHEMAS[@]}"; do
+        qstep "$schema"
+        schema_list="${schema_list}${schema_list:+, }${schema}"
     done
     runsql "drop schema if exists $schema_list cascade;" || die
+    eend
+fi
 
-    etitle "Importation des schémas"
-    for schema in "${IMPORT_SCHEMAS[@]}"; do
+if [ -n "$step_import_bin" ]; then
+    etitle "Importation des schémas (pgsql)"
+    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
         file="${DRE_PREFIX}-$Timestamp-$schema.bin"
+        schema="schema_$schema"
 
         qstep "$schema: drop extensions"
         runsql "drop extension if exists unaccent, pg_trgm cascade;" || die
@@ -264,10 +310,48 @@ if [ -n "$step_import" ]; then
         qstep "$schema: import $file"
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
         runsql "\
-grant usage on schema schema_$schema to reader;
-grant select on all tables in schema schema_$schema to reader;
--- alter table if exists __provisionning_changelog_lock set schema schema_$schema;
--- alter table if exists __provisionning_changelog set schema schema_$schema;
+grant usage on schema $schema to reader;
+grant select on all tables in schema $schema to reader;
+grant select on all sequences in schema $schema to reader;
+" || die
+    done
+    eend
+fi
+
+if [ -n "$step_import_json" ]; then
+    etitle "Création des schémas (json)"
+    for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
+        schema="mongo_$schema"
+
+        qstep "$schema"
+        runsql "\
+create schema if not exists $schema;
+" || die
+    done
+    eend
+
+    etitle "Importation des collections (json)"
+    for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
+        splitpair "$schema_collection" schema collection
+        file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
+        schema="mongo_$schema"
+
+        qstep "$schema: $collection: import $file"
+        runsql "
+create table if not exists $schema.$collection (source_json jsonb);
+" || die
+        <"$file" runsql "
+copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
+" || die
+    done
+    for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
+        schema="mongo_$schema"
+
+        qstep "$schema: maj authnz"
+        runsql "\
+grant usage on schema $schema to reader;
+grant select on all tables in schema $schema to reader;
+grant select on all sequences in schema $schema to reader;
 " || die
     done
     eend
@@ -293,29 +377,32 @@ if [ -n "$step_runao" ]; then
             # Les scripts de préparation peuvent créer les schémas nécessaires ou
             # faire toute autre opération utile
             rundir "$aodir/prepare"
-            # S'assurer tout de même que les schémas mentionnés existent
-            for schema in "${SCHEMAS[@]}"; do
-                runsql "create schema if not exists $schema;" || die
-            done
         fi
+        # S'assurer tout de même que les schémas mentionnés existent
+        for schema in "${SCHEMAS[@]}"; do
+            qstep "$schema: create schema"
+            runsql "create schema if not exists $schema;" || die
+        done
+
         have_vxx=
         if [ -n "$vxx" -a -d "$aodir/$vxx" ]; then
             have_vxx=1
             rundir "$aodir/$vxx"
         fi
+
         if [ -d "$aodir/updates" ]; then
             [ -z "$have_vxx" ] && estep "Mises à jour"
-            # Donner un accès complet en lecture au compte reader
-            for schema in "${SCHEMAS[@]}"; do
-                runsql "\
-grant usage on schema $schema to reader;
-grant select on all tables in schema $schema to reader;
-" || die
-            done
-            # Les scripts de finalisation peuvent influer sur ce comportement par
-            # défaut si nécessaire
             rundir "$aodir/updates"
         fi
+        # Donner un accès complet en lecture au compte reader
+        for schema in "${SCHEMAS[@]}"; do
+            qstep "$schema: maj authnz"
+            runsql "\
+grant usage on schema $schema to reader;
+grant select on all tables in schema $schema to reader;
+grant select on all sequences in schema $schema to reader;
+" || die
+        done
 
         if [ -d "$aodir/documentation" ]; then
             estep "Documentation générale"
@@ -337,7 +424,7 @@ grant select on all tables in schema $schema to reader;
     eend
 fi
 
-if [ -n "$step_import" ]; then
+if [ -n "$step_import_bin" ]; then
     estep "Maj version"
     runsql "\
 create table if not exists version (majeure int, mineure int, patch int, prerelease varchar(8), timestamp varchar(8));

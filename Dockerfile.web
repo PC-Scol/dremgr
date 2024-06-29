@@ -13,5 +13,7 @@ RUN /g/build
 COPY --from=php /g/ /g/
 RUN /g/build -a @apache-php-cas php-utils
 
+#RUN /g/php-exts/enable-xdebug
+
 EXPOSE 80
 ENTRYPOINT ["/g/entrypoint"]

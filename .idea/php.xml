@@ -20,6 +20,15 @@
       <path value="$PROJECT_DIR$/sbin/vendor/composer" />
     </include_path>
   </component>
+  <component name="PhpProjectServersManager">
+    <servers>
+      <server host="localhost" id="10edb795-e01d-423d-b060-94c3815cc355" name="localhost" port="7081" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/app" />
+        </path_mappings>
+      </server>
+    </servers>
+  </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4" />
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
