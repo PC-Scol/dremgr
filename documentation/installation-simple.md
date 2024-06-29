@@ -19,8 +19,9 @@ Une fois les images construites, il faut préparer le démarrage de l'instance D
 ~~~
 La *première* invocation crée le fichier d'exemple `prod_profile.env`
 
-Il FAUT consulter ce fichier et l'éditer AVANT de continuer. Notamment, les
-variables suivantes doivent être configurées le cas échéant:
+Il FAUT consulter ce fichier et l'éditer AVANT de continuer. *Au minimum*,
+modifiez les variables dont la valeur est `XXX_a_modifier`. Les variables
+suivantes peuvent être configurées le cas échéant:
 
 `DRE_URL`
 `DRE_USER`
@@ -39,10 +40,13 @@ variables suivantes doivent être configurées le cas échéant:
 
 `ADDON_URLS`
 : Liste d'URLs de dépôts git contenant des "addons" de dremgr. Par défaut, les
-  deux URLs suivants sont listés:
-  * `https://github.com/PC-Scol/dreaddon-documentation.git`
+  trois URLs de github suivants sont listés:
+  * `PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
-  * `https://github.com/PC-Scol/dreaddon-pilotage.git`
+  * `PC-Scol/dreaddon-ins_piste.git`
+    schéma "ins_piste" développé par l'UPHF, construit à partir des exports des
+    bases MongoDB
+  * `PC-Scol/dreaddon-pilotage.git`
     schéma "pilotage" développé par l'UPHF, base de l'univers BO livré aussi par
     l'UPHF
 

@@ -30,7 +30,8 @@ profils, un ensemble de variable doit être défini plus bas dans le fichier. On
 peut rajouter autant de profils que nécessaire, mais il faut définir les
 variables avec le préfixe correspondant en prenant exemple sur la section "test"
 
-Notamment, les variables suivantes doivent être configurées le cas échéant:
+*Au minimum*, modifiez les variables dont la valeur est `XXX_a_modifier`. Les
+variables suivantes peuvent être configurées le cas échéant:
 
 `<profil>_DRE_URL`
 `<profil>_DRE_USER`
@@ -52,6 +53,9 @@ Notamment, les variables suivantes doivent être configurées le cas échéant:
   deux URLs suivants sont listés:
   * `PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
+  * `PC-Scol/dreaddon-ins_piste.git`
+    schéma "ins_piste" développé par l'UPHF, construit à partir des exports des
+    bases MongoDB
   * `PC-Scol/dreaddon-pilotage.git`
     schéma "pilotage" développé par l'UPHF, base de l'univers BO livré aussi par
     l'UPHF
@@ -244,7 +248,5 @@ anciennes vers une version plus récente sont supportées, mais les mises à jou
 
 En définitive, basculer sur la branche `develop` ne devrait probablement pas
 être effectué en production.
-
-
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

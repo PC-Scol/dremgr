@@ -234,9 +234,9 @@ LBNET=
 LBHTTP=7081
 LBHTTPS=
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=XXX
+POSTGRES_PASSWORD=XXX_a_modifier
 FE_USER=reader
-FE_PASSWORD=YYY
+FE_PASSWORD=XXX_a_modifier
 ~~~
 
 Les valeurs partagées sont ensuite réutilisées ailleurs dans la configuration.
@@ -291,13 +291,13 @@ précisions suivantes:
   définir des noms différents pour les comptes, e.g
   ~~~sh
   prod_POSTGRES_USER=prod_admin
-  prod_POSTGRES_PASSWORD=XXX
+  prod_POSTGRES_PASSWORD=XXX_a_modifier
   prod_FE_USER=prod_reader
-  prod_FE_PASSWORD=YYY
+  prod_FE_PASSWORD=XXX_a_modifier
   test_POSTGRES_USER=test_admin
-  test_POSTGRES_PASSWORD=ZZZ
+  test_POSTGRES_PASSWORD=XXX_a_modifier
   test_FE_USER=test_reader
-  test_FE_PASSWORD=TTT
+  test_FE_PASSWORD=XXX_a_modifier
   ~~~
 
 **Paramètres privés non documentés**
