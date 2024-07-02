@@ -1,7 +1,7 @@
 # -*- coding: utf-8 mode: dockerfile -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 ARG REGISTRY=pubdocker.univ-reunion.fr
-FROM $REGISTRY/src/base as base
-FROM $REGISTRY/src/postgres as postgres
+FROM $REGISTRY/src/base AS base
+FROM $REGISTRY/src/postgres AS postgres
 
 FROM postgres:15-bookworm
 

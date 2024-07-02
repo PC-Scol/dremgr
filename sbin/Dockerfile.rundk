@@ -2,11 +2,11 @@
 ARG NDIST=12
 ARG REGISTRY=pubdocker.univ-reunion.fr
 
-FROM $REGISTRY/src/base as base
-FROM $REGISTRY/src/php as php
+FROM $REGISTRY/src/base AS base
+FROM $REGISTRY/src/php AS php
 
 ################################################################################
-FROM debian:${NDIST}-slim as builder
+FROM debian:${NDIST}-slim AS builder
 COPY --from=base /g/ /g/
 COPY --from=base /src/ /src/
 
