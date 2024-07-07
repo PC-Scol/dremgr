@@ -4,6 +4,7 @@ namespace app\vp;
 use app\app\ANavigablePage;
 use app\q\tools;
 use Exception;
+use nur\b\date\Hour;
 use nur\json;
 use nur\m\pgsql\PgsqlConn;
 use nur\md;
@@ -75,6 +76,19 @@ class IndexPage extends ANavigablePage {
 
     $this->conninfo = tools::get_profile_vars(self::FE_VARS, $profile);
 
+    $importDisabled = boolval(tools::get_profile_var("CRON_DISABLE", $profile));
+    $importPlan = trim(tools::get_profile_var("CRON_PLAN", $profile) ?? "");
+    $t = preg_split('/\s+/', $importPlan);
+    if (count($t) == 5 && is_numeric($t[0]) && is_numeric($t[1]) &&
+      $t[2] === "*" && $t[3] === "*" && $t[4] === "*") {
+      $importHour = new Hour([$t[1], $t[0], 0]);
+    } else {
+      $importHour = null;
+    }
+    $this->importDisabled = $importDisabled;
+    $this->importPlan = $importPlan;
+    $this->importHour = $importHour;
+
     $inst = tools::get_profile_vars(self::INST_VARS, $profile);
     $version = ["valid" => false];
     try {
@@ -91,6 +105,8 @@ class IndexPage extends ANavigablePage {
 
   protected $conninfo;
 
+  protected $importDisabled, $importPlan, $importHour;
+
   protected $version;
 
   protected $docdir, $docs;
@@ -98,16 +114,31 @@ class IndexPage extends ANavigablePage {
   function print(): void {
     $this->printProfileTabs();
 
+    $importDisabled = $this->importDisabled;
+    $importPlan = $this->importPlan;
+    $importHour = $this->importHour;
+    if ($importDisabled) {
+      $importDesc = "L'import journalier de la base DRE est <b>désactivé</b>";
+    } elseif ($importHour !== null) {
+      $importDesc = "Selon la planification configurée, la base DRE doit être importée tous les jours à <code>$importHour</code>";
+    } else {
+      $importDesc = "La base DRE doit être importée tous les jours selon la planification suivante: <code>$importPlan</code>";
+    }
     $version = $this->version;
     if ($version["valid"]) {
       vo::p([
         "class" => "alert alert-info",
-        "La base DRE a été importée le ",
+        $importDesc,
+        "<br/>La dernière importation date du ",
         v::b($version["date"]),
         " et sa version est ",
         v::b($version["version"]),
       ]);
     } else {
+      vo::p([
+        "class" => "alert alert-info",
+        $importDesc,
+      ]);
       vo::p([
         "class" => "alert alert-warning",
         "Impossible de déterminer la version actuelle de la base de données. Elle n'a peut-être pas encore été chargée",
