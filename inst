@@ -124,7 +124,7 @@ if [ "$Profile" == ALL ]; then
     case "$action" in
     none) args+=(--check-only);;
     auto) ;;
-    *) args+=("--$action");;
+    *) args+=("--${action//_/-}");;
     esac
 
     read -a profiles <<<"${APP_PROFILES//

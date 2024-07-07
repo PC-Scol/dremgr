@@ -90,7 +90,7 @@ informations à l'utilisateur.
 `CRON_PLAN`
 : Planification cron pour le script d'import
 
-  Les fichiers sont générés à 4h GMT, soit 5h heure de Paris. on planifie à 5h45
+  Les fichiers sont générés à 4h GMT, soit 5h heure de Paris. on planifie à 5h30
   par défaut pour laisser le temps à l'export de se terminer
 
 `CRON_DISABLE`

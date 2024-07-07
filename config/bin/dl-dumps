@@ -8,8 +8,19 @@ source /g/init.env || exit 1
 export PGDATABASE=dre PGUSER="$POSTGRES_USER"
 unset PGHOST PGPORT
 
+DL_MAX=5
 function dl() {
-    curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "$DRE_URL/$1"
+    local r=22 count=0
+    while [ $r -eq 22 ]; do
+        curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "$DRE_URL/$1"; r=$?
+        if [ $r -eq 22 ]; then
+            let count=count+1
+            [ $count -gt $DL_MAX ] && break
+            sleep 30
+            qstep "nouvelle tentative $count/$DL_MAX..."
+        fi
+    done
+    return $r
 }
 function runsql() {
     quietc psql -c "$@"

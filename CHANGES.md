@@ -1,3 +1,8 @@
+## Version 0.16.3 du 07/07/2024-10:17
+
+* `c6d6677` réessayer si le fichier n'est pas trouvé
+* `342e47f` bug
+
 ## Version 0.16.2 du 07/07/2024-07:34
 
 * `bdb4a6f` afficher l'heure d'import configuré

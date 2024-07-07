@@ -26,7 +26,7 @@ https://compte:motdepasse@gitprive.univ.fr/addonprive.git
 ~~~
 
 Cet addon sera mis à jour depuis le dépôt et importé chaque jour à l'heure
-configurée, c'est à dire 5h45 par défaut.
+configurée, c'est à dire 5h30 par défaut.
 
 Si une ligne commence par `#`, elle est ignorée, ce qui permet de rajouter des
 commentaire dans la liste des addons, e.g:
