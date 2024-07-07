@@ -17,6 +17,17 @@ class tools {
     return $timestamp;
   }
 
+  static function get_profile_var(string $var, string $profile): ?string {
+    $pvar = "${profile}_$var";
+    $avar = "__ALL__$var";
+    if (($value = getenv($pvar)) === false) {
+      if (($value = getenv($avar)) === false) {
+        $value = getenv($var);
+      }
+    }
+    return $value !== false? $value: null;
+  }
+
   static function get_profile_vars(array $vars, string $profile): array {
     $pvalues = [];
     foreach ($vars as $key => $var) {
@@ -27,7 +38,7 @@ class tools {
           $value = getenv($var);
         }
       }
-      $pvalues[$key] = $value;
+      $pvalues[$key] = $value !== false? $value: null;
     }
     return $pvalues;
   }

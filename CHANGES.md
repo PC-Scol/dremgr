@@ -1,3 +1,8 @@
+## Version 0.16.2 du 07/07/2024-07:34
+
+* `bdb4a6f` afficher l'heure d'import configuré
+* `a743930` cosmetic
+
 ## Version 0.16.1 du 29/06/2024-08:07
 
 * `e9b44b5` maj documentation
