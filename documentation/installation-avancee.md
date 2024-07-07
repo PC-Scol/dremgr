@@ -170,7 +170,7 @@ forcer le téléchargement et l'importation:
 ./inst -Ai
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
-définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h45
+définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h30
 
 ## Modification du logo
 
