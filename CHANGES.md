@@ -1,3 +1,7 @@
+## Version 0.17.1 du 15/07/2024-20:06
+
+* `ca3563a` créer un fichier RELEASE-NOTES.md pour les notes de mise à jour
+
 ## Version 0.17.0 du 15/07/2024-17:14
 
 * `4354766` renommer front.env en dremgr.env
