@@ -195,16 +195,16 @@ FE_DBNAME="$DBNAME"
 
 ## Paramètres du mode avancé
 
-Dans le mode avancé, le fichier `front.env` contient le paramètrage des
+Dans le mode avancé, le fichier `dremgr.env` contient le paramètrage des
 profils. Ce même fichier peut regrouper les configurations de tous les profils,
 et ainsi les fichiers de profils peuvent être des liens symboliques vers
-front.env
+`dremgr.env`
 
-Dans l'exemple suivant, `front.env` contient la configuration pour les profils
+Dans l'exemple suivant, `dremgr.env` contient la configuration pour les profils
 `prod` et `test`:
 ~~~sh
-ln -s front.env prod_profile.env
-ln -s front.env test_profile.env
+ln -s dremgr.env prod_profile.env
+ln -s dremgr.env test_profile.env
 ~~~
 
 **Paramètres courants**

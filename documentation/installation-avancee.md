@@ -13,12 +13,12 @@ instructions pour ne pas perdre la configuration courante
 ## Installer dans le mode avancé
 
 Le mode avancé permet de gérer plusieurs instances. Chaque instance correspond à
-un profil: prod, test, etc... Le fichier `front.env` définit l'ensemble des
+un profil: prod, test, etc... Le fichier `dremgr.env` définit l'ensemble des
 profils qui sont pilotés par l'installation.
 
 Commencer par copier le fichier d'exemple
 ~~~sh
-cp documentation/front.env.sample front.env
+cp documentation/dremgr.env.sample dremgr.env
 ~~~
 
 *Si vous avez déjà installé dremgr dans le mode simple*, reportez les paramètres
@@ -69,18 +69,18 @@ Il y a d'autres paramètres configurables.
 [Consulter la liste complète des paramètres](parametres.md)
 
 Ensuite, il faut définir autant de fichiers `<profil>_profile.env` que de
-profils mentionnés dans le fichier `front.env`. Chaque fichier pourrait être
-indépendant, mais il est plus simple de tout définir dans le fichier `front.env`
+profils mentionnés dans le fichier `dremgr.env`. Chaque fichier pourrait être
+indépendant, mais il est plus simple de tout définir dans le fichier `dremgr.env`
 et de faire des liens symboliques.
 
 En l'occurrence, comme les profils prod et test sont définis, on fait les liens
 symboliques correspondants. ATTENTION! Si le mode simple avait été utilisé
 auparavant, le fichier `prod_profile.env` précédent est perdu au profit du
 nouveau lien symbolique. Assurez-vous d'avoir reportés les paramètres dans
-`front.env` avant de lancer ces commandes
+`dremgr.env` avant de lancer ces commandes
 ~~~sh
-ln -sf front.env prod_profile.env
-ln -sf front.env test_profile.env
+ln -sf dremgr.env prod_profile.env
+ln -sf dremgr.env test_profile.env
 ~~~
 
 Créer le réseau mentionné dans la configuration (variable `DBNET`)
@@ -136,7 +136,7 @@ Pour la connexion à l'application web, éditez les fichiers suivants:
   attributs nécessaires.
 
 Par défaut, le service web sera accessible sur <http://localhost:7081>. Pour
-changer cette valeur, éditer le fichier `front.env` et configurer les variables
+changer cette valeur, éditer le fichier `dremgr.env` et configurer les variables
 `LBHOST` et `LBHTTP`
 
 Pour configurer l'accès en HTTPS, envoyer un message sur le forum pour avoir la

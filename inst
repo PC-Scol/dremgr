@@ -68,7 +68,7 @@ function import_dreaddon() {
 
     import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" "$@"
 
-    less -EF "$importlog"
+    less -eF "$importlog"
 }
 
 function psql_prompt() {
@@ -95,7 +95,7 @@ args=(
     -g:,--profile:PROFILE Profile= "\
 ++Spécifier le profil. Un fichier de configuration PROFILE_profile.env doit exister.
 Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
-    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans front.env"
+    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans dremgr.env"
     -P,--prod Profile=prod "++alias pour --profile prod"
     -T,--test Profile=test "++alias pour --profile test"
     -s,--start action=start "Démarrer DRE"
@@ -114,8 +114,8 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
 parse_args "$@"; set -- "${args[@]}"
 
 if [ "$Profile" == ALL ]; then
-    [ -f "$DREMGR/front.env" ] || die "front.env: fichier introuvable"
-    eval "$(source "$DREMGR/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+    [ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
+    eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
     [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(

@@ -99,7 +99,7 @@ OPTIONS
         Spécifier le profil. Un fichier de configuration PROFILE_profile.env doit exister.
         Si cette option n'est pas spécifiée, le profil sélectionné par défaut est prod
     -A, --all-profiles
-        Faire l'opération pour tous les profils définis dans front.env
+        Faire l'opération pour tous les profils définis dans dremgr.env
     -P, --prod
         alias pour --profile prod
     -T, --test
