@@ -1,3 +1,7 @@
+## Version 0.17.0 du 15/07/2024-17:14
+
+* `4354766` renommer front.env en dremgr.env
+
 ## Version 0.16.3 du 07/07/2024-10:17
 
 * `c6d6677` réessayer si le fichier n'est pas trouvé
