@@ -71,8 +71,8 @@ function template_source_envs() {
     source_envs=("$DREMGR/build.env")
     if [ -n "$Profile" ]; then
         source_envs+=("$DREMGR/${Profile}_profile.env")
-    elif [ -f "$DREMGR/front.env" ]; then
-        source_envs+=("$DREMGR/front.env")
+    elif [ -f "$DREMGR/dremgr.env" ]; then
+        source_envs+=("$DREMGR/dremgr.env")
     fi
     _template_source_envs "${source_envs[@]}"
     template_lists=("${DREMGR_TEMPLATE_LIST_VARS[@]}")

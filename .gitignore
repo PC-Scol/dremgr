@@ -7,7 +7,7 @@
 /.proxy.env
 /build.env
 /*_profile.env
-/front.env
+/dremgr.env
 
 /var/
 /*_start

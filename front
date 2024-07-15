@@ -64,8 +64,8 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-[ -f "$DREMGR/front.env" ] || die "front.env: fichier introuvable"
-eval "$(source "$DREMGR/front.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+[ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
+eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
 [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
 inst_check_env || exit 0
