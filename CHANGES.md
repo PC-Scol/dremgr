@@ -1,16 +1,8 @@
+## Version 0.17.1 du 15/07/2024-20:06
+
+* `ca3563a` créer un fichier RELEASE-NOTES.md pour les notes de mise à jour
+
 ## Version 0.17.0 du 15/07/2024-17:14
-
-ATTENTION! Changement cassant!
-
-Faire la migration avec les commandes suivantes:
-~~~sh
-mv front.env dremgr.env
-for i in *_profile.env; do
-  if [ "$(readlink "$i")" == front.env ]; then
-    ln -sf dregmgr.env "$i"
-  fi
-done
-~~~
 
 * `4354766` renommer front.env en dremgr.env
 

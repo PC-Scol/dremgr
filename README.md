@@ -6,6 +6,9 @@ DRE
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
 accès à un export journalier des bases de données d'une instance PEGASE
 
+IMPORTANT: Si vous mettez à jour votre installation, soyez sûr de prendre le
+temps de lire les [Release Notes](RELEASE-NOTES.md)
+
 ## Pré-requis
 
 dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
