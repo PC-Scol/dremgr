@@ -1,3 +1,19 @@
+## Version 0.17.0 du 15/07/2024-17:14
+
+ATTENTION! Changement cassant!
+
+Faire la migration avec les commandes suivantes:
+~~~sh
+mv front.env dremgr.env
+for i in *_profile.env; do
+  if [ "$(readlink "$i")" == front.env ]; then
+    ln -sf dregmgr.env "$i"
+  fi
+done
+~~~
+
+* `4354766` renommer front.env en dremgr.env
+
 ## Version 0.16.3 du 07/07/2024-10:17
 
 * `c6d6677` réessayer si le fichier n'est pas trouvé
