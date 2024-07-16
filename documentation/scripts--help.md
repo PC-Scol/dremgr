@@ -75,8 +75,8 @@ OPTIONS
         (Re)démarrer DRE si nécessaire
     -R, --restart
         Forcer le (re)démarrage de DRE
-    -i, --import-dumps
-        Lancer l'import maintenant, au lieu d'attendre la planification
+    -i, --import-all
+        Lancer l'import complet maintenant, sans attendre la planification
     -q, --psql
         Lancer une invite psql connecté avec le compte administrateur
 ~~~
@@ -110,13 +110,23 @@ OPTIONS
     -R, --restart
     -b, --rebuild
         Forcer le rebuild de l'image avant le démarrage
-    -i, --import-dumps
-    -I, --import-dreaddon
+    -i, --import-all
+        Lancer l'import complet maintenant, sans attendre la planification
+    -I, --import-one
+        Lancer l'import d'un unique addon sans attendre la planification
+        - soit la commande suivante:
+            inst -I DREADDON
+        - l'addon est importé comme avec les options suivantes:
+            inst -i -- --runao -o DREADDON "$@"
+        cf la documentation pour les détails
+    -J, --import-one-devel
         Importer un addon en mode développement:
+        - Soit la commande suivante:
+            inst -J path/to/DREADDON
         - le contenu du répertoire de l'addon est synchronisé vers le répertoire correspondant du conteneur
-        - puis l'addon est importé comme si cette commande avait été lancée avec les options suivantes:
-            -i -- --no-updateao --runao -o DREADDON "$@"
-          cf README.md pour les détails
+        - puis l'addon est importé comme avec les options suivantes:
+            inst -i -- --no-updateao --runao -o DREADDON "$@"
+          cf la documentation pour les détails
     -q, --psql
 ~~~
 
