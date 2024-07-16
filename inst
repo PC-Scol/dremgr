@@ -53,7 +53,14 @@ function import_dumps() {
     fi
 }
 
-function import_dreaddon() {
+function import_one() {
+    local name="$1"; shift
+    [ -n "$name" ] || die "Vous devez spécifier le nom de l'addon à importer"
+
+    import_dumps -@ latest --runao -o "$name" "$@"
+}
+
+function import_one_devel() {
     local srcdir="$1"; shift
     [ -n "$srcdir" ] || die "Vous devez spécifier le répertoire source de l'addon à importer"
     [ -d "$srcdir" ] || die "$srcdir: répertoire d'addon introuvable"
@@ -103,12 +110,22 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
-    -i,--import-dumps action=import_dumps "Lancer l'import maintenant, au lieu d'attendre la planification"
-    -I,--import-dreaddon action=import_dreaddon "++Importer un addon en mode développement:
+    -i,--import-all action=import_all "Lancer l'import complet maintenant, sans attendre la planification"
+    -I,--import-one action=import_one "\
+++Lancer l'import d'un unique addon sans attendre la planification
+- soit la commande suivante:
+    $MYNAME -I DREADDON
+- l'addon est importé comme avec les options suivantes:
+    $MYNAME -i -- --runao -o DREADDON \"\$@\"
+cf la documentation pour les détails"
+    -J,--import-one-devel action=import_one_devel "\
+++Importer un addon en mode développement:
+- Soit la commande suivante:
+    $MYNAME -J path/to/DREADDON
 - le contenu du répertoire de l'addon est synchronisé vers le répertoire correspondant du conteneur
-- puis l'addon est importé comme si cette commande avait été lancée avec les options suivantes:
-    -i -- --no-updateao --runao -o DREADDON \"\$@\"
-  cf README.md pour les détails"
+- puis l'addon est importé comme avec les options suivantes:
+    $MYNAME -i -- --no-updateao --runao -o DREADDON \"\$@\"
+  cf la documentation pour les détails"
     -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
 )
 parse_args "$@"; set -- "${args[@]}"
@@ -158,8 +175,9 @@ start) start_dre "$@";;
 stop) stop_dre "$@";;
 refresh) refresh_dre "$@";;
 restart) restart_dre "$@";;
-import_dumps) import_dumps "$@";;
-import_dreaddon) import_dreaddon "$@";;
+import_all) import_dumps "$@";;
+import_one) import_one "$@";;
+import_one_devel) import_one_devel "$@";;
 psql) psql_prompt "$@";;
 *) die "$action: action non implémentée";;
 esac

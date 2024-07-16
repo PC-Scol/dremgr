@@ -1,5 +1,14 @@
 # Release Notes
 
+## Version 0.18.0 du 16/07/2024
+
+Les options suivantes ont été renommées:
+* `-i, --import-dumps` devient `-i, --import-all`
+* `-I, --import-dreaddon` devient `-J, --import-one-devel`
+
+Nouvelles options
+* `-I, --import-one` pour réimporter uniquement un addon
+
 ## Version 0.17.0 du 15/07/2024
 
 ATTENTION! Changement cassant: le fichier `front.env` est renommé `dremgr.env`
