@@ -1,3 +1,7 @@
+## Version 0.17.2 du 16/07/2024-15:41
+
+* `f6d64a4` bug
+
 ## Version 0.17.1 du 15/07/2024-20:06
 
 * `ca3563a` créer un fichier RELEASE-NOTES.md pour les notes de mise à jour
