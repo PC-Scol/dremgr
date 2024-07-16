@@ -1,3 +1,7 @@
+## Version 0.18.0 du 16/07/2024-17:15
+
+* `3ed673a` renommage des options -i, -I, -J
+
 ## Version 0.17.2 du 16/07/2024-15:41
 
 * `f6d64a4` bug
