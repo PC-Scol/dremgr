@@ -40,7 +40,7 @@ services:
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
         ADDON_URLS
-        CRON_DISABLE
+        CRON_DISABLE CRON_MAX_AGE
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql

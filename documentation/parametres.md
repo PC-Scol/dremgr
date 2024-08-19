@@ -98,6 +98,10 @@ informations à l'utilisateur.
   base de données est laisée en l'état et plus aucune mise à jour n'est lancée
   automatiquement
 
+`CRON_MAX_AGE`
+: Nombre de jours au terme duquel un fichier téléchargé est supprimé. Par
+  défaut, ne garder que les 15 derniers jours
+
 `HOST_MAPPINGS`
 : Liste de mappings d'hôte à installer dans le container, un par ligne
 

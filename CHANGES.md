@@ -1,3 +1,7 @@
+## Version 0.18.1 du 19/08/2024-19:40
+
+* `a80e751` rendre paramétrable la durée de rétention des fichiers téléchargés
+
 ## Version 0.18.0 du 16/07/2024-17:15
 
 * `3ed673a` renommage des options -i, -I, -J
