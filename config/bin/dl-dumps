@@ -448,9 +448,10 @@ fi
 if [ -n "$step_cleanup" ]; then
     if [ -n "$Clean" ]; then
         qstep "Nettoyage des fichiers obsolètes"
-        find -name "checksums-*" -mtime +30 -delete
-        find -name "DRE_VERSION_*" -mtime +30 -delete
-        find -name "$DRE_PREFIX-*" -mtime +30 -delete
+        age="${CRON_MAX_AGE:-30}"
+        find -name "checksums-*" -mtime "+$age" -delete
+        find -name "DRE_VERSION_*" -mtime "+$age" -delete
+        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
     fi
 fi
 
