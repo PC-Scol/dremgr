@@ -1,7 +1,5 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
 
-version: "3.8"
-
 services:
   db:
     image: @@PRIVAREG@@dremgr/db
