@@ -1,5 +1,33 @@
 # Release Notes
 
+## Version 0.19.0
+
+Certains paramètres ont été modifiés dans le fichier `dremgr.env` (ou
+`prod_profile.env` si le mode simple est utilisé). Pour de meilleures
+performances, les modifications suivantes sont à apporter manuellement:
+
+* Rajouter le paramètre `MINIMIZE_DOWNTIME`
+  ~~~sh
+  MINIMIZE_DOWNTIME=1
+  ~~~
+* Enlever les définitions de `PGDATABASE` et `APP_PROFILE_VARS`. Les lignes
+  suivantes doivent être supprimées:
+  ~~~sh
+  PGDATABASE=dre
+
+  APP_PROFILE_VARS="
+  HOST_MAPPINGS
+  DRE_URL DRE_USER DRE_PASSWORD
+  POSTGRES_HOST POSTGRES_USER POSTGRES_PASSWORD
+  INST_VIP INST_PORT
+  FE_HOST FE_PORT FE_DBNAME FE_USER FE_PASSWORD
+  PGADMIN_USER PGADMIN_PASSWORD
+  ADMINER_DBHOSTS ADMINER_DBCONNS
+  ADDON_URLS
+  CRON_PLAN CRON_DISABLE CRON_MAX_AGE
+  "
+  ~~~
+
 ## Version 0.18.0 du 16/07/2024
 
 Les options suivantes ont été renommées:
