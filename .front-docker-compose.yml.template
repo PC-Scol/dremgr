@@ -6,6 +6,7 @@ services:
     command: pgbouncer
     env_file:
       - .proxy.env
+      - .dremgr.env
       - dremgr.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
@@ -20,6 +21,7 @@ services:
     image: @@PRIVAREG@@dremgr/pgadmin
     env_file:
       - .proxy.env
+      - .dremgr.env
       - dremgr.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
@@ -31,6 +33,7 @@ services:
     image: @@PRIVAREG@@dremgr/adminer
     env_file:
       - .proxy.env
+      - .dremgr.env
       - dremgr.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
@@ -40,6 +43,7 @@ services:
     image: @@PRIVAREG@@dremgr/web
     env_file:
       - .proxy.env
+      - .dremgr.env
       - dremgr.env
     environment:
       #@@UL:LBHTTPS@@DEVEL: 1

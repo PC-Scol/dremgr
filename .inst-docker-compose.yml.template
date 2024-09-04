@@ -5,6 +5,7 @@ services:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
+      - .dremgr.env
       - @@Profile@@_profile.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
@@ -28,6 +29,7 @@ services:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
+      - .dremgr.env
       - @@Profile@@_profile.env
     environment:
       <<: *db-environment
@@ -38,7 +40,7 @@ services:
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
         ADDON_URLS
-        CRON_DISABLE CRON_MAX_AGE
+        CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
