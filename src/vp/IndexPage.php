@@ -9,6 +9,8 @@ use nur\json;
 use nur\m\pgsql\PgsqlConn;
 use nur\md;
 use nur\path;
+use nur\sery\A;
+use nur\sery\php\time\Date;
 use nur\shutils;
 use nur\v\bs3\vc\CListGroup;
 use nur\v\bs3\vc\CVerticalTable;
@@ -118,26 +120,41 @@ class IndexPage extends ANavigablePage {
     $importPlan = $this->importPlan;
     $importHour = $this->importHour;
     if ($importDisabled) {
-      $importDesc = "L'import journalier de la base DRE est <b>désactivé</b>";
+      $planDesc = "L'import journalier de la base DRE est <b>désactivé</b>";
     } elseif ($importHour !== null) {
-      $importDesc = "Selon la planification configurée, la base DRE doit être importée tous les jours à <code>$importHour</code>";
+      $planDesc = "Selon la planification configurée, la base DRE doit être importée tous les jours à <code>$importHour</code>";
     } else {
-      $importDesc = "La base DRE doit être importée tous les jours selon la planification suivante: <code>$importPlan</code>";
+      $planDesc = "La base DRE doit être importée tous les jours selon la planification suivante: <code>$importPlan</code>";
     }
+
     $version = $this->version;
     if ($version["valid"]) {
-      vo::p([
-        "class" => "alert alert-info",
-        $importDesc,
-        "<br/>La dernière importation date du ",
-        v::b($version["date"]),
+      $today = new Date();
+      $dateDesc = ["<br/>La dernière importation date "];
+      if ($version["date"] == $today) {
+        A::merge($dateDesc, [
+          v::b("d'aujourd'hui"),
+        ]);
+      } else {
+        A::merge($dateDesc, [
+          " du ",
+          v::b($version["date"]),
+        ]);
+      }
+      A::merge($dateDesc, [
         " et sa version est ",
         v::b($version["version"]),
+      ]);
+
+      vo::p([
+        "class" => "alert alert-info",
+        $planDesc,
+        $dateDesc,
       ]);
     } else {
       vo::p([
         "class" => "alert alert-info",
-        $importDesc,
+        $planDesc,
       ]);
       vo::p([
         "class" => "alert alert-warning",
