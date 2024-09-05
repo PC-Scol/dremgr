@@ -301,24 +301,25 @@ if [ -n "$step_checkao" ]; then
     done
 fi
 
-if [ -n "$MinimizeDowntime" ]; then
-    tmpdb="dre_tmp$$"
-    moridb="dre_delete$$"
-    finaldb="$PGDATABASE"
-    etitle "Base de données temporaire $tmpdb"
-    PGDATABASE= runsql "create database $tmpdb;"
-    PGDATABASE="$tmpdb"
-    runsql "alter default privileges in schema public grant select on tables to reader;"
-
-elif [ -n "$step_import" ]; then
-    etitle "Suppression des anciens schémas"
-    schema_list=
-    for schema in "${DROP_SCHEMA_SCHEMAS[@]}" "${DROP_MONGO_SCHEMAS[@]}"; do
-        qstep "$schema"
-        schema_list="${schema_list}${schema_list:+, }${schema}"
-    done
-    runsql "drop schema if exists $schema_list cascade;" || die
-    eend
+if [ -n "$step_import" ]; then
+    if [ -n "$MinimizeDowntime" ]; then
+        tmpdb="dre_tmp$$"
+        moridb="dre_delete$$"
+        finaldb="$PGDATABASE"
+        etitle "Base de données temporaire $tmpdb"
+        PGDATABASE= runsql "create database $tmpdb;"
+        PGDATABASE="$tmpdb"
+        runsql "alter default privileges in schema public grant select on tables to reader;"
+    else
+        etitle "Suppression des anciens schémas"
+        schema_list=
+        for schema in "${DROP_SCHEMA_SCHEMAS[@]}" "${DROP_MONGO_SCHEMAS[@]}"; do
+            qstep "$schema"
+            schema_list="${schema_list}${schema_list:+, }${schema}"
+        done
+        runsql "drop schema if exists $schema_list cascade;" || die
+        eend
+    fi
 fi
 
 if [ -n "$step_import_bin" ]; then
@@ -383,6 +384,7 @@ fi
 if [ -n "$step_runao" ]; then
     etitle "Installation des addons"
     mkdir -p "$WORKDIR"
+
     for addon in "${ADDONS[@]}"; do
         etitle "$addon"; quietc_echo "* install $addon"
         if [[ "$addon" == *:* ]]; then
@@ -438,10 +440,9 @@ grant select on all sequences in schema $schema to reader;
         eend
     done
 
-    if [ -d "$WORKDIR/documentation" ]; then
-        estep "Installation de la documentation"
-        rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
-    fi
+    [ -d "$WORKDIR/documentation" ] && estep "Installation de la documentation"
+    mkdir -p "$WORKDIR/documentation"
+    rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
 
     rm -rf "$WORKDIR"
     eend
@@ -457,7 +458,7 @@ values ($majeure, $mineure, $patch, '$prerelease', '$Timestamp');
 " || die
 fi
 
-if [ -n "$MinimizeDowntime" ]; then
+if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
     estep "Bascule $tmpdb --> $finaldb"
     runsql "select pg_terminate_backend(pid) from pg_stat_activity where datname = '$finaldb';"
     runsql "alter database $finaldb rename to $moridb;"
