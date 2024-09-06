@@ -5,8 +5,8 @@ services:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
-      - .dremgr.env
       - @@Profile@@_profile.env
+      - .dremgr.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
@@ -29,8 +29,8 @@ services:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
-      - .dremgr.env
       - @@Profile@@_profile.env
+      - .dremgr.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre
