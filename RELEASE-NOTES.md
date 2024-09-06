@@ -3,11 +3,12 @@
 ## Version 0.19.0
 
 Certains paramètres ont été modifiés dans le fichier `dremgr.env` (ou
-`prod_profile.env` si le mode simple est utilisé). Pour de meilleures
-performances, les modifications suivantes sont à apporter manuellement:
+`prod_profile.env` si le mode simple est utilisé). Les modifications suivantes
+sont à apporter manuellement:
 
-* Rajouter le paramètre `MINIMIZE_DOWNTIME`
+* Rajouter les paramètres `PGBOUNCER_ADMIN_PASS` et `MINIMIZE_DOWNTIME`
   ~~~sh
+  PGBOUNCER_ADMIN_PASS=XXX_a_modifier
   MINIMIZE_DOWNTIME=1
   ~~~
 * Enlever les définitions de `PGDATABASE` et `APP_PROFILE_VARS`. Les lignes
@@ -28,6 +29,10 @@ performances, les modifications suivantes sont à apporter manuellement:
   "
   ~~~
 
+ATTENTION! bien lire la documentation concernant le nouveau paramètre
+`MINIMIZE_DOWNTIME`, notamment si votre base DRE est provisionnée autrement que
+par des addons.
+
 ## Version 0.18.0 du 16/07/2024
 
 Les options suivantes ont été renommées:
@@ -47,6 +52,7 @@ suivantes:
 if [ -f front.env ]; then
   mv front.env dremgr.env
   for i in *_profile.env; do
+    [ -L "$i" ] || continue
     if [ "$(readlink "$i")" == front.env ]; then
       ln -sf dremgr.env "$i"
     fi

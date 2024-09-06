@@ -50,6 +50,22 @@ function restart_front() {
     start_front "$@"
 }
 
+function pgbouncer_prompt() {
+    local composefile="$DREMGR/front-docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Invite pgbouncer"
+        eval "$(
+          source "$DREMGR/dremgr.env"; source "$DREMGR/.dremgr.env"
+          echo "local user password"
+          echo_setv user="$PGBOUNCER_ADMIN_USER"; echo_setv password="$PGBOUNCER_ADMIN_PASS"
+        )"
+        docker compose -f "$composefile" exec pgbouncer psql -d "dbname=pgbouncer user=$user password=$password" "$@" || die
+    else
+        eerror "Impossible de lancer l'invite pgbouncer: frontal DRE est arrêté"
+    fi
+}
+
 action=auto
 Rebuild=
 args=(
@@ -61,6 +77,7 @@ args=(
     -r,--refresh action=refresh "(Re)démarrer le frontal DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage du frontal DRE"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -q,--pgbouncer action=pgbouncer "++Lancer une invite psql pour piloter pgbouncer"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -79,5 +96,6 @@ start) start_front "$@";;
 stop) stop_front "$@";;
 refresh) refresh_front "$@";;
 restart) restart_front "$@";;
+pgbouncer) pgbouncer_prompt "$@";;
 *) die "$action: action non implémentée";;
 esac
