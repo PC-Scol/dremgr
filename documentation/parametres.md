@@ -1,8 +1,10 @@
 # Paramètres dremgr
 
-`build` a besoin de certains paramètres pour pouvoir construire les images nécessaires à dremgr
+`build` a besoin de certains paramètres pour pouvoir construire les images
+nécessaires à dremgr
 
-`inst` et `front` ont besoin de certains paramètres pour démarrer les services associés
+`dbinst`, `dbfront` et `webfront` ont besoin de certains paramètres pour
+démarrer les services associés
 
 Ces paramètres sont cherchés dans des fichiers dont le nom est normalisés
 

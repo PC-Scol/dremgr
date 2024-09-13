@@ -1,0 +1,102 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
+"$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
+DREMGR="$MYDIR"
+source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
+source "$DREMGR/sbin/functions.sh" || exit 1
+
+function start_dbfront() {
+    local composefile="$DREMGR/dbfront-docker-compose.yml"
+    [ -f "$composefile" ] || die "$composefile: fichier introuvable"
+    if [ -n "$ForceStart" ]; then
+        :
+    elif dcrunning "$composefile"; then
+        enote "Le frontal postgresql DRE est démarré"
+        return
+    fi
+
+    #local reload
+    #dcrunning "$composefile" && reload=1
+
+    "$MYDIR/build" ${Rebuild:+--rebuild} || die
+
+    estep "Démarrage du frontal postgresql DRE"
+    docker compose -f "$composefile" up -d --wait || die
+
+    #if [ -n "$reload" ]; then
+    #    estep "Rechargement pgAdmin"
+    #    sleep 2
+    #    docker compose exec pgadmin /g/pgadmin/reload
+    #fi
+}
+
+function stop_dbfront() {
+    local composefile="$DREMGR/dbfront-docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Arrêt du frontal postgresql DRE"
+        docker compose -f "$composefile" down || die
+    fi
+}
+
+function refresh_dbfront() {
+    local ForceStart=1
+    start_dbfront "$@"
+}
+
+function restart_dbfront() {
+    stop_dbfront "$@"
+    start_dbfront "$@"
+}
+
+function pgbouncer_prompt() {
+    local composefile="$DREMGR/dbfront-docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Invite pgbouncer"
+        eval "$(
+          source "$DREMGR/dremgr.env"; source "$DREMGR/.dremgr.env"
+          echo "local user password"
+          echo_setv user="$PGBOUNCER_ADMIN_USER"; echo_setv password="$PGBOUNCER_ADMIN_PASS"
+        )"
+        docker compose -f "$composefile" exec pgbouncer psql -d "dbname=pgbouncer user=$user password=$password" "$@" || die
+    else
+        eerror "Impossible de lancer l'invite pgbouncer: frontal postgresql DRE est arrêté"
+    fi
+}
+
+action=auto
+Rebuild=
+args=(
+    "Gérer le frontal postgresql de DRE"
+    #"usage"
+    --check-only action=none "++Ne faire que la vérification de l'environnement"
+    -s,--start action=start "Démarrer le frontal postgresql"
+    -k,--stop action=stop "Arrêter le frontal postgresql"
+    -r,--refresh action=refresh "(Re)démarrer le frontal postgresql si nécessaire"
+    -R,--restart action=restart "Forcer le (re)démarrage du frontal postgresql"
+    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -q,--pgbouncer action=pgbouncer "++Lancer une invite psql pour piloter pgbouncer"
+)
+parse_args "$@"; set -- "${args[@]}"
+
+[ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
+eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
+
+IS_DBFRONT=1
+run_check_env || exit 0
+[ "$action" == auto ] && action=start
+[ "$action" == none ] && exit 0
+
+Profile=
+ForceStart=
+case "$action" in
+start) start_dbfront "$@";;
+stop) stop_dbfront "$@";;
+refresh) refresh_dbfront "$@";;
+restart) restart_dbfront "$@";;
+pgbouncer) pgbouncer_prompt "$@";;
+*) die "$action: action non implémentée";;
+esac

@@ -1,13 +1,12 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
 
-version: "3.8"
-
 services:
   db:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
       - @@Profile@@_profile.env
+      - .dremgr.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
@@ -31,6 +30,7 @@ services:
     env_file:
       - .proxy.env
       - @@Profile@@_profile.env
+      - .dremgr.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre
@@ -40,7 +40,7 @@ services:
         APP_DATADIR
         POSTGRES_USER POSTGRES_PASSWORD
         ADDON_URLS
-        CRON_DISABLE CRON_MAX_AGE
+        CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql

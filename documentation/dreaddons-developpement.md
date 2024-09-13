@@ -118,14 +118,14 @@ sur son poste (via WSL ou autre méthode) et lancer l'importation à chaque fois
   ~~~
 * Ensuite, on peut lancer l'imporation des fichiers du jour
   ~~~sh
-  ./inst -i
+  ./dbinst -i
   ~~~
 
   NB: il est possible de spécifier la date des fichiers à importer avec l'option
   `-@ YYYYMMDD`. Par exemple, pour importer les fichiers du 15/06/2024, on peut
   faire ceci (le `--` entre `-i` et `-@` est requis):
   ~~~sh
-  ./inst -i -- -@ 20240615
+  ./dbinst -i -- -@ 20240615
   ~~~
 
 La méthode ci-dessus réimporte TOUS les dumps et TOUS les addons, ce qui permet
@@ -142,7 +142,7 @@ git commit -am "mes modifications" && git push
 
 # puis importer les modifications
 cd ~/path/to/dremgr
-./inst -I documentation
+./dbinst -I documentation
 ~~~
 Dans cet exemple, seul l'addon `dreaddon-documentation` est réimporté, ce qui
 permet de vérifier que les fichiers de documentation proposés sont bien ceux
@@ -151,11 +151,11 @@ attendus.
 Pour faciliter le développement, l'option `-J` permet de synchroniser le contenu
 du répertoire local d'addon puis de lancer son import, e.g:
 ~~~sh
-./inst -J path/to/dreaddon-documentation
+./dbinst -J path/to/dreaddon-documentation
 
 # la commande ci-dessus est grossièrement équivalente à:
 rsync -rlp --delete path/to/dreaddon-documentation/ var/prod-dredata/addons/dreaddon-documentation/
-./inst -i -- --no-updateao --runao -o dreaddon-documentation -@ latest
+./dbinst -i -- --no-updateao --runao -o dreaddon-documentation -@ latest
 less var/prod-dredata/import.log
 ~~~
 

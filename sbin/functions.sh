@@ -50,6 +50,9 @@ function dcrunning() {
     fi
 }
 
+IS_DBINST=
+IS_DBFRONT=
+IS_WEBFRONT=
 DREMGR_ENV_TEMPLATE=..env.template
 DREMGR_BUILD_TEMPLATE=.build.env.dist
 DREMGR_PROFILE_TEMPLATE=.prod_profile.env.dist
@@ -75,6 +78,7 @@ function template_source_envs() {
         source_envs+=("$DREMGR/dremgr.env")
     fi
     _template_source_envs "${source_envs[@]}"
+    template_vars+=(IS_DBINST IS_DBFRONT IS_WEBFRONT)
     template_lists=("${DREMGR_TEMPLATE_LIST_VARS[@]}")
 
     if [ -n "$Profile" ]; then
@@ -109,7 +113,7 @@ ENSUITE, vous pourrez relancer la commande"
     fi
 }
 
-function inst_check_env() {
+function run_check_env() {
     eval "$(template_locals)"
     local -a filter files; local file
 

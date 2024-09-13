@@ -6,8 +6,8 @@ DREMGR="$MYDIR"
 source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
-function start_dre() {
-    local composefile="$DREMGR/inst-docker-compose.yml"
+function start_dbinst() {
+    local composefile="$DREMGR/dbinst-docker-compose.yml"
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
@@ -23,8 +23,8 @@ function start_dre() {
     docker compose -f "$composefile" up -d --wait || die
 }
 
-function stop_dre() {
-    local composefile="$DREMGR/inst-docker-compose.yml"
+function stop_dbinst() {
+    local composefile="$DREMGR/dbinst-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
         estep "Arrêt de DRE [$Profile]"
@@ -32,18 +32,18 @@ function stop_dre() {
     fi
 }
 
-function refresh_dre() {
+function refresh_dbinst() {
     local ForceStart=1
-    start_dre "$@"
+    start_dbinst "$@"
 }
 
-function restart_dre() {
-    stop_dre "$@"
-    start_dre "$@"
+function restart_dbinst() {
+    stop_dbinst "$@"
+    start_dbinst "$@"
 }
 
 function import_dumps() {
-    local composefile="$DREMGR/inst-docker-compose.yml"
+    local composefile="$DREMGR/dbinst-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
         estep "Import des dumps [$Profile]"
@@ -79,7 +79,7 @@ function import_one_devel() {
 }
 
 function psql_prompt() {
-    local composefile="$DREMGR/inst-docker-compose.yml"
+    local composefile="$DREMGR/dbinst-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
         estep "Invite psql [$Profile]"
@@ -89,8 +89,20 @@ function psql_prompt() {
     fi
 }
 
+function shell_prompt() {
+    local composefile="$DREMGR/dbinst-docker-compose.yml"
+    [ -f "$composefile" ] || return 0
+    if dcrunning "$composefile"; then
+        estep "Invite shell [$Profile]"
+        local container="$1"; shift
+        docker compose -f "$composefile" exec "$container" bash "$@" || die
+    else
+        eerror "Impossible de lancer l'invite shell: DRE [$Profile] est arrêté"
+    fi
+}
+
 case "$MYNAME" in
-*_inst) Profile="${MYNAME%_inst}";;
+*_dbinst) Profile="${MYNAME%_dbinst}";;
 *) Profile=prod;;
 esac
 action=auto
@@ -127,6 +139,8 @@ cf la documentation pour les détails"
     $MYNAME -i -- --no-updateao --runao -o DREADDON \"\$@\"
   cf la documentation pour les détails"
     -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
+    --shell-db action=shell_db "++Lancer une invite bash dans le container db"
+    -x,--shell-cron action=shell_cron "++Lancer une invite bash dans le container cron"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -158,7 +172,8 @@ Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
 envfile="$DREMGR/${Profile}_profile.env"
 
-inst_check_env || exit 0
+IS_DBINST=1
+run_check_env || exit 0
 [ -f "$envfile" ] || die "$Profile: profil invalide (${envfile#$DREMGR/}: fichier de profil introuvable)"
 
 DREDATA="$DREMGR/var/${Profile}-dredata"
@@ -171,13 +186,14 @@ done
 
 ForceStart=
 case "$action" in
-start) start_dre "$@";;
-stop) stop_dre "$@";;
-refresh) refresh_dre "$@";;
-restart) restart_dre "$@";;
+start) start_dbinst "$@";;
+stop) stop_dbinst "$@";;
+refresh) refresh_dbinst "$@";;
+restart) restart_dbinst "$@";;
 import_all) import_dumps "$@";;
 import_one) import_one "$@";;
 import_one_devel) import_one_devel "$@";;
 psql) psql_prompt "$@";;
+shell_*) shell_prompt "${action#shell_}" "$@";;
 *) die "$action: action non implémentée";;
 esac

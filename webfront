@@ -6,13 +6,13 @@ DREMGR="$MYDIR"
 source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
-function start_front() {
-    local composefile="$DREMGR/front-docker-compose.yml"
+function start_webfront() {
+    local composefile="$DREMGR/webfront-docker-compose.yml"
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
     elif dcrunning "$composefile"; then
-        enote "Le frontal DRE est démarré"
+        enote "Le frontal web DRE est démarré"
         return
     fi
 
@@ -21,7 +21,7 @@ function start_front() {
 
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
 
-    estep "Démarrage du frontal DRE"
+    estep "Démarrage du frontal web DRE"
     docker compose -f "$composefile" up -d --wait || die
 
     #if [ -n "$reload" ]; then
@@ -31,35 +31,35 @@ function start_front() {
     #fi
 }
 
-function stop_front() {
-    local composefile="$DREMGR/front-docker-compose.yml"
+function stop_webfront() {
+    local composefile="$DREMGR/webfront-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
-        estep "Arrêt du frontal DRE"
+        estep "Arrêt du frontal web DRE"
         docker compose -f "$composefile" down || die
     fi
 }
 
-function refresh_front() {
+function refresh_webfront() {
     local ForceStart=1
-    start_front "$@"
+    start_webfront "$@"
 }
 
-function restart_front() {
-    stop_front "$@"
-    start_front "$@"
+function restart_webfront() {
+    stop_webfront "$@"
+    start_webfront "$@"
 }
 
 action=auto
 Rebuild=
 args=(
-    "Gérer cette instance de DRE"
+    "Gérer le frontal web de DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    -s,--start action=start "Démarrer le frontal DRE"
-    -k,--stop action=stop "Arrêter le frontal DRE"
-    -r,--refresh action=refresh "(Re)démarrer le frontal DRE si nécessaire"
-    -R,--restart action=restart "Forcer le (re)démarrage du frontal DRE"
+    -s,--start action=start "Démarrer le frontal web"
+    -k,--stop action=stop "Arrêter le frontal web"
+    -r,--refresh action=refresh "(Re)démarrer le frontal web si nécessaire"
+    -R,--restart action=restart "Forcer le (re)démarrage du frontal web"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"
@@ -68,16 +68,17 @@ parse_args "$@"; set -- "${args[@]}"
 eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
 [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
-inst_check_env || exit 0
+IS_WEBFRONT=1
+run_check_env || exit 0
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
 Profile=
 ForceStart=
 case "$action" in
-start) start_front "$@";;
-stop) stop_front "$@";;
-refresh) refresh_front "$@";;
-restart) restart_front "$@";;
+start) start_webfront "$@";;
+stop) stop_webfront "$@";;
+refresh) refresh_webfront "$@";;
+restart) restart_webfront "$@";;
 *) die "$action: action non implémentée";;
 esac
