@@ -1,3 +1,7 @@
+## Version 0.19.1 du 13/09/2024-13:43
+
+* `b103c57` maj mineure de la doc
+
 ## Version 0.19.0 du 13/09/2024-13:29
 
 * `3af572b` maj documentation
