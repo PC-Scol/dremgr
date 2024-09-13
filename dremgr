@@ -7,13 +7,12 @@ source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
 function all() {
-    [ -n "$Rebuild" ] && set -- --rebuild "$@"
     if [ -n "$Front" ]; then
-        "$DREMGR/webfront" "$@" &&
+        "$DREMGR/webfront" ${Rebuild:+-b} "$@" &&
         "$DREMGR/dbfront" "$@" &&
         "$DREMGR/dbinst" -A "$@"
     else
-        "$DREMGR/dbinst" "$@"
+        "$DREMGR/dbinst" ${Rebuild:+-b} "$@"
     fi
 }
 
