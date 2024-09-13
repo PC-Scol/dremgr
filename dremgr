@@ -20,7 +20,7 @@ function all() {
 action=start
 Rebuild=
 args=(
-    "Gérer le frontal et les instances de DRE configurées"
+    "Gérer les frontaux et les instances de DRE configurées"
     #"usage"
     -s,--start action=start "Démarrer les services"
     -k,--stop action=stop "Arrêter les services"

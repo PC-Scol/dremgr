@@ -53,13 +53,13 @@ function restart_webfront() {
 action=auto
 Rebuild=
 args=(
-    "Gérer cette instance de DRE"
+    "Gérer le frontal web de DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    -s,--start action=start "Démarrer le frontal web DRE"
-    -k,--stop action=stop "Arrêter le frontal web DRE"
-    -r,--refresh action=refresh "(Re)démarrer le frontal web DRE si nécessaire"
-    -R,--restart action=restart "Forcer le (re)démarrage du frontal web DRE"
+    -s,--start action=start "Démarrer le frontal web"
+    -k,--stop action=stop "Arrêter le frontal web"
+    -r,--refresh action=refresh "(Re)démarrer le frontal web si nécessaire"
+    -R,--restart action=restart "Forcer le (re)démarrage du frontal web"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"

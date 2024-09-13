@@ -1,3 +1,7 @@
+IMPORTANT: Si vous voulez mettre à jour votre installation, soyez sûr de prendre
+le temps de lire les [Release Notes](RELEASE-NOTES.md) AVANT de commencer à
+faire quoi que ce soit.
+
 # dremgr
 
 dremgr est un environnement pour la gestion d'une ou plusieurs instances de base
@@ -5,9 +9,6 @@ DRE
 
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
 accès à un export journalier des bases de données d'une instance PEGASE
-
-IMPORTANT: Si vous mettez à jour votre installation, soyez sûr de prendre le
-temps de lire les [Release Notes](RELEASE-NOTES.md)
 
 ## Pré-requis
 
@@ -43,10 +44,28 @@ cd dremgr
     (un peu) plus de travail.
     [Installer dremgr dans le mode avancé](documentation/installation-avancee.md)
 
+## Installer une mise à jour
+
+IMPORTANT: *AVANT* de commencer à faire quoi que ce soit, prenez le temps de
+lire les [Release Notes](RELEASE-NOTES.md)
+
+Généralement, il faut reconstruire les images avant de relancer les services:
+~~~sh
+cd dremgr
+
+# mettre à jour le dépôt
+git pull
+
+# reconstruire les images puis redémarrer les services concernés
+./dremgr -rb
+~~~
+Cependant, les Releases Notes peuvent parfois contenir des instructions
+différentes ce celles mentionnées ci-dessus.
+
 ## Exploitation
 
-* Chaque script build, inst, front possède une aide intégrée affichée avec
-  l'option `--help`
+* Chaque script `build`, `dremgr`, `dbinst`, `dbfront` et `webfront` possède une
+  aide intégrée affichée avec l'option `--help`
   [Afficher l'aide complète des scripts](documentation/scripts--help.md)
 * [Liste des paramètres des fichiers d'environnement](documentation/parametres.md)
 * Installer une mise à jour: consultez la section correspondant au mode

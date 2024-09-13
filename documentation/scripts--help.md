@@ -1,7 +1,7 @@
 # Afficher l'aide
 
-Chaque outil build, inst, front possède une aide intégrée affichée avec
-l'option `--help`
+Chaque outil `build`, `dremgr`, `dbinst`, `dbfront` et `webfront` possède une
+aide intégrée affichée avec l'option `--help`
 
 ## build
 
@@ -50,19 +50,67 @@ OPTIONS
     -p, --push
 ~~~
 
-## inst
+## dremgr
 
-inst sert à gérer les instances des bases de données
+dremgr sert à piloter en une seule commandes les frontaux (via `webfront` et
+`dbfront`) et les instances DRE (via `dbinst`)
 
 Aide standard
 ~~~sh
-./inst --help
+./dremgr --help
 ~~~
 ~~~
-inst: Gérer cette instance de DRE
+dremgr: Gérer les frontaux et les instances de DRE configurées
 
 USAGE
-    inst [options]
+    dremgr [options]
+
+OPTIONS
+    --help++
+        Afficher l'aide avancée
+    -s, --start
+        Démarrer les services
+    -k, --stop
+        Arrêter les services
+    -r, --refresh
+        (Re)démarrer les services si nécessaire
+    -R, --restart
+        Forcer le (re)démarrage des services
+~~~
+
+Aide avancée
+~~~sh
+./dremgr --help++
+~~~
+~~~
+dremgr: Gérer les frontaux et les instances de DRE configurées
+
+USAGE
+    dremgr [options]
+
+OPTIONS
+    --help++
+    -s, --start
+    -k, --stop
+    -r, --refresh
+    -R, --restart
+    -b, --rebuild
+        Forcer le rebuild de l'image avant le démarrage
+~~~
+
+## dbinst
+
+dbinst sert à gérer les instances des bases de données
+
+Aide standard
+~~~sh
+./dbinst --help
+~~~
+~~~
+dbinst: Gérer cette instance de DRE
+
+USAGE
+    dbinst [options]
 
 OPTIONS
     --help++
@@ -83,13 +131,13 @@ OPTIONS
 
 Aide avancée
 ~~~sh
-./inst --help++
+./dbinst --help++
 ~~~
 ~~~
-inst: Gérer cette instance de DRE
+dbinst: Gérer cette instance de DRE
 
 USAGE
-    inst [options]
+    dbinst [options]
 
 OPTIONS
     --help++
@@ -115,57 +163,112 @@ OPTIONS
     -I, --import-one
         Lancer l'import d'un unique addon sans attendre la planification
         - soit la commande suivante:
-            inst -I DREADDON
+            dbinst -I DREADDON
         - l'addon est importé comme avec les options suivantes:
-            inst -i -- --runao -o DREADDON "$@"
+            dbinst -i -- --runao -o DREADDON "$@"
         cf la documentation pour les détails
     -J, --import-one-devel
         Importer un addon en mode développement:
         - Soit la commande suivante:
-            inst -J path/to/DREADDON
+            dbinst -J path/to/DREADDON
         - le contenu du répertoire de l'addon est synchronisé vers le répertoire correspondant du conteneur
         - puis l'addon est importé comme avec les options suivantes:
-            inst -i -- --no-updateao --runao -o DREADDON "$@"
+            dbinst -i -- --no-updateao --runao -o DREADDON "$@"
           cf la documentation pour les détails
     -q, --psql
+    --shell-db
+        Lancer une invite bash dans le container db
+    -x, --shell-cron
+        Lancer une invite bash dans le container cron
 ~~~
 
-## front
+## dbfront
 
-front sert à gérer les services frontaux
+dbfront sert à gérer les services frontaux postgresql
 
 Aide standard
 ~~~sh
-./front --help
+./dbfront --help
 ~~~
 ~~~
-front: Gérer cette instance de DRE
+dbfront: Gérer le frontal postgresql de DRE
 
 USAGE
-    front [options]
+    dbfront [options]
 
 OPTIONS
     --help++
         Afficher l'aide avancée
     -s, --start
-        Démarrer le frontal DRE
+        Démarrer le frontal postgresql
     -k, --stop
-        Arrêter le frontal DRE
+        Arrêter le frontal postgresql
     -r, --refresh
-        (Re)démarrer le frontal DRE si nécessaire
+        (Re)démarrer le frontal postgresql si nécessaire
     -R, --restart
-        Forcer le (re)démarrage du frontal DRE
+        Forcer le (re)démarrage du frontal postgresql
 ~~~
 
 Aide avancée
 ~~~sh
-./front --help++
+./dbfront --help++
 ~~~
 ~~~
-front: Gérer cette instance de DRE
+dbfront: Gérer le frontal postgresql de DRE
 
 USAGE
-    front [options]
+    dbfront [options]
+
+OPTIONS
+    --help++
+    --check-only
+        Ne faire que la vérification de l'environnement
+    -s, --start
+    -k, --stop
+    -r, --refresh
+    -R, --restart
+    -b, --rebuild
+        Forcer le rebuild de l'image avant le démarrage
+    -q, --pgbouncer
+        Lancer une invite psql pour piloter pgbouncer
+~~~
+
+## webfront
+
+webfront sert à gérer les services frontaux web
+
+Aide standard
+~~~sh
+./webfront --help
+~~~
+~~~
+webfront: Gérer le frontal web de DRE
+
+USAGE
+    webfront [options]
+
+OPTIONS
+    --help++
+        Afficher l'aide avancée
+    -s, --start
+        Démarrer le frontal web
+    -k, --stop
+        Arrêter le frontal web
+    -r, --refresh
+        (Re)démarrer le frontal web si nécessaire
+    -R, --restart
+        Forcer le (re)démarrage du frontal web
+~~~
+
+Aide avancée
+~~~sh
+./webfront --help++
+~~~
+~~~
+webfront: Gérer le frontal web de DRE
+
+USAGE
+    webfront [options]
 
 OPTIONS
     --help++

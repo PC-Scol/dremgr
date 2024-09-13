@@ -15,7 +15,7 @@ plus instances sur la même machine, il faut sélectionner le mode avancé.
 
 Une fois les images construites, il faut préparer le démarrage de l'instance DRE
 ~~~sh
-./inst
+./dbinst
 ~~~
 La *première* invocation crée le fichier d'exemple `prod_profile.env`
 
@@ -60,7 +60,7 @@ Il y a d'autres paramètres configurables.
 
 Une fois le fichier configuré, l'instance peut être démarrée
 ~~~sh
-./inst
+./dbinst
 ~~~
 
 La base de données est accessible sur l'adresse IP spécifiée dans le
@@ -72,26 +72,9 @@ psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
 Bien entendu, pour le moment elle ne contient aucune donnée. On peut forcer le
 téléchargement et l'importation:
 ~~~sh
-./inst -i
+./dbinst -i
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
 définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h30
-
-## Installer une mise à jour
-
-En cas de mise à jour, il faut reconstruire les images avant de relancer
-l'instance:
-~~~sh
-cd dremgr
-
-# mettre à jour le dépôt
-git pull
-
-# reconstruire les images
-./build -r
-
-# redémarrer la base de données
-./inst -r
-~~~
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

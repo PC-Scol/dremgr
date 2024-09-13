@@ -2,9 +2,37 @@
 
 ## Version 0.19.0
 
-Certains paramètres ont été modifiés dans le fichier `dremgr.env` (ou
-`prod_profile.env` si le mode simple est utilisé). Les modifications suivantes
-sont à apporter manuellement:
+IMPORTANT: *AVANT* de faire cette mise à jour, il faut arrêter les services, faire
+la mise à jour, faire les modifications indiquées ci-dessous, puis redémarrer
+les services.
+~~~sh
+# arrêter les services
+./front -k
+./inst -Ak
+
+# mettre à jour le dépôt
+git pull
+
+# faire les modifications des paramètres indiquées ci-dessous
+...
+
+# Reconstruire les images
+./build -r
+
+# Redémarrer les services
+./dremgr
+~~~
+
+Les modifications notables sont:
+* introduction d'un script unique `dremgr` pour simplifier certaines actions
+* le frontal a été séparé en deux entités: frontal web et frontal postgresql
+* renommage des scripts `inst` en `dbinst` et `front` en `webfront`
+* certains paramètres ont été modifiés dans le fichier `dremgr.env` (ou
+  `prod_profile.env` si le mode simple est utilisé) et doivent faire l'objet
+  d'une modification manuelle
+
+Voici les modification à reporter manuellement dans les fichiers de
+configuration:
 
 * Rajouter les paramètres `PGBOUNCER_ADMIN_PASS` et `MINIMIZE_DOWNTIME`
   ~~~sh
@@ -29,7 +57,7 @@ sont à apporter manuellement:
   "
   ~~~
 
-ATTENTION! bien lire la documentation concernant le nouveau paramètre
+IMPORTANT: bien lire la documentation concernant le nouveau paramètre
 `MINIMIZE_DOWNTIME`, notamment si votre base DRE est provisionnée autrement que
 par des addons.
 

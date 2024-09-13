@@ -69,13 +69,13 @@ function pgbouncer_prompt() {
 action=auto
 Rebuild=
 args=(
-    "Gérer cette instance de DRE"
+    "Gérer le frontal postgresql de DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    -s,--start action=start "Démarrer le frontal postgresql DRE"
-    -k,--stop action=stop "Arrêter le frontal postgresql DRE"
-    -r,--refresh action=refresh "(Re)démarrer le frontal postgresql DRE si nécessaire"
-    -R,--restart action=restart "Forcer le (re)démarrage du frontal postgresql DRE"
+    -s,--start action=start "Démarrer le frontal postgresql"
+    -k,--stop action=stop "Arrêter le frontal postgresql"
+    -r,--refresh action=refresh "(Re)démarrer le frontal postgresql si nécessaire"
+    -R,--restart action=restart "Forcer le (re)démarrage du frontal postgresql"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -q,--pgbouncer action=pgbouncer "++Lancer une invite psql pour piloter pgbouncer"
 )
