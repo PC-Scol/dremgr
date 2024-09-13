@@ -1,6 +1,6 @@
 # Release Notes
 
-## Version 0.19.0
+## Version 0.19.0 du 13/09/2024
 
 IMPORTANT: *AVANT* de faire cette mise à jour, il faut arrêter les services, faire
 la mise à jour, faire les modifications indiquées ci-dessous, puis redémarrer
@@ -16,11 +16,8 @@ git pull
 # faire les modifications des paramètres indiquées ci-dessous
 ...
 
-# Reconstruire les images
-./build -r
-
-# Redémarrer les services
-./dremgr
+# Reconstruire les images puis démarrer les services
+./dremgr -rb
 ~~~
 
 Les modifications notables sont:
