@@ -1,22 +1,6 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
 
 services:
-  pgbouncer:
-    image: @@PRIVAREG@@dremgr/db
-    command: pgbouncer
-    env_file:
-      - .proxy.env
-      - .dremgr.env
-      - dremgr.env
-    #@@IF:DBNET@@networks:
-    #@@IF:DBNET@@  @@DBNET@@:
-    #@@IF:DBPORT@@ports:
-    #@@IF:DBPORT@@  - @@DBVIP@@@@DBPORT@@:5432
-    deploy:
-      update_config:
-        order: stop-first
-    restart: always
-
   pgadmin:
     image: @@PRIVAREG@@dremgr/pgadmin
     env_file:

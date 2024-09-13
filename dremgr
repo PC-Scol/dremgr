@@ -9,10 +9,11 @@ source "$DREMGR/sbin/functions.sh" || exit 1
 function all() {
     [ -n "$Rebuild" ] && set -- --rebuild "$@"
     if [ -n "$Front" ]; then
-        "$DREMGR/front" "$@" &&
-        "$DREMGR/inst" -A "$@"
+        "$DREMGR/webfront" "$@" &&
+        "$DREMGR/dbfront" "$@" &&
+        "$DREMGR/dbinst" -A "$@"
     else
-        "$DREMGR/inst" "$@"
+        "$DREMGR/dbinst" "$@"
     fi
 }
 
