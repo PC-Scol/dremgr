@@ -1,3 +1,19 @@
+## Version 0.19.0 du 13/09/2024-13:29
+
+* `3af572b` maj documentation
+* `b0ebb83` distinguer dbfront et webfront
+* `5c334a5` exposer le mot de passe administrateur de pgbouncer
+* `78cfd2e` bug: les variables de .dremgr.env ne doivent pas pouvoir être surchargées
+* `cb78606` bug
+* `a4eeb6b` cosmetic
+* `86674cf` préparation release-notes pour la v0.19.0
+* `5e3d853` placer les options statiques dans un fichier non modifiable par l'utilisateur
+* `efb62a6` option pour lancer un shell dans cron ou db
+* `baa91e0` minimiser le temps d'indisponibilité de la base
+* `eb17f2e` supprimer la clé obsolète version: dans docker-compose.yml
+* `5a56ec6` ajout tbin/ pour des outils spécifiques au développeur
+* `eb6ec18` ajouter dremgr qui lance front et inst en une seule commande
+
 ## Version 0.18.1 du 19/08/2024-19:40
 
 * `a80e751` rendre paramétrable la durée de rétention des fichiers téléchargés
