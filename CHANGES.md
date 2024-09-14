@@ -1,3 +1,7 @@
+## Version 0.19.2 du 14/09/2024-07:28
+
+* `0538635` bug: ne faire le rebuild qu'une seule fois
+
 ## Version 0.19.1 du 13/09/2024-13:43
 
 * `b103c57` maj mineure de la doc
