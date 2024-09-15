@@ -2,9 +2,9 @@
 
 ## Version 0.19.0 du 13/09/2024
 
-IMPORTANT: *AVANT* de faire cette mise à jour, il faut arrêter les services, faire
-la mise à jour, faire les modifications indiquées ci-dessous, puis redémarrer
-les services.
+IMPORTANT: *AVANT* de faire cette mise à jour, il faut arrêter les services.
+Prévoir un temps d'arrêt d'une trentaine de minutes, le temps de reconstruire
+les images
 ~~~sh
 # arrêter les services
 ./front -k
@@ -13,11 +13,14 @@ les services.
 # mettre à jour le dépôt
 git pull
 
+# reconstruire les images
+./build -r
+
 # faire les modifications des paramètres indiquées ci-dessous
 ...
 
-# Reconstruire les images puis démarrer les services
-./dremgr -rb
+# Démarrer les services
+./dremgr
 ~~~
 
 Les modifications notables sont:
