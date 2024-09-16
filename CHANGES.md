@@ -1,3 +1,8 @@
+## Version 0.19.3 du 16/09/2024-14:37
+
+* `df0b85e` bug suite à une maj de l'image adminer
+* `928dbea` maj de la documentation
+
 ## Version 0.19.2 du 14/09/2024-07:28
 
 * `0538635` bug: ne faire le rebuild qu'une seule fois

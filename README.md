@@ -56,8 +56,11 @@ cd dremgr
 # mettre à jour le dépôt
 git pull
 
-# reconstruire les images puis redémarrer les services concernés
-./dremgr -rb
+# reconstruire les images
+./build -r
+
+# redémarrer les services concernés
+./dremgr -r
 ~~~
 Cependant, les Releases Notes peuvent parfois contenir des instructions
 différentes ce celles mentionnées ci-dessus.
