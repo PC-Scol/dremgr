@@ -1,12 +1,16 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
-"$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
-DREMGR="$MYDIR"
-source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
-source "$DREMGR/sbin/functions.sh" || exit 1
+RUNPHP="$MYDIR/sbin/runphp"
+"$RUNPHP" --bs --ue --ci || exit 1
+PROJDIR=; COMPOSERDIR=; COMPOSERPHAR=; VENDORDIR=; BUILDENV0=; BUILDENV=
+BUILD_IMAGES=(php-apache mariadb10); export BUILD_FLAVOUR=; DIST=; IMAGENAME=
+source "$RUNPHP" || exit 1
+source "$PROJDIR/$VENDORDIR/nulib/php/load.sh" || exit 1
+require: template
 
 BUILD_ARGS=(
+    DIST NDIST
     REGISTRY
     APT_PROXY
     APT_MIRROR
@@ -14,12 +18,70 @@ BUILD_ARGS=(
     TIMEZONE
 )
 
+function dklsnet() {
+    docker network ls --no-trunc --format '{{.Name}}' -f name="$1" 2>/dev/null
+}
+
+function dklsimg() {
+    local image="$1" version="$2"
+    docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$image${version:+:$version}" 2>/dev/null
+}
+
+function dklsct() {
+    # afficher le container dont l'image correspondante est $1
+    docker ps --no-trunc --format '{{.Image}} {{.Names}}' | awk -v image="$1" '$1 == image { print $2 }'
+}
+
+function dkrunning() {
+    # vérifier si le container d'image $1 tourne
+    [ -n "$(dklsct "$@")" ]
+}
+
+function dclsct() {
+    # afficher les containers correspondant à $1(=docker-compose.yml)
+    docker compose ${1:+-f "$1"} ps -q
+}
+
+function dcrunning() {
+    # vérifier si les containers correspondant à $1(=docker-compose.yml) tournent
+    # si $2 est spécifié, c'est le nombre de service qui doit tourner
+    if [ -n "$2" ]; then
+        [ "$(dclsct "${@:1:1}" | wc -l)" -eq "$2" ]
+    else
+        [ -n "$(dclsct "${@:1:1}")" ]
+    fi
+}
+
+function build_check_env() {
+    eval "$(template_locals)"
+
+    template_copy_missing "$PROJDIR/$BUILDENV0" && updated=1
+    template_process_userfiles
+
+    if [ -n "$updated" ]; then
+        enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier $BUILDENV
+    ${EDITOR:-nano} $BUILDENV
+ENSUITE, vous pourrez relancer la commande"
+        return 1
+    fi
+}
+
 function _build() {
-    local image="${PRIVAREG:+$PRIVAREG/}dremgr/$1"
+    local dockerfile image="${PRIVAREG:+$PRIVAREG/}${IMAGENAME%/*}/$1"
     if [ -n "$ForceBuild" -o -z "$(dklsimg "$image")" ]; then
         estep "Construction de $image"
+        dockerfiles=(
+            "$MYDIR/Dockerfile.$1.local"
+            "$MYDIR/Dockerfile.$1$BUILD_FLAVOUR"
+            "$PROJDIR/$VENDORDIR/nulib/php/dockerfiles/Dockerfile.$1$BUILD_FLAVOUR"
+            "$MYDIR/Dockerfile.$1"
+            "$PROJDIR/$VENDORDIR/nulib/php/dockerfiles/Dockerfile.$1"
+        )
+        for dockerfile in "${dockerfiles[@]}"; do
+            [ -f "$dockerfile" ] && break
+        done
         args=(
-            -f "$DREMGR/Dockerfile.$1"
+            -f "$dockerfile"
             ${Pull:+--pull}
             ${NoCache:+--no-cache}
             ${PlainOutput:+--progress plain}
@@ -34,7 +96,7 @@ function _build() {
         for host in "${HOST_MAPPINGS[@]}"; do
             args+=(--add-host "$host")
         done
-        docker build "${args[@]}" "$DREMGR" || die
+        docker build "${args[@]}" "$PROJDIR" || die
         if [ -n "$Push" ]; then
             if [ -n "$PRIVAREG" ]; then
                 estep "Poussement de $image"
@@ -48,19 +110,24 @@ function _build() {
 function build_images() {
     local image sourced
 
-    [ $# -gt 0 ] || set -- rundk db web pgadmin adminer
+    [ $# -gt 0 ] || set -- runphp "${BUILD_IMAGES[@]}"
     for image in "$@"; do
         case "$image" in
-        rundk)
+        runphp)
+            [ ${#Configs[*]} -gt 0 ] && export RUNDK_FORCE_BUILDENVS="${Configs[*]}"
             local -a args=(--bootstrap)
-            [ -z "$ForceBuild" ] && args+=(--unless-exists)
+            [ "$ForceBuild" != all ] && args+=(--unless-exists)
             [ -n "$Pull" ] && args+=(--pull)
             [ -n "$NoCache" ] && args+=(--no-cache)
-            "$DREMGR/sbin/rundk" "${args[@]}" || die
+            "$RUNPHP" "${args[@]}" || die
             ;;
         *)
             if [ -z "$sourced" ]; then
-                source "$DREMGR/build.env"
+                [ ${#Configs[*]} -gt 0 ] || Configs=("$PROJDIR/$BUILDENV")
+                for config in "${Configs[@]}"; do
+                    source "$config"
+                done
+                after_source_buildenv
                 read -a HOST_MAPPINGS <<<"${HOST_MAPPINGS//
 / }"
                 sourced=1
@@ -72,16 +139,19 @@ function build_images() {
 }
 
 action=build
+Configs=()
 ForceBuild=
 Pull=
 NoCache=
 PlainOutput=
 Push=
 args=(
-    "Construire les images pour DRE"
+    "Construire les images pour le projet"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    -r,--rebuild ForceBuild=1 "Forcer la (re)construction de l'image"
+    -c:,--config:BUILDENV Configs "Spécifier un fichier d'environnement pour le build"
+    -r,--rebuild ForceBuild=1 "Forcer la (re)construction des images"
+    -R,--rebuild-all ForceBuild=all "++Comme --rebuild, mais reconstruire aussi runphp"
     -U,--pull Pull=1 "++Forcer le re-téléchargement des images dépendantes"
     -j,--no-cache NoCache=1 "++Construire l'image en invalidant le cache"
     -D,--plain-output PlainOutput=1 "++Afficher le détail du build"
@@ -89,7 +159,19 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-build_check_env || die
+if [ ${#Configs[*]} -gt 0 ]; then
+    aconfigs=()
+    for config in "${Configs[@]}"; do
+        setx config=abspath "$config"
+        aconfigs+=("$config")
+    done
+    Configs=("${aconfigs[@]}")
+    # pas de vérification d'environnement si on spécifie Configs
+    # ne pas oublier d'implémenter un traitement spécifique si build_check_env()
+    # contient d'autres vérifications
+else
+    build_check_env || die
+fi
 [ "$action" == none ] && exit 0
 
 case "$action" in
