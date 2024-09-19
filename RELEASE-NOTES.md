@@ -25,7 +25,7 @@ git pull
 
 Les modifications notables sont:
 * introduction d'un script unique `dremgr` pour simplifier certaines actions
-* le frontal a été séparé en deux entités: frontal web et frontal postgresql
+* le frontal a été séparé en deux entités: frontal web et frontal bdd
 * renommage des scripts `inst` en `dbinst` et `front` en `webfront`
 * certains paramètres ont été modifiés dans le fichier `dremgr.env` (ou
   `prod_profile.env` si le mode simple est utilisé) et doivent faire l'objet

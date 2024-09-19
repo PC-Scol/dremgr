@@ -184,14 +184,14 @@ OPTIONS
 
 ## dbfront
 
-dbfront sert à gérer les services frontaux postgresql
+dbfront sert à gérer les services frontaux bdd
 
 Aide standard
 ~~~sh
 ./dbfront --help
 ~~~
 ~~~
-dbfront: Gérer le frontal postgresql de DRE
+dbfront: Gérer le frontal bdd de DRE
 
 USAGE
     dbfront [options]
@@ -200,13 +200,13 @@ OPTIONS
     --help++
         Afficher l'aide avancée
     -s, --start
-        Démarrer le frontal postgresql
+        Démarrer le frontal bdd
     -k, --stop
-        Arrêter le frontal postgresql
+        Arrêter le frontal bdd
     -r, --refresh
-        (Re)démarrer le frontal postgresql si nécessaire
+        (Re)démarrer le frontal bdd si nécessaire
     -R, --restart
-        Forcer le (re)démarrage du frontal postgresql
+        Forcer le (re)démarrage du frontal bdd
 ~~~
 
 Aide avancée
@@ -214,7 +214,7 @@ Aide avancée
 ./dbfront --help++
 ~~~
 ~~~
-dbfront: Gérer le frontal postgresql de DRE
+dbfront: Gérer le frontal bdd de DRE
 
 USAGE
     dbfront [options]
