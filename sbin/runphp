@@ -153,13 +153,13 @@ if [ -z "$bootstrap" ]; then
     fi
 
     if [ -n "$ForcedBootstrap" ]; then
-        [ -z "$_RUNDK_IN_DOCKER" ] && eecho "== runphp is needed: bootstrapping"
+        [ -z "$_RUNPHP_IN_DOCKER" ] && eecho "== runphp is needed: bootstrapping"
         bootstrap=1
         BootstrapOnly=
     fi
 fi
 
-if [ -z "$_RUNDK_IN_DOCKER" ]; then
+if [ -z "$_RUNPHP_IN_DOCKER" ]; then
     ############################################################################
     # Lancement depuis l'extérieur du container
 
@@ -224,9 +224,9 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
 
     ## Construire l'image
 
-    if [ -n "$RUNDK_NO_USE_RSLAVE" ]; then
+    if [ -n "$RUNPHP_NO_USE_RSLAVE" ]; then
         UseRslave=
-    elif [ -n "$RUNDK_USE_RSLAVE" ]; then
+    elif [ -n "$RUNPHP_USE_RSLAVE" ]; then
         UseRslave=1
     elif [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
         # pas de mount propagation sous WSL
@@ -237,8 +237,8 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
 
     IMAGE=
     if [ -z "$bootstrap" ]; then
-        if [ -n "$RUNDK_FORCE_BUILDENVS" ]; then
-            eval "Configs=($RUNDK_FORCE_BUILDENVS)"
+        if [ -n "$RUNPHP_FORCE_BUILDENVS" ]; then
+            eval "Configs=($RUNPHP_FORCE_BUILDENVS)"
             for config in "${Configs[@]}"; do
                 source "$config" || exit 1
             done
@@ -274,8 +274,8 @@ if [ -z "$_RUNDK_IN_DOCKER" ]; then
         args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
         Dist=
-        if [ -n "$RUNDK_FORCE_BUILDENVS" ]; then
-            eval "Configs=($RUNDK_FORCE_BUILDENVS)"
+        if [ -n "$RUNPHP_FORCE_BUILDENVS" ]; then
+            eval "Configs=($RUNPHP_FORCE_BUILDENVS)"
         elif [ -n "$BUILDENV" -a -f "$PROJDIR/$BUILDENV" ]; then
             Configs=("$PROJDIR/$BUILDENV")
         elif [ -n "$BUILDENV0" -a -f "$PROJDIR/$BUILDENV0" ]; then
@@ -405,7 +405,7 @@ OPTIONS
             --) shift; break;;
             --help)
                 eecho "\
-runphp: construire l'image docker
+runphp: lancer une commande dans docker
 
 USAGE
     $MYNAME ci|cu|composer
@@ -437,20 +437,17 @@ OPTIONS
         done
 
         if [ -n "$ComposerInstall" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+            # Forcer l'installation des dépendances si nécessaire
             ForcedBootstrap=1
         fi
     fi
 
     ## Lancer la commande
 
-    uid="$(id -u)"
-    gid="$(id -g)"
     args=(
         run -it --rm
         --name "runphp-$(basename -- "$1")-$$"
-        -e _RUNDK_IN_DOCKER=1
-        -e _RUNDK_UID="$uid"
-        -e _RUNDK_GID="$gid"
+        -e _RUNPHP_IN_DOCKER=1
     )
     for arg in "${!PROXY_VARS[@]}"; do
         args+=(--e "$arg=${PROXY_VARS[$arg]}")
@@ -476,17 +473,12 @@ OPTIONS
     args+=(-w "$(pwd)")
 
     # lancer avec l'utilisateur courant
-    if [ $uid -ne 0 ]; then
+    if [ $(id -u) -ne 0 ]; then
         # si c'est un utilisateur lambda, il faut monter les informations
         # nécessaires. composer est déjà monté via $HOME
-        user="$(id -un)"
-        userent="$(getent passwd "$user")"
-        group="$(id -gn)"
-        groupent="$(getent group "$group")"
         args+=(
-            -e _RUNDK_USER="$user"
-            -e _RUNDK_USERENT="$userent"
-            -e _RUNDK_GROUPENT="$groupent"
+            -e DEVUSER_USERENT="$(getent passwd "$(id -un)")"
+            -e DEVUSER_GROUPENT="$(getent group "$(id -gn)")"
         )
     fi
 
@@ -502,18 +494,10 @@ else
     ############################################################################
     # Lancement depuis l'intérieur du container
 
-    # Ajouter les informations utilisateur le cas échéant
-    if [ -n "$_RUNDK_USERENT" ]; then
-        grep -q "^$_RUNDK_USER:" /etc/passwd || echo "$_RUNDK_USERENT" >>/etc/passwd
-    fi
-    if [ -n "$_RUNDK_GROUPENT" ]; then
-        grep -q "^$_RUNDK_GROUP:" /etc/group || echo "$_RUNDK_GROUPENT" >>/etc/group
-    fi
-    if [ -n "$_RUNDK_USER" ]; then
-        user="$_RUNDK_USER"
-        export _RUNDK_USER=
-        export _RUNDK_USERENT=
-        export _RUNDK_GROUPENT=
+    if [ -n "$DEVUSER_USERENT" ]; then
+        user="${DEVUSER_USERENT%%:*}"
+        export DEVUSER_USERENT=
+        export DEVUSER_GROUPENT=
         if in_path su-exec; then
             exec su-exec "$user" "$0" "$@"
         else

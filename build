@@ -59,6 +59,16 @@ function build_check_env() {
     template_process_userfiles
 
     if [ -n "$updated" ]; then
+        setx userent=getent passwd "$(id -un)"
+        setx userent=qval "$userent"
+        setx groupent=getent group "$(id -gn)"
+        setx groupent=qval "$groupent"
+        sed -i "
+/^#DEVUSER_.*=/s/^#//
+/^DEVUSER_USERENT=/s/=.*/=${userent//\//\\\/}/
+/^DEVUSER_GROUPENT=/s/=.*/=${groupent//\//\\\/}/
+" "$PROJDIR/$BUILDENV"
+
         enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier $BUILDENV
     ${EDITOR:-nano} $BUILDENV
 ENSUITE, vous pourrez relancer la commande"
@@ -114,7 +124,7 @@ function build_images() {
     for image in "$@"; do
         case "$image" in
         runphp)
-            [ ${#Configs[*]} -gt 0 ] && export RUNDK_FORCE_BUILDENVS="${Configs[*]}"
+            [ ${#Configs[*]} -gt 0 ] && export RUNPHP_FORCE_BUILDENVS="${Configs[*]}"
             local -a args=(--bootstrap)
             [ "$ForceBuild" != all ] && args+=(--unless-exists)
             [ -n "$Pull" ] && args+=(--pull)
