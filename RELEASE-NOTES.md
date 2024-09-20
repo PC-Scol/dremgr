@@ -1,5 +1,19 @@
 # Release Notes
 
+## Version 0.20.0 du 20/09/2024
+
+Cette mise à jour nécessite que la reconstruction des images soit forcée
+~~~sh
+# mettre à jour le dépôt
+git pull
+
+# Forcer la reconstruction des images
+./build -UR
+
+# Forcer le redémarrage des services
+./dremgr -R
+~~~
+
 ## Version 0.19.0 du 13/09/2024
 
 IMPORTANT: *AVANT* de faire cette mise à jour, il faut arrêter les services.
