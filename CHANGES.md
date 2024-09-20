@@ -1,3 +1,12 @@
+## Version 0.20.0 du 20/09/2024-08:16
+
+* `36e671b` maj release notes
+* `2a6fb62` maj doc pour MINIMIZE_DOWNTIME
+* `5870373` bug avec le chargement des paramètres
+* `6d8a882` maj doc
+* `8c3e467` maj runphp
+* `6e49247` migration vers runphp
+
 ## Version 0.19.3 du 16/09/2024-14:37
 
 * `df0b85e` bug suite à une maj de l'image adminer
