@@ -93,7 +93,10 @@ informations à l'utilisateur.
 : Planification cron pour le script d'import
 
   Les fichiers sont générés à 4h GMT, soit 5h heure de Paris. on planifie à 5h30
-  par défaut pour laisser le temps à l'export de se terminer
+  par défaut pour laisser le temps à l'export de se terminer.
+
+  Bien entendu, si vous n'êtes pas en métropole, il faudra modifier ce paramètre
+  en fonction du fuseau horaire.
 
 `CRON_DISABLE`
 : Indiquer une valeur quelconque pour désactiver les imports automatiques. La
@@ -103,6 +106,28 @@ informations à l'utilisateur.
 `CRON_MAX_AGE`
 : Nombre de jours au terme duquel un fichier téléchargé est supprimé. Par
   défaut, ne garder que les 15 derniers jours
+
+`MINIMIZE_DOWNTINE`
+: Si ce paramètre est activé, l'importation des dumps et des addons se fait de
+  façon à minimiser le temps d'indisponibilité de la base de données DRE:
+  l'importation se fait dans une base temporaire vide, et ensuite, cette base
+  temporaire remplace la base actuelle.
+
+  De cette façon, le temps pendant lequel la base DRE n'est pas disponible à
+  cause de l'import quotidien est réduit à 1 ou 2 secondes. Bien entendu, les
+  connexion en cours sont "sauvagement" arrêtées lors de la bascule sur la
+  nouvelle base.
+
+  Cependant, à cause de ce mode opératoire, toutes les tables et données qui ont
+  été créées "manuellement" dans la base de données DRE sont perdues, puisqu'on
+  repart toujours d'une base vide. Il y a plusieurs solutions:
+  * Désactiver cette fonctionnalité (i.e `MINIMIZE_DOWNTINE=`) mais le temps
+    d'indisponibilité va de 10 à 15 minutes en fonction du nombre d'addons et de
+    la quantité de données
+  * Créer les tables supplémentaires via un addon. Ce n'est pas forcément
+    possible, surtout si ce sont des données créées manuellement.
+  * Créer une autre base de données en parallèle, et utiliser `dblink` pour
+    interagir avec la base DRE
 
 `HOST_MAPPINGS`
 : Liste de mappings d'hôte à installer dans le container, un par ligne
