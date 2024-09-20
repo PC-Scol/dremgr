@@ -7,19 +7,21 @@ FROM $REGISTRY/src/php AS php
 
 ################################################################################
 FROM debian:${NDIST}-slim AS builder
+ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
+ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
+
 COPY --from=base /g/ /g/
 COPY --from=base /src/ /src/
-
 RUN /g/build core lite _builder
-RUN make -C /src/su-exec
+RUN /g/build _su-exec_builder
 
 ################################################################################
 FROM debian:${NDIST}-slim
-
-COPY --from=builder /src/su-exec/su-exec /g/
-COPY --from=base /g/ /g/
 ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
 ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
+
+COPY --from=base /g/ /g/
+COPY --from=builder /src/su-exec/su-exec /g/
 RUN /g/build
 
 COPY --from=php /g/ /g/

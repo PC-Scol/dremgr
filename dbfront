@@ -1,7 +1,7 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
-"$MYDIR/sbin/rundk" --bs --ue --ci || exit 1
+"$MYDIR/sbin/runphp" --bs --ue --ci || exit 1
 DREMGR="$MYDIR"
 source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
@@ -12,7 +12,7 @@ function start_dbfront() {
     if [ -n "$ForceStart" ]; then
         :
     elif dcrunning "$composefile"; then
-        enote "Le frontal postgresql DRE est démarré"
+        enote "Le frontal bdd DRE est démarré"
         return
     fi
 
@@ -21,7 +21,7 @@ function start_dbfront() {
 
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
 
-    estep "Démarrage du frontal postgresql DRE"
+    estep "Démarrage du frontal bdd DRE"
     docker compose -f "$composefile" up -d --wait || die
 
     #if [ -n "$reload" ]; then
@@ -35,7 +35,7 @@ function stop_dbfront() {
     local composefile="$DREMGR/dbfront-docker-compose.yml"
     [ -f "$composefile" ] || return 0
     if dcrunning "$composefile"; then
-        estep "Arrêt du frontal postgresql DRE"
+        estep "Arrêt du frontal bdd DRE"
         docker compose -f "$composefile" down || die
     fi
 }
@@ -62,20 +62,20 @@ function pgbouncer_prompt() {
         )"
         docker compose -f "$composefile" exec pgbouncer psql -d "dbname=pgbouncer user=$user password=$password" "$@" || die
     else
-        eerror "Impossible de lancer l'invite pgbouncer: frontal postgresql DRE est arrêté"
+        eerror "Impossible de lancer l'invite pgbouncer: frontal bdd DRE est arrêté"
     fi
 }
 
 action=auto
 Rebuild=
 args=(
-    "Gérer le frontal postgresql de DRE"
+    "Gérer le frontal bdd de DRE"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
-    -s,--start action=start "Démarrer le frontal postgresql"
-    -k,--stop action=stop "Arrêter le frontal postgresql"
-    -r,--refresh action=refresh "(Re)démarrer le frontal postgresql si nécessaire"
-    -R,--restart action=restart "Forcer le (re)démarrage du frontal postgresql"
+    -s,--start action=start "Démarrer le frontal bdd"
+    -k,--stop action=stop "Arrêter le frontal bdd"
+    -r,--refresh action=refresh "(Re)démarrer le frontal bdd si nécessaire"
+    -R,--restart action=restart "Forcer le (re)démarrage du frontal bdd"
     -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -q,--pgbouncer action=pgbouncer "++Lancer une invite psql pour piloter pgbouncer"
 )
