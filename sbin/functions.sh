@@ -77,6 +77,7 @@ function template_source_envs() {
     elif [ -f "$DREMGR/dremgr.env" ]; then
         source_envs+=("$DREMGR/dremgr.env")
     fi
+    source_envs+=("$DREMGR/.dremgr.env")
     _template_source_envs "${source_envs[@]}"
     template_vars+=(IS_DBINST IS_DBFRONT IS_WEBFRONT)
     template_lists=("${DREMGR_TEMPLATE_LIST_VARS[@]}")
