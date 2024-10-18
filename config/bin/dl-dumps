@@ -357,11 +357,8 @@ create schema if not exists $schema;
     eend
 
     etitle "Importation des collections (json)"
-    for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
-        splitpair "$schema_collection" schema collection
-        file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
-        schema="mongo_$schema"
-
+    function import_json() {
+        local schema="$1" collection="$2" file="$3"
         qstep "$schema: $collection: import $file"
         runsql "
 create table if not exists $schema.$collection (source_json jsonb);
@@ -369,6 +366,13 @@ create table if not exists $schema.$collection (source_json jsonb);
         <"$file" runsql "
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
 " || die
+    }
+    import_json mongo_piste_inscription version_instance "$version"
+    for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
+        splitpair "$schema_collection" schema collection
+        file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
+        schema="mongo_$schema"
+        import_json "$schema" "$collection" "$file"
     done
     for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
         schema="mongo_$schema"
