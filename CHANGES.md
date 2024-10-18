@@ -1,3 +1,9 @@
+## Version 0.21.0 du 18/10/2024-21:10
+
+* `a14d4c1` ajouter la table mongo_piste_inscription.version_instance
+* `58884ef` bug mineur
+* `5b6b4be` toujours utiliser la dernière version mineure de pgadmin
+
 ## Version 0.20.0 du 20/09/2024-08:16
 
 * `36e671b` maj release notes
