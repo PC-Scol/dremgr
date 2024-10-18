@@ -1,3 +1,7 @@
+## Version 0.21.1 du 18/10/2024-21:39
+
+* `342a7cb` supprimer dreaddon-ins_piste qui est obsolète de la documentation
+
 ## Version 0.21.0 du 18/10/2024-21:10
 
 * `a14d4c1` ajouter la table mongo_piste_inscription.version_instance
