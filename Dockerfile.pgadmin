@@ -3,7 +3,7 @@ ARG REGISTRY=pubdocker.univ-reunion.fr
 FROM $REGISTRY/src/base AS base
 FROM $REGISTRY/src/postgres AS postgres
 
-FROM dpage/pgadmin4:8.8
+FROM dpage/pgadmin4:8
 
 USER root
 COPY --from=base /g/ /g/
