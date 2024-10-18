@@ -43,9 +43,6 @@ suivantes peuvent être configurées le cas échéant:
   trois URLs de github suivants sont listés:
   * `PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
-  * `PC-Scol/dreaddon-ins_piste.git`
-    schéma "ins_piste" développé par l'UPHF, construit à partir des exports des
-    bases MongoDB
   * `PC-Scol/dreaddon-pilotage.git`
     schéma "pilotage" développé par l'UPHF, base de l'univers BO livré aussi par
     l'UPHF
