@@ -1,3 +1,8 @@
+## Version 0.21.2 du 06/11/2024-17:32
+
+* `d30701d` suivre le fichier témoin .composer.lock.runphp
+* `25175ac` n'afficher un message que si le fichier de profil n'existe pas
+
 ## Version 0.21.1 du 18/10/2024-21:39
 
 * `342a7cb` supprimer dreaddon-ins_piste qui est obsolète de la documentation
