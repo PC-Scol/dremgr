@@ -162,7 +162,8 @@ if [ "$Profile" == ALL ]; then
 / }"
     for profile in "${profiles[@]}"; do
         etitle "$profile"
-        "$MYSELF" --profile "$profile" "${args[@]}" -- "$@"
+        "$MYSELF" --profile "$profile" "${args[@]}" -- "$@"; r=$?
+        [ $r -eq 22 ] && exit
         eend
     done
     exit
@@ -173,7 +174,7 @@ Profile="${Profile%_profile.env}"
 envfile="$DREMGR/${Profile}_profile.env"
 
 IS_DBINST=1
-run_check_env || exit 0
+run_check_env || exit 22
 [ -f "$envfile" ] || die "$Profile: profil invalide (${envfile#$DREMGR/}: fichier de profil introuvable)"
 
 DREDATA="$DREMGR/var/${Profile}-dredata"

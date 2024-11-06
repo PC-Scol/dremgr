@@ -118,6 +118,12 @@ function run_check_env() {
     eval "$(template_locals)"
     local -a filter files; local file
 
+    # si le fichier d'environnement n'existe pas, il faudra le configurer
+    local please_configure
+    if [ -n "$Profile" -a ! -e "${Profile}_profile.env" ]; then
+        please_configure=1
+    fi
+
     # les fichiers .*.template sont systématiquement recréés
     filter=(
         -type d -name .git -prune -or
@@ -147,7 +153,7 @@ function run_check_env() {
     # puis mettre à jour les fichiers
     template_process_userfiles
 
-    if [ -n "$updated" -a -n "$Profile" ]; then
+    if [ -n "$updated" -a -n "$please_configure" ]; then
         enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier ${Profile}_profile.env
     ${EDITOR:-nano} ${Profile}_profile.env
 ENSUITE, vous pourrez relancer la commande"
