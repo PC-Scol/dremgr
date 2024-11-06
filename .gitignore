@@ -1,8 +1,6 @@
 .~lock*#
 .*.swp
 
-/.composer.lock.rundk
-
 /.env
 /.proxy.env
 /build.env
