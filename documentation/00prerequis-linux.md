@@ -72,4 +72,9 @@ configuration des groupes
 
 Pour les autres systèmes, vous devez vous reporter à votre manuel utilisateur
 
+---
+
+Une fois que vous avez installé les pré-requis, vous pouvez passer à l'étape
+suivante, [>> cloner le dépôt](01cloner-depot.md)
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
