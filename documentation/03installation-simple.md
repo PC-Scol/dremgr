@@ -1,17 +1,15 @@
-# Installation de dremgr
-
 Si vous n'avez pas encore construit les images, vous devez le faire au préalable.
-[Construire les images](construire-images.md)
+[Construire les images](02construire-images.md)
 
 Le mode simple n'installe qu'une seule instance de la base de données ainsi que
 du mécanisme pour la mettre à jour quotidiennement. Ce mode n'offre aucune
 interface utilisateur.
 
 Si vous souhaitez offrir une interface aux utilisateurs, ou gérer facilement
-plus instances sur la même machine, il faut sélectionner le mode avancé.
-[Installer dremgr dans le mode avancé](installation-avancee.md)
+plusieurs instances sur la même machine, il faut sélectionner le mode avancé.
+[Installer dremgr dans le mode avancé](03installation-avancee.md)
 
-## Installer dans le mode simple
+# Installer dans le mode simple
 
 Une fois les images construites, il faut préparer le démarrage de l'instance DRE
 ~~~sh

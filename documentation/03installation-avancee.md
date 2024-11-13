@@ -1,7 +1,5 @@
-# Installation de dremgr
-
 Si vous n'avez pas encore construit les images, vous devez le faire au préalable.
-[Construire les images](construire-images.md)
+[Construire les images](02construire-images.md)
 
 Le mode avancé permet d'installer autant d'instances que nécessaire sur une même
 machine. Elle offre aussi une interface utilisateur, mais elle demande (un peu)
@@ -10,7 +8,7 @@ plus de travail.
 Si vous avez déjà installé dremgr dans le mode simple, suivez attentivement les
 instructions pour ne pas perdre la configuration courante
 
-## Installer dans le mode avancé
+# Installer dans le mode avancé
 
 Le mode avancé permet de gérer plusieurs instances. Chaque instance correspond à
 un profil: prod, test, etc... Le fichier `dremgr.env` définit l'ensemble des

@@ -1,6 +1,8 @@
-# Installation de dremgr
+Si vous n'avez pas encore installé les pré-requis ni cloné le dépôt, retournez
+aux sections précédentes: installer les pré-requis [pour linux](00prerequis-linux.md)
+ou [pour windows/WSL](00prerequis-wsl.md) puis [cloner le dépôt](01cloner-depot.md)
 
-## Contruire les images
+# Contruire les images
 
 Avant de pouvoir utiliser dremgr, il faut construire les images docker
 utilisées par l'application
@@ -33,9 +35,17 @@ Une fois le fichier configuré, les images peuvent être construites
 ./build
 ~~~
 
-Une fois les images construites, et le mode de fonctionnement choisi, dremgr
-peut être installé
-* [Installer dremgr dans le mode simple](installation-simple.md)
-* [Installer dremgr dans le mode avancé](installation-avancee.md)
+--
+
+Une fois que vous avez construit les images, vous devez choisir le mode de
+fonctionnement:
+* Le mode simple n'installe qu'une seule instance de la base de données ainsi
+  que du mécanisme pour la mettre à jour quotidiennement. Ce mode n'offre
+  aucune interface utilisateur.
+  [>> Installer dremgr dans le mode simple](03installation-simple.md)
+* Le mode avancé permet d'installer autant d'instances que nécessaire sur une
+  même machine. Elle offre aussi une interface utilisateur, mais elle demande
+  (un peu) plus de travail.
+  [>> Installer dremgr dans le mode avancé](03installation-avancee.md)
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

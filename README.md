@@ -10,39 +10,37 @@ DRE
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
 accès à un export journalier des bases de données d'une instance PEGASE
 
-## Pré-requis
+## Faire l'installation initiale
 
 dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
-* Installation des [pré-requis pour Debian](documentation/prerequis-linux.md) et
-  autres distributions Linux. Ce mode d'installation est celui à sélectionner
-  pour la production, mais peut aussi être utilisé pour les tests ou le
-  développement, notamment si le poste de l'utilisateur est sous Linux.
-* Installation des [pré-requis pour WSL](documentation/prerequis-wsl.md), le
-  sous-système Linux pour Windows. Ce mode d'installation est approprié pour les
-  tests ou le développement.
 
-## Démarrage rapide
-
-Ouvrez un terminal et clonez le dépôt
-~~~sh
-git clone https://github.com/PC-Scol/dremgr.git
-~~~
-~~~sh
-cd dremgr
-~~~
-
-* Il faut d'abord construire les images docker nécessaires.
-  [Construire les images](documentation/construire-images.md)
-* Ensuite, vous devez choisir le mode de fonctionnement:
+* Installez d'abord les pré-requis
+  * Installation des [pré-requis pour Debian](documentation/00prerequis-linux.md)
+    et autres distributions Linux. Ce mode d'installation est celui à
+    sélectionner pour la production, mais peut aussi être utilisé pour les tests
+    ou le développement, notamment si le poste de l'utilisateur est sous Linux.
+  * Installation des [pré-requis pour WSL](documentation/00prerequis-wsl.md), le
+    sous-système Linux pour Windows. Ce mode d'installation est approprié pour
+    les tests ou le développement.
+* Puis ouvrez un terminal et clonez le dépôt
+  ~~~sh
+  git clone https://github.com/PC-Scol/dremgr.git
+  ~~~
+  ~~~sh
+  cd dremgr
+  ~~~
+* Ensuite, Il faut construire les images docker nécessaires.
+  [Construire les images](documentation/02construire-images.md)
+* Enfin, vous devez choisir le mode de fonctionnement:
   * Le mode simple n'installe qu'une seule instance de la base de données ainsi
     que du mécanisme pour la mettre à jour quotidiennement. Ce mode n'offre
     aucune interface utilisateur.
-    [Installer dremgr dans le mode simple](documentation/installation-simple.md)
+    [Installer dremgr dans le mode simple](documentation/03installation-simple.md)
   * Le mode avancé permet d'installer autant d'instances que nécessaire sur une
     même machine. Elle offre aussi une interface utilisateur, mais elle demande
     (un peu) plus de travail.
-    [Installer dremgr dans le mode avancé](documentation/installation-avancee.md)
+    [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
 
 ## Installer une mise à jour
 
