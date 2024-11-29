@@ -3,6 +3,7 @@
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 RUNPHP="$MYDIR/sbin/runphp"
 "$RUNPHP" --bs --ue --ci || exit 1
+RUNPHP_STANDALONE=
 PROJDIR=; COMPOSERDIR=; COMPOSERPHAR=; VENDORDIR=; BUILDENV0=; BUILDENV=
 BUILD_IMAGES=(php-apache mariadb10); export BUILD_FLAVOUR=; DIST=; IMAGENAME=
 source "$RUNPHP" || exit 1
@@ -59,15 +60,17 @@ function build_check_env() {
     template_process_userfiles
 
     if [ -n "$updated" ]; then
-        setx userent=getent passwd "$(id -un)"
-        setx userent=qval "$userent"
-        setx groupent=getent group "$(id -gn)"
-        setx groupent=qval "$groupent"
-        sed -i "
+        if [ $(id -u) -ne 0 ]; then
+            setx userent=getent passwd "$(id -un)"
+            setx userent=qval "$userent"
+            setx groupent=getent group "$(id -gn)"
+            setx groupent=qval "$groupent"
+            sed -i "
 /^#DEVUSER_.*=/s/^#//
 /^DEVUSER_USERENT=/s/=.*/=${userent//\//\\\/}/
 /^DEVUSER_GROUPENT=/s/=.*/=${groupent//\//\\\/}/
 " "$PROJDIR/$BUILDENV"
+        fi
 
         enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier $BUILDENV
     ${EDITOR:-nano} $BUILDENV
@@ -125,8 +128,8 @@ function build_images() {
         case "$image" in
         runphp)
             [ ${#Configs[*]} -gt 0 ] && export RUNPHP_FORCE_BUILDENVS="${Configs[*]}"
-            local -a args=(--bootstrap)
-            [ "$ForceBuild" != all ] && args+=(--unless-exists)
+            local -a args=(--bs)
+            [ "$ForceBuild" != all ] && args+=(--ue)
             [ -n "$Pull" ] && args+=(--pull)
             [ -n "$NoCache" ] && args+=(--no-cache)
             "$RUNPHP" "${args[@]}" || die
