@@ -70,20 +70,40 @@ if [ -f "$MYDIR/runphp.userconf.local" ]; then
     source "$MYDIR/runphp.userconf.local"
 fi
 
-[ -n "$PROJDIR" ] || PROJDIR="$(dirname -- "$MYDIR")"
-[ "${PROJDIR#/}" != "$PROJDIR" ] || PROJDIR="$(cd "$MYDIR/$PROJDIR"; pwd)"
+DEFAULT_DIST=d12
+if [ -n "$RUNPHP_STANDALONE" ]; then
+    PROJDIR="$RUNPHP_PROJDIR"
 
-[ -n "$COMPOSERDIR" ] || COMPOSERDIR=.
-[ -n "$COMPOSERPHAR" ] || COMPOSERPHAR=sbin/composer.phar
-[ -n "$VENDORDIR" ] || VENDORDIR=vendor
-[ -n "$BUILDENV0" ] || BUILDENV0=.build.env.dist
-[ -n "$BUILDENV" ] || BUILDENV=build.env
-[ -n "$DIST" ] || DIST=d12
-[ -n "$IMAGENAME" ] || IMAGENAME=nulib/
+    COMPOSERDIR=.
+    COMPOSERPHAR=
+    VENDORDIR=vendor
+    BUILDENV0=
+    BUILDENV=
+    DIST="${RUNPHP_DIST:-$DEFAULT_DIST}"
+    IMAGENAME=nulib/
 
-[ "$COMPOSERPHAR" == none ] && COMPOSERPHAR=
-[ "$BUILDENV0" == none ] && BUILDENV0=
-[ "$BUILDENV" == none ] && BUILDENV=
+    PRIVAREG=docker.io
+    REGISTRY="$RUNPHP_REGISTRY"
+
+    [ -n "$RUNPHP_BUILD_FLAVOUR" ] && BUILD_FLAVOUR="$RUNPHP_BUILD_FLAVOUR"
+
+else
+    [ -n "$PROJDIR" ] || PROJDIR="$(dirname -- "$MYDIR")"
+    [ "${PROJDIR#/}" != "$PROJDIR" ] || PROJDIR="$(cd "$MYDIR/$PROJDIR"; pwd)"
+
+    [ -n "$COMPOSERDIR" ] || COMPOSERDIR=.
+    [ -n "$COMPOSERPHAR" ] || COMPOSERPHAR=sbin/composer.phar
+    [ -n "$VENDORDIR" ] || VENDORDIR=vendor
+    [ -n "$BUILDENV0" ] || BUILDENV0=.build.env.dist
+    [ -n "$BUILDENV" ] || BUILDENV=build.env
+    [ -n "$DIST" ] || DIST="$DEFAULT_DIST"
+    [ -n "$IMAGENAME" ] || IMAGENAME=nulib/
+
+    [ "$COMPOSERPHAR" == none ] && COMPOSERPHAR=
+    [ "$BUILDENV0" == none ] && BUILDENV0=
+    [ "$BUILDENV" == none ] && BUILDENV=
+fi
+[ "$BUILD_FLAVOUR" == none ] && BUILD_FLAVOUR=
 
 function after_source_buildenv() {
     NDIST="${DIST#d}"
@@ -99,7 +119,7 @@ function is_defined() { [ -n "$(declare -p "$1" 2>/dev/null)" ]; }
 function in_path() { [ -n "$1" -a -x "$(which "$1" 2>/dev/null)" ]; }
 function composer() {
     cd "$PROJDIR/$COMPOSERDIR" || exit 1
-    if [ -x "$PROJDIR/$COMPOSERPHAR" ]; then
+    if [ -n "$COMPOSERPHAR" -a -x "$PROJDIR/$COMPOSERPHAR" ]; then
         "$PROJDIR/$COMPOSERPHAR" "$@"
     elif in_path composer; then
         command composer "$@"
@@ -110,36 +130,65 @@ function composer() {
     else
         die "impossible de trouver composer"
     fi
-    if [ -f composer.lock ]; then
+    if [ -z "$RUNPHP_STANDALONE" -a -f composer.lock ]; then
         cp composer.lock "$PROJDIR/.composer.lock.runphp"
     fi
 }
+function ensure_image() {
+    local dfdir suffix dockerfiles dockerfile
+    local privareg imagename
+    if [ -z "$Image" ]; then
+        [ -n "$RUNPHP_STANDALONE" ] && dfdir="$RUNPHP_STANDALONE/runphp" || dfdir="$MYDIR"
+        dockerfiles=(
+            "_local:$dfdir/Dockerfile.runphp.local"
+            "${BUILD_FLAVOUR//+/_}:$dfdir/Dockerfile.runphp$BUILD_FLAVOUR"
+            ":$dfdir/Dockerfile.runphp"
+        )
+        for dockerfile in "${dockerfiles[@]}"; do
+            suffix="${dockerfile%:*}"
+            dockerfile="${dockerfile##*:}"
+            [ -f "$dockerfile" ] && break
+        done
+        Dockerfile="$dockerfile"
 
-bootstrap=
-BootstrapOnly=1
-ComposerInstall=
-ForcedBootstrap=
-parse_opts=1
-args=()
-for arg in "$@"; do
-    if [ -z "$parse_opts" ]; then
-        args+=("$arg")
-    elif [ "$arg" == --bootstrap -o "$arg" == --bs ]; then
-        bootstrap=1
-    elif [ "$arg" == --exec ]; then
-        BootstrapOnly=
-    elif [ "$arg" == --composer-install -o "$arg" == --ci ]; then
-        ComposerInstall=1
-    elif [[ "$arg" == -* ]]; then
-        args+=("$arg")
-    else
-        args+=("$arg")
-        parse_opts=
+        [[ "$IMAGENAME" == */ ]] && imagename=runphp || imagename="${IMAGENAME%/*}/runphp"
+        privareg="$PRIVAREG"
+        if [ "$imagename" == runphp ]; then
+            [ -z "$privareg" -o "$privareg" == docker.io ] && privareg=docker.io/library
+        else
+            [ -z "$privareg" ] && privareg=docker.io
+        fi
+        Image="$privareg/$imagename$suffix:$DIST"
     fi
-done
-set -- "${args[@]}"
+}
+function check_image() {
+    local image="$Image"
+    for prefix in docker.io/library/ docker.io; do
+        if [ "${image#$prefix}" != "$image" ]; then
+            image="${image#$prefix}"
+            break
+        fi
+    done
+    [ -n "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$image" 2>/dev/null)" ]
+}
 
-if [ -z "$bootstrap" ]; then
+## Arguments initiaux
+
+Bootstrap=
+ComposerInstall=
+if [ "$1" == --runphp-bootstrap -o "$1" == --bs ]; then
+    Bootstrap=1
+    shift
+elif [ "$1" == --runphp-exec ]; then
+    Bootstrap=
+    shift
+elif [ "$1" == --runphp-install -o "$1" == --ci ]; then
+    ComposerInstall=1
+    shift
+fi
+
+ForcedBootstrap=
+if [ -z "$Bootstrap" -a -z "$RUNPHP_STANDALONE" ]; then
     # si vendor/ n'existe pas, alors on doit faire bootstrap
     if [ ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
         ForcedBootstrap=1
@@ -147,27 +196,18 @@ if [ -z "$bootstrap" ]; then
         ForcedBootstrap=1
     elif ! diff -q "$PROJDIR/$COMPOSERDIR/composer.lock" "$PROJDIR/.composer.lock.runphp" >&/dev/null; then
         ForcedBootstrap=1
-    elif [ -n "$bootstrap" -a -n "$BootstrapOnly" ]; then
-        # bootstrap inutile
-        exit 0
     fi
-
     if [ -n "$ForcedBootstrap" ]; then
-        [ -z "$_RUNPHP_IN_DOCKER" ] && eecho "== runphp is needed: bootstrapping"
-        bootstrap=1
-        BootstrapOnly=
+        [ "$RUNPHP_MODE" != docker ] && eecho "== bootstrapping runphp"
+        Bootstrap=1
+        ComposerInstall=1
     fi
 fi
 
-if [ -z "$_RUNPHP_IN_DOCKER" ]; then
+if [ "$RUNPHP_MODE" != docker ]; then
     ############################################################################
     # Lancement depuis l'extérieur du container
-
-    # recenser les valeur de proxy
-    declare -A PROXY_VARS
-    for var in {HTTPS,ALL,NO}_PROXY {http,https,all,no}_proxy; do
-        is_defined "$var" && PROXY_VARS[${var,,}]="${!var}"
-    done
+    ############################################################################
 
     ## Charger ~/.dkbuild.env
 
@@ -214,7 +254,6 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
         esac
     }
     [ -f ~/.dkbuild.env ] && source ~/.dkbuild.env
-
     [ -n "$APT_PROXY" ] || APT_PROXY=
     [ -n "$APT_MIRROR" ] || APT_MIRROR=default
     [ -n "$SEC_MIRROR" ] || SEC_MIRROR=default
@@ -222,8 +261,15 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
     [ -n "$PRIVAREG" ] || PRIVAREG=
     [ -n "$REGISTRY" ] || REGISTRY=pubdocker.univ-reunion.fr
 
-    ## Construire l'image
+    ## Charger la configuration
 
+    # Recenser les valeur de proxy
+    declare -A PROXY_VARS
+    for var in {HTTPS,ALL,NO}_PROXY {http,https,all,no}_proxy; do
+        is_defined "$var" && PROXY_VARS[${var,,}]="${!var}"
+    done
+
+    # Paramètres de montage
     if [ -n "$RUNPHP_NO_USE_RSLAVE" ]; then
         UseRslave=
     elif [ -n "$RUNPHP_USE_RSLAVE" ]; then
@@ -235,8 +281,9 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
         UseRslave=1
     fi
 
-    IMAGE=
-    if [ -z "$bootstrap" ]; then
+    # Toujours vérifier l'existence de l'image
+    Image=
+    if [ -z "$Bootstrap" ]; then
         if [ -n "$RUNPHP_FORCE_BUILDENVS" ]; then
             eval "Configs=($RUNPHP_FORCE_BUILDENVS)"
             for config in "${Configs[@]}"; do
@@ -250,16 +297,16 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
             source "$PROJDIR/$BUILDENV0" || exit 1
             after_source_buildenv
         fi
-        if [ -z "$IMAGE" ]; then
-            [[ "$IMAGENAME" == */ ]] && imagename=runphp || imagename="${IMAGENAME%/*}/runphp"
-            [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$imagename:$DIST" || IMAGE="$REGISTRY/$imagename:$DIST"
-        fi
-        if [ -z "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$IMAGE" 2>/dev/null)" ]; then
-            bootstrap=1
-        fi
+        ensure_image
+        check_image || Bootstrap=1
     fi
 
-    if [ -n "$bootstrap" ]; then
+    Chdir=
+    Verbose="$RUNPHP_VERBOSE"
+    if [ -n "$Bootstrap" ]; then
+        ## Mode bootstrap de l'image ###########################################
+        # Ici, on a déterminé que l'image doit être construite
+
         BUILD_ARGS=(
             DIST NDIST
             REGISTRY
@@ -269,8 +316,8 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
             TIMEZONE
         )
 
-        SOPTS=+d:9876543210:c:UjDx:z:r:pw:v
-        LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,chdir:,verbose,no-use-rslave
+        SOPTS=+d:9876543210:c:UjDx:z:r:p
+        LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,ci,no-use-rslave
         args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
         Dist=
@@ -287,8 +334,6 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
         Pull=
         NoCache=
         PlainOutput=
-        Chdir=
-        Verbose=
         while [ $# -gt 0 ]; do
             case "$1" in
             --) shift; break;;
@@ -297,7 +342,7 @@ if [ -z "$_RUNPHP_IN_DOCKER" ]; then
 runphp: construire l'image docker
 
 USAGE
-    $MYNAME --bootstrap [options...] [--exec command [args...]]
+    $MYNAME --bootstrap [options...]
 
 OPTIONS
     -c, --config build.env
@@ -309,11 +354,7 @@ OPTIONS
     -z, --timezone TIMEZONE
     -r, --privareg PRIVAREG
     -p, --push
-        paramètres pour la consruction de l'image
-    -w, --chdir CHDIR
-        aller dans le répertoire spécifié avant de lancer la commande
-    -v, --verbose
-        afficher plus d'informations"
+        paramètres pour la consruction de l'image"
                 exit 0
                 ;;
             -d|--dist) shift; Dist="$1";;
@@ -328,8 +369,7 @@ OPTIONS
             -z|--timezone) shift; TIMEZONE="$1";;
             -r|--privareg) shift; PRIVAREG="$1";;
             -p|--push) Push=1;;
-            -w|--chdir) shift; Chdir="$1";;
-            -v|--verbose) Verbose=1;;
+            --ci) ComposerInstall=1;;
             --no-use-rslave) UseRslave=;;
             *) die "$1: option non configurée";;
             esac
@@ -349,26 +389,17 @@ OPTIONS
             after_source_buildenv
         fi
         [ -n "$Dist" ] && DIST="$Dist"
-        if [ -z "$IMAGE" ]; then
-            [[ "$IMAGENAME" == */ ]] && imagename=runphp || imagename="${IMAGENAME%/*}/runphp"
-            [ -n "$PRIVAREG" ] && IMAGE="$PRIVAREG/$imagename:$DIST" || IMAGE="$REGISTRY/$imagename:$DIST"
-        fi
-        if [ -z "$UnlessExists" -o -z "$(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}}' "$IMAGE" 2>/dev/null)" ]; then
-            eecho "== Building $IMAGE"
-            dockerfiles=(
-                "$MYDIR/Dockerfile.runphp.local"
-                "$MYDIR/Dockerfile.runphp$BUILD_FLAVOUR"
-                "$MYDIR/Dockerfile.runphp"
-            )
-            for dockerfile in "${dockerfiles[@]}"; do
-                [ -f "$dockerfile" ] && break
-            done
+
+        ensure_image
+        check_image && exists=1 || exists=
+        if [ -z "$UnlessExists" -o -z "$exists" ]; then
+            eecho "== Building $Image"
             args=(
-                -f "$dockerfile"
+                -f "$Dockerfile"
                 ${Pull:+--pull}
                 ${NoCache:+--no-cache}
                 ${BuildPlain:+--progress plain}
-                -t "$IMAGE"
+                -t "$Image"
             )
             for arg in "${BUILD_ARGS[@]}"; do
                 args+=(--build-arg "$arg=${!arg}")
@@ -383,39 +414,40 @@ OPTIONS
             docker build "${args[@]}" /tmp/runphp-build || exit 1
 
             if [ -n "$Push" -a -n "$PRIVAREG" ]; then
-                eecho "== Pushing $IMAGE"
-                docker push "$IMAGE" || exit 1
+                eecho "== Pushing $Image"
+                docker push "$Image" || exit 1
             fi
         fi
-        if [ -n "$ComposerInstall" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
-            BootstrapOnly=
-            ForcedBootstrap=1
+        if [ -z "$RUNPHP_STANDALONE" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+            # Forcer l'installation des dépendances si nécessaire
+            ComposerInstall=1
         fi
-        [ -n "$BootstrapOnly" ] && exit 0
+        [ -z "$ComposerInstall" -o -n "$UnlessExists" ] && exit 0
 
     else
-        SOPTS=+w:v
-        LOPTS=help,chdir:,verbose,no-use-rslave
+        ## Mode exécution de commande ##########################################
+        # Ici, on a déterminé qu'il faut lancer une commande
+
+        SOPTS=+w:
+        LOPTS=help,chdir:,no-use-rslave
         args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
-        Chdir=
-        Verbose=
         while [ $# -gt 0 ]; do
             case "$1" in
             --) shift; break;;
             --help)
                 eecho "\
-runphp: lancer une commande dans docker
+runphp: lancer une commande dans un environnement PHP déterminé
 
 USAGE
     $MYNAME ci|cu|composer
-    $MYNAME --exec [options...] command [args...]
+    $MYNAME [options] command [args...]
 
 COMMANDES COMPOSER
     ci
     cu
         installer/mettre à jour les dépendances du projet avec composer
-    composer (args...]
+    composer [args...]
         lancer composer avec les arguments spécifiés.
 
 pour les commandes ci-dessus, l'option --chdir est ignorée: le répertoire
@@ -423,22 +455,19 @@ courant est forcé au répertoire du projet composer
 
 OPTIONS
     -w, --chdir CHDIR
-        aller dans le répertoire spécifié avant de lancer la commande
-    -v, --verbose
-        afficher plus d'informations"
+        aller dans le répertoire spécifié avant de lancer la commande"
                 exit 0
                 ;;
             -w|--chdir) shift; Chdir="$1";;
-            -v|--verbose) Verbose=1;;
             --no-use-rslave) UseRslave=;;
             *) die "$1: option non configurée";;
             esac
             shift
         done
 
-        if [ -n "$ComposerInstall" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+        if [ -z "$RUNPHP_STANDALONE" -a ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
             # Forcer l'installation des dépendances si nécessaire
-            ForcedBootstrap=1
+            ComposerInstall=1
         fi
     fi
 
@@ -447,28 +476,42 @@ OPTIONS
     args=(
         run -it --rm
         --name "runphp-$(basename -- "$1")-$$"
-        -e _RUNPHP_IN_DOCKER=1
+        -e RUNPHP_MODE=docker
     )
     for arg in "${!PROXY_VARS[@]}"; do
-        args+=(--e "$arg=${PROXY_VARS[$arg]}")
+        args+=(-e "$arg=${PROXY_VARS[$arg]}")
     done
+    if [ -n "$RUNPHP_STANDALONE" ]; then
+        args+=(
+            -e "RUNPHP_STANDALONE=$RUNPHP_STANDALONE"
+            -e "RUNPHP_PROJDIR=$PROJDIR"
+        )
+    fi
     for host in "${HOST_MAPPINGS[@]}"; do
         args+=(--add-host "$host")
     done
 
     # monter le répertoire qui contient $PROJDIR
     mount_composer=
-    if [ "${PROJDIR#$HOME/}" != "$PROJDIR" -o "$PROJDIR" == "$HOME" ]; then
+    mount_runphp=1
+    if [ -z "$PROJDIR" -o "${PROJDIR#$HOME/}" != "$PROJDIR" -o "$PROJDIR" == "$HOME" ]; then
         # bind mount $HOME
         args+=(-v "$HOME:$HOME${UseRslave:+:rslave}")
+        [ -n "$RUNPHP_STANDALONE" ] &&
+            [ "${RUNPHP_STANDALONE#$HOME/}" != "$RUNPHP_STANDALONE" ] &&
+            mount_runphp=
     else
         # bind mount uniquement le répertoire du projet
         args+=(-v "$PROJDIR:$PROJDIR${UseRslave:+:rslave}")
         mount_composer=1
+        [ "$RUNPHP_STANDALONE" == "$PROJDIR" ] && mount_runphp=
     fi
     if [ -n "$mount_composer" -a -d "$HOME/.composer" ]; then
         # monter la configuration de composer
         args+=(-v "$HOME/.composer:$HOME/.composer")
+    fi
+    if [ -n "$RUNPHP_STANDALONE" -a -n "$mount_runphp" ]; then
+        args+=(-v "$RUNPHP_STANDALONE:$RUNPHP_STANDALONE")
     fi
     args+=(-w "$(pwd)")
 
@@ -483,16 +526,17 @@ OPTIONS
     fi
 
     args+=(
-        "$IMAGE"
+        "$Image"
         exec "$0" ${Chdir:+-w "$Chdir"}
     )
-    [ -n "$ForcedBootstrap" ] && set -- ci
+    [ -n "$ComposerInstall" ] && set -- ci
     [ -n "$Verbose" ] && eecho "\$ docker ${args[*]} $*"
     exec docker "${args[@]}" "$@"
 
 else
     ############################################################################
     # Lancement depuis l'intérieur du container
+    ############################################################################
 
     if [ -n "$DEVUSER_USERENT" ]; then
         user="${DEVUSER_USERENT%%:*}"
@@ -520,7 +564,9 @@ else
         shift
     done
 
-    if [ "$1" == ci ]; then
+    if [ -z "$1" ]; then
+        die "no command specified"
+    elif [ "$1" == ci ]; then
         eecho "== installing composer dependencies"
         composer i
     elif [ "$1" == cu ]; then
@@ -532,6 +578,6 @@ else
         if [ -n "$chdir" ]; then
             cd "$chdir" || exit 1
         fi
-        exec "${@:-bash}"
+        exec "$@"
     fi
 fi

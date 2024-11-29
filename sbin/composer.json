@@ -9,9 +9,9 @@
 		}
 	],
 	"require": {
-		"nulib/php": "dev-wip",
-		"nur/sery": "dev-master",
-		"php": ">=7.4"
+		"nulib/php": "^7.4-dev",
+		"nur/ture": "^7.4-dev",
+		"php": "^7.4"
 	},
 	"autoload": {
 		"psr-4": {

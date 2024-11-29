@@ -1,5 +1,32 @@
 # Release Notes
 
+Si vous ne savez pas quelle la version actuellement instalée, vous pouvez
+consulter le fichier VERSION.txt
+~~~sh
+cat VERSION.txt
+~~~
+
+Il vous suffit ensuite de suivre les instructions ci-dessous pour les versions ultérieures
+
+## Version 0.22.0 du 29/11/2024
+
+Cette mise à jour technique utilise des paquets sources différents. Elle demande
+donc quelques manipulations.
+~~~sh
+# supprimer un fichier qui n'était pas suivi avant, pour éviter les conflits
+rm -rf .composer.lock.runphp sbin/vendor
+
+# mettre à jour le dépôt
+git pull
+
+# installer les paquets mis à jour
+./sbin/runphp --bs --ue
+./sbin/runphp ci
+
+# Forcer le redémarrage des services
+./dremgr -R
+~~~
+
 ## Version 0.20.0 du 20/09/2024
 
 Cette mise à jour nécessite que la reconstruction des images soit forcée
