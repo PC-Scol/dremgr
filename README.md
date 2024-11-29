@@ -1,6 +1,13 @@
-IMPORTANT: Si vous voulez mettre à jour votre installation, soyez sûr de prendre
-le temps de lire les [Release Notes](RELEASE-NOTES.md) AVANT de commencer à
-faire quoi que ce soit.
+> [!IMPORTANT]
+> Si vous voulez mettre à jour votre installation, soyez sûr de prendre le temps
+> de lire les [Release Notes](RELEASE-NOTES.md) AVANT de commencer à faire quoi
+> que ce soit.
+
+> [!WARNING]
+> Ce projet n'a pas encore atteint sa version stable. Il est donc sujet à des
+> modifications incompatibles de temps à autres. D'où l'importance de lire et
+> suivre avec attention les instructions des [Release Notes](RELEASE-NOTES.md)
+> AVANT de commencer à faire quoi que ce soit.
 
 # dremgr
 
