@@ -172,18 +172,13 @@ définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h30
 ## Modification du logo
 
 Pour remplacer le logo par celui de votre université dans l'application web, il
-faut *supprimer* le fichier `public/brand.png` puis copier une nouvelle image au
-format PNG avec le nom `brand.png`
+faut remplacer le fichier `public/brand.png` par votre propre image au format
+PNG (il faut garder le même nom)
 ~~~sh
-rm -f public/brand.png
-
 cp ~/path/to/monlogo public/brand.png
 ~~~
-la raison pour laquelle il faut supprimer d'abord est que par défaut il s'agit
-d'un lien symbolique. donc, pour être certain de copier un nouveau fichier et
-non de remplacer la cible du lien symbolique, on supprime d'abord
 
-L'image DOIT avoir une hauteur de 50 pixel. la largeur importe peu.
+L'image DOIT avoir une hauteur de 50 pixel. La largeur importe peu.
 
 ## Installer une version de développement
 
