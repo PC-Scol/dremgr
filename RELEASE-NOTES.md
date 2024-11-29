@@ -1,7 +1,7 @@
 # Release Notes
 
 Si vous ne savez pas quelle la version actuellement instalée, vous pouvez
-consulter le fichier VERSION.txt
+consulter le fichier `VERSION.txt`
 ~~~sh
 cat VERSION.txt
 ~~~
