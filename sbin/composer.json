@@ -9,8 +9,8 @@
 		}
 	],
 	"require": {
-		"nulib/php": "^7.4-dev",
-		"nur/ture": "^7.4-dev",
+		"nulib/php": "^0.1.0",
+		"nur/ture": "^0.1.0",
 		"php": "^7.4"
 	},
 	"autoload": {
