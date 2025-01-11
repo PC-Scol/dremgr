@@ -1,12 +1,27 @@
 # Release Notes
 
 Si vous ne savez pas quelle la version actuellement instalée, vous pouvez
-consulter le fichier VERSION.txt
+consulter le fichier `VERSION.txt`
 ~~~sh
 cat VERSION.txt
 ~~~
 
 Il vous suffit ensuite de suivre les instructions ci-dessous pour les versions ultérieures
+
+## Version 0.23.0 du 11/01/2025
+
+Cette mise à jour technique fixe la version des librairies dépendantes, pour
+améliorer la stabilité à long terme. Elle demande donc quelques manipulations
+~~~sh
+# mettre à jour le dépôt
+git pull
+
+# installer les paquets mis à jour
+./sbin/runphp ci
+
+# Forcer le redémarrage des services
+./dremgr -R
+~~~
 
 ## Version 0.22.0 du 29/11/2024
 

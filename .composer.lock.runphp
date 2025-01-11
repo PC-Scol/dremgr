@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb194165be1c557755113f42d71b0469",
+    "content-hash": "95a42acd88901da961a58e99068dd63d",
     "packages": [
         {
             "name": "nulib/php",
-            "version": "dev-master",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "3958b8f11d16d7a4c17feb415b9158425608112a"
+                "reference": "0dfb30d395c0516ba14ef3d9eb22e408bfd93d80"
             },
             "require": {
                 "ext-json": "*",
@@ -49,15 +49,15 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2024-11-29T04:40:10+00:00"
+            "time": "2024-11-29T15:29:35+00:00"
         },
         {
             "name": "nur/ture",
-            "version": "dev-master",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-ture.git",
-                "reference": "2cca0771639244db6edc787ce343a7ff5aade740"
+                "reference": "714e52820167e1f408b53796aed3f45e16c24673"
             },
             "require": {
                 "php": "^7.4"
@@ -144,7 +144,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2024-11-29T04:52:20+00:00"
+            "time": "2024-11-29T12:54:12+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -165,12 +165,12 @@
             },
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
                 "branch-alias": {
                     "dev-main": "2.5-dev"
-                },
-                "thanks": {
-                    "name": "symfony/contracts",
-                    "url": "https://github.com/symfony/contracts"
                 }
             },
             "autoload": {
@@ -239,8 +239,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -371,10 +371,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "nulib/php": 20,
-        "nur/ture": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
