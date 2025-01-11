@@ -1,3 +1,8 @@
+## Version 0.23.0 du 11/01/2025-14:14
+
+* `e841637` fixer la version des librairies
+* `a9bb7da` cosmetic
+
 ## Version 0.22.0 du 29/11/2024-12:29
 
 * `3eba6fc` Maj RELEASE NOTES
