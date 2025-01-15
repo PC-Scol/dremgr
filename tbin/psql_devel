@@ -1,0 +1,26 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+source /etc/nulib.sh || exit 1
+
+ADM="host=pegase-dre.self port=5432 dbname=pgbouncer user=pgbouncer password=admin"
+RW="host=pegase-dre.self port=5432 dbname=dre user=root password=admin"
+RO="host=pegase-dre.self port=5432 dbname=dre user=reader password=reader"
+
+conn="$RW"
+inputs=()
+args=(
+    "description"
+    -w,--write conn="$RW"
+    -r,--read conn="$RO"
+    -a,--admin conn="$ADM"
+    -f: inputs
+)
+parse_args "$@"; set -- "${args[@]}"
+
+if [ ${#inputs[*]} -gt 0 ]; then
+    for input in "${inputs[@]}"; do
+        psql -d "$conn" "$@" -f "$input"
+    done
+else
+    exec psql -d "$conn" "$@"
+fi
