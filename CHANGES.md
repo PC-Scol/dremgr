@@ -1,3 +1,9 @@
+## Version 0.23.1 du 05/02/2025-17:20
+
+* `8e2e888` maj doc
+* `55eb2a0` support de la nouvelle convention de nommage
+* `6c26479` maj outils devel
+
 ## Version 0.23.0 du 11/01/2025-14:14
 
 * `e841637` fixer la version des librairies
