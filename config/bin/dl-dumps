@@ -53,6 +53,13 @@ IMPORT_MONGO_SCHEMAS=()
 IMPORT_MONGO_COLLECTIONS=()
 function add_schema() {
     local sum="$1" file="$2" schema
+    if [[ "$file" == "$DRE_PREFIX"* ]]; then
+        [ -f "$file" ] || quietc_echo "$file: OK ce fichier sera téléchargé"
+        [ -n "$Tmpsums" ] && echo "$sum $(pwd)/$file" >>"$Tmpsums"
+    else
+        quietc_echo "$file: KO ce fichier sera ignoré"
+        return
+    fi
     DL_FILES+=("$file")
     if [[ "$file" == *.bin ]]; then
         schema="$file"
@@ -139,6 +146,7 @@ if [ -z "$DRE_PREFIX" ]; then
     DRE_PREFIX="${DRE_PREFIX#https://dre-dump.}"
     DRE_PREFIX="${DRE_PREFIX%/*}"
     DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
+    [ "$APP_PROFILE" == prod ] && DRE_PREFIX="prod-$DRE_PREFIX"
 fi
 
 cd "$DLDIR"
@@ -153,10 +161,13 @@ sums="checksums-$Timestamp"
 version="DRE_VERSION_$Timestamp"
 
 if [ -n "$step_dl" ]; then
+    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
+
     if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
         qstep "dl $sums"
         dl "$sums" || die
     fi
+    ac_set_tmpfile Tmpsums
     eval "$(sed 's/^/add_schema /' "$sums")"
 
     if [ ! -f "$version" ]; then
@@ -171,7 +182,7 @@ if [ -n "$step_dl" ]; then
     done
 
     qstep "Vérifications des sommes de contrôle"
-    sha256sum --status -c "$sums" || die
+    sha256sum --status -c "$Tmpsums" || die
 elif [ -f "$sums" ]; then
     eval "$(sed 's/^/add_schema /' "$sums")"
 else
