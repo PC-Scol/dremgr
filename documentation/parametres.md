@@ -25,6 +25,19 @@ paramètres sont lus dans le fichier `prod_profile.env`
 `DRE_PASSWORD`
 : utilisateur et mot de passe pour accéder au serveur des dumps DRE
 
+`DRE_PREFIX`
+: Préfixe des fichiers à télécharger. Normalement, la liste des fichiers à
+  télécharger est calculée à partir du contenu du fichier `checksums`. Dans tous
+  les cas, seuls les fichiers dont le nom commence par ce préfixe sont
+  considérés.
+
+  La valeur par défaut est `prod-DOMAINEETAB` pour le profil `prod` et
+  `DOMAINEETAB` pour les autres profils
+
+  Attention! si vous utilisez le mode simple pour attaquer une instance qui
+  n'est PAS de production, il faut alors absolument définir ce paramètre, parce
+  que dans le mode simple, le nom du profil est fixé à `prod`
+
 **Configuration du service postgresql**
 
 `POSTGRES_HOST`
