@@ -8,6 +8,15 @@ cat VERSION.txt
 
 Il vous suffit ensuite de suivre les instructions ci-dessous pour les versions ultérieures
 
+## Version 0.23.1 du 05/02/2025
+
+Cette version est compatible avec la nouvelle convention de nommage. Consulter
+la documentation du paramètre `DRE_PREFIX` pour les détails, en particulier si
+le mode simple est utilisé pour attaquer une instance qui n'est PAS de
+production.
+
+[Consulter la documentation des paramètres](documentation/parametres.md)
+
 ## Version 0.23.0 du 11/01/2025
 
 Cette mise à jour technique fixe la version des librairies dépendantes, pour
@@ -116,6 +125,8 @@ configuration:
 IMPORTANT: bien lire la documentation concernant le nouveau paramètre
 `MINIMIZE_DOWNTIME`, notamment si votre base DRE est provisionnée autrement que
 par des addons.
+
+[Consulter la documentation des paramètres](documentation/parametres.md)
 
 ## Version 0.18.0 du 16/07/2024
 
