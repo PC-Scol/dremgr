@@ -1,3 +1,7 @@
+## Version 0.23.2 du 06/02/2025-07:48
+
+* `a36a81c` corriger la doc
+
 ## Version 0.23.1 du 05/02/2025-17:20
 
 * `8e2e888` maj doc
