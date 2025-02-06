@@ -1,3 +1,7 @@
+## Version 0.23.3 du 06/02/2025-08:44
+
+* `91b60b8` corriger la prise en compte du profil courant
+
 ## Version 0.23.2 du 06/02/2025-07:48
 
 * `a36a81c` corriger la doc
