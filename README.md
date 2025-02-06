@@ -76,14 +76,10 @@ différentes ce celles mentionnées ci-dessus.
   aide intégrée affichée avec l'option `--help`
   [Afficher l'aide complète des scripts](documentation/scripts--help.md)
 * [Liste des paramètres des fichiers d'environnement](documentation/parametres.md)
-* Installer une mise à jour: consultez la section correspondant au mode
-  d'installation qui a été choisi
-  * [Mise à jour dans le mode simple](documentation/installation-simple.md)
-  * [Mise à jour dans le mode avancé](documentation/installation-avancee.md)
 * Pour tester des fonctionnalités qui ne sont pas encore stabilisées, il est
   possible de basculer une installation en mode "développement". ATTENTION!
   Cette opération ne devrait pas être effectuée en production.
-  [Installer une version de développement](documentation/installation-avancee.md)
+  [Installer une version de développement](documentation/03installation-avancee.md)
 * Les addons permettent de rajouter des fonctionnalités à DRE.
   * [Installation d'addons](documentation/dreaddons.md)
   * [Développement d'addons](documentation/dreaddons-developpement.md)
