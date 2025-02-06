@@ -47,10 +47,9 @@ paramètres sont lus dans le fichier `prod_profile.env`
 : utilisateur administrateur de la BDD
 
 `POSTGRES_PASSWORD`
-: mot de passe administrateur de la BDD. Une valeur aléatoire est généré lors de
-  l'installation. Elle peut être modifiée *avant* le premier démarrage de
-  l'instance de la base de données. Si l'instance a déjà démarré, modifier ce
-  paramètre n'a plus aucun effet.
+: mot de passe administrateur de la BDD. Ce paramètre doit être modifié *avant*
+  le premier démarrage de l'instance de la base de données. Si l'instance a déjà
+  démarré, modifier ce paramètre n'a plus aucun effet.
 
 **Adresse et port d'écoute de l'instance**
 
@@ -84,10 +83,10 @@ informations à l'utilisateur.
   par un addon
 
 `FE_PASSWORD`
-: mot de passe de l'utilisateur avec accès en lecture universel. Une valeur
-  aléatoire est généré lors de l'installation. Elle peut être modifiée *avant*
-  le premier démarrage de l'instance de la base de données. Si l'instance a déjà
-  démarré, modifier ce paramètre n'a plus aucun effet.
+: mot de passe de l'utilisateur avec accès en lecture universel. Ce paramètre
+  doit être modifié *avant* le premier démarrage de l'instance de la base de
+  données. Si l'instance a déjà démarré, modifier ce paramètre n'a plus aucun
+  effet.
 
 **Autres données**
 
