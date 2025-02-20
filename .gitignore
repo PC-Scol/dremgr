@@ -1,6 +1,4 @@
-.~lock*#
-.*.swp
-
+/.composer.lock.runphp
 /.env
 /.proxy.env
 /build.env
@@ -10,3 +8,6 @@
 /var/
 /*_start
 /*-docker-compose.yml
+
+.~lock*#
+.*.swp
