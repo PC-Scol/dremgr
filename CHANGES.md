@@ -1,10 +1,12 @@
-Si vous ne savez pas quelle la version actuellement instalée, vous pouvez
+# Release Notes
+
+Si vous ne savez pas quelle est la version actuellement instalée, vous pouvez
 consulter le fichier `VERSION.txt`
 ~~~sh
 cat VERSION.txt
 ~~~
 
-Il vous suffit ensuite de suivre les instructions ci-dessous pour les versions ultérieures
+Il vous suffit ensuite de suivre les instructions pour les versions ultérieures ci-dessous
 
 ## Release 1.0.1 du 01/03/2025-16:11
 
