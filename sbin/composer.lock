@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95a42acd88901da961a58e99068dd63d",
+    "content-hash": "ab7c54ba7438788d7b35da2ebf3fd82f",
     "packages": [
         {
             "name": "nulib/php",
-            "version": "0.1.0",
+            "version": "0.3.4p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "0dfb30d395c0516ba14ef3d9eb22e408bfd93d80"
+                "reference": "d4d51ffcea8ba641900cc7f2114be0b52f0d9e0b"
             },
             "require": {
                 "ext-json": "*",
@@ -23,13 +23,14 @@
                 "ext-curl": "*",
                 "ext-pcntl": "*",
                 "ext-posix": "*",
-                "nulib/tests": "7.4"
+                "ext-sqlite3": "*",
+                "nulib/tests": "^7.4"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "7.4.x-dev",
-                    "dev-php82": "8.2.x-dev"
+                    "dev-dev74": "7.4.x-dev",
+                    "dev-dev82": "8.2.x-dev"
                 }
             },
             "autoload": {
@@ -49,15 +50,15 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2024-11-29T15:29:35+00:00"
+            "time": "2025-03-01T02:23:16+00:00"
         },
         {
             "name": "nur/ture",
-            "version": "0.1.0",
+            "version": "0.3.0p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-ture.git",
-                "reference": "714e52820167e1f408b53796aed3f45e16c24673"
+                "reference": "ae4cc5a36b257ba030f6693b173405e26df162dc"
             },
             "require": {
                 "php": "^7.4"
@@ -70,7 +71,7 @@
                 "nur/m-pgsql": "dev-wip",
                 "nur/mapper": "dev-wip",
                 "nur/passwd": "dev-wip",
-                "nur/sery": "dev-master",
+                "nur/sery": "*",
                 "nur/tests": "dev-master",
                 "nur/v-bs3": "dev-wip"
             },
@@ -90,18 +91,19 @@
                 "ext-sqlite3": "*",
                 "ext-tidy": "*",
                 "ext-zip": "*",
-                "nulib/php": "^7.4-dev",
-                "nulib/phpss": "^7.4-dev",
-                "nulib/spout": "^7.4-dev",
+                "nulib/php": "^0.3.0p74",
+                "nulib/phpss": "^0.3.0p74",
+                "nulib/spout": "^0.3.0p74",
                 "nulib/tests": "^7.4"
             },
             "bin": [
+                "bin/dumpser.php",
+                "bin/csv2xlsx.php",
                 "nur_bin/compctl.php",
                 "nur_bin/compdep.php",
                 "nur_bin/datectl.php",
                 "nur_bin/fsvdiff.php",
                 "nur_bin/cachectl.php",
-                "nur_bin/dumpser.php",
                 "nur_bin/ldap-delete.php",
                 "nur_bin/ldap-get-infos.php",
                 "nur_bin/ldap-search.php",
@@ -111,8 +113,8 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "7.4.x-dev",
-                    "dev-php82": "8.2.x-dev"
+                    "dev-dev74": "7.4.x-dev",
+                    "dev-dev82": "8.2.x-dev"
                 }
             },
             "autoload": {
@@ -144,7 +146,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2024-11-29T12:54:12+00:00"
+            "time": "2025-03-01T09:46:02+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
