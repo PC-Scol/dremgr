@@ -15,5 +15,3 @@ canal de mise à jour pérenne.
 
 La mise à jour se fait "normalement", en suivant les
 [instructions de la page d'accueil](README.md)
-
--*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
