@@ -1,5 +1,3 @@
-# Release Notes
-
 Si vous ne savez pas quelle la version actuellement instalée, vous pouvez
 consulter le fichier `VERSION.txt`
 ~~~sh
@@ -8,7 +6,7 @@ cat VERSION.txt
 
 Il vous suffit ensuite de suivre les instructions ci-dessous pour les versions ultérieures
 
-## Release 1.0.0 du 01/03/2025-15:44
+## Release 1.0.1 du 01/03/2025-16:11
 
 Cette version est la première livraison publique de dremgr. Elle utilise un
 canal de mise à jour pérenne.
