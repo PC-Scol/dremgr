@@ -11,16 +11,35 @@ DRE
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
 accès à un export journalier des bases de données d'une instance PEGASE
 
+> [!TIP]
+> **Obtenir de l'aide**
+> Envoyez un message sur le [forum PC-SCOL](https://forum.pc-scol.fr)
+> en mentionnant `@jclain`
+
 ## Faire l'installation initiale
 
 dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
+
+Les commandes listées ci-dessous sont pour un démarrage rapide si vous savez ce
+que vous faites. Si c'est la première fois, il est conseillée de cliquer sur les
+liens pour avoir des détails sur la procédure.
 
 * Installez d'abord les pré-requis
   * Installation des [pré-requis pour Debian](documentation/00prerequis-linux.md)
     et autres distributions Linux. Ce mode d'installation est celui à
     sélectionner pour la production, mais peut aussi être utilisé pour les tests
     ou le développement, notamment si le poste de l'utilisateur est sous Linux.
+    ~~~sh
+    sudo apt update && sudo apt install git curl rsync tar unzip python3 gawk
+    ~~~
+    ~~~sh
+    curl -fsSL https://get.docker.com | sudo sh
+    ~~~
+    ~~~sh
+    [ -n "$(getent group docker)" ] || sudo groupadd docker
+    sudo usermod -aG docker $USER
+    ~~~
   * Installation des [pré-requis pour WSL](documentation/00prerequis-wsl.md), le
     sous-système Linux pour Windows. Ce mode d'installation est approprié pour
     les tests ou le développement.
@@ -33,11 +52,29 @@ n'importe quel système Linux, pourvu que les pré-requis soient respectés.
   ~~~
 * Ensuite, Il faut construire les images docker nécessaires.
   [Construire les images](documentation/02construire-images.md)
+  ~~~sh
+  ./build
+  ~~~
+  ~~~sh
+  nano build.env
+  ~~~
+  ~~~sh
+  ./build
+  ~~~
 * Enfin, vous devez choisir le mode de fonctionnement:
   * Le mode simple n'installe qu'une seule instance de la base de données ainsi
     que du mécanisme pour la mettre à jour quotidiennement. Ce mode n'offre
     aucune interface utilisateur.
     [Installer dremgr dans le mode simple](documentation/03installation-simple.md)
+    ~~~sh
+    ./dbinst
+    ~~~
+    ~~~sh
+    nano prod_profile.env
+    ~~~
+    ~~~sh
+    ./dbinst
+    ~~~
   * Le mode avancé permet d'installer autant d'instances que nécessaire sur une
     même machine. Elle offre aussi une interface utilisateur, mais elle demande
     (un peu) plus de travail.
