@@ -1,13 +1,7 @@
 > [!IMPORTANT]
 > Si vous voulez mettre à jour votre installation, soyez sûr de prendre le temps
-> de lire les [Release Notes](RELEASE-NOTES.md) AVANT de commencer à faire quoi
-> que ce soit.
-
-> [!WARNING]
-> Ce projet n'a pas encore atteint sa version stable. Il est donc sujet à des
-> modifications incompatibles de temps à autres. D'où l'importance de lire et
-> suivre avec attention les instructions des [Release Notes](RELEASE-NOTES.md)
-> AVANT de commencer à faire quoi que ce soit.
+> de lire les [Release Notes](CHANGES.md) AVANT de commencer à faire quoi que ce
+> soit.
 
 # dremgr
 
@@ -52,7 +46,7 @@ n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 ## Installer une mise à jour
 
 IMPORTANT: *AVANT* de commencer à faire quoi que ce soit, prenez le temps de
-lire les [Release Notes](RELEASE-NOTES.md)
+lire les [Release Notes](CHANGES.md)
 
 Généralement, il faut reconstruire les images avant de relancer les services:
 ~~~sh
