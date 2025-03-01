@@ -8,7 +8,7 @@ cat VERSION.txt
 
 Il vous suffit ensuite de suivre les instructions pour les versions ultérieures ci-dessous
 
-## Release 1.0.1 du 01/03/2025-16:11
+## Release 1.0.2 du 01/03/2025-16:31
 
 Cette version est la première livraison publique de dremgr. Elle utilise un
 canal de mise à jour pérenne.
