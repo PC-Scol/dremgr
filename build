@@ -6,6 +6,7 @@ RUNPHP="$MYDIR/sbin/runphp"
 RUNPHP_STANDALONE=
 PROJDIR=; COMPOSERDIR=; COMPOSERPHAR=; VENDORDIR=; BUILDENV0=; BUILDENV=
 BUILD_IMAGES=(php-apache mariadb10); export BUILD_FLAVOUR=; DIST=; IMAGENAME=
+DISTFILES=()
 source "$RUNPHP" || exit 1
 source "$PROJDIR/$VENDORDIR/nulib/php/load.sh" || exit 1
 require: template
@@ -55,26 +56,72 @@ function dcrunning() {
 
 function build_check_env() {
     eval "$(template_locals)"
+    local updatedenv distfile distname
+    local -a updatedfiles distfiles
 
-    template_copy_missing "$PROJDIR/$BUILDENV0" && updated=1
+    if template_copy_missing "$PROJDIR/$BUILDENV0"; then
+        updated=1
+        updatedenv=1
+    fi
+    for distfile in "${DISTFILES[@]}"; do
+        if [ -f "$PROJDIR/$distfile" ]; then
+            if template_copy_missing "$PROJDIR/$distfile"; then
+                updated=1
+                setx distname=basename -- "$distfile"
+                distname="${distname#.}"; distname="${distname%.dist}"
+                setx distfile=dirname -- "$distfile"
+                distfile="$distfile/$distname"
+                updatedfiles+=("$distfile")
+            fi
+        elif [ -d "$PROJDIR/$distfile" ]; then
+            local distdir="$PROJDIR/$distfile"
+            setx -a distfiles=find "$distdir" -type f -name ".*.dist"
+            for distfile in "${distfiles[@]}"; do
+                if template_copy_missing "$distfile"; then
+                    updated=1
+                    setx distname=basename -- "$distfile"
+                    distname="${distname#.}"; distname="${distname%.dist}"
+                    # ignorer les fichiers binaires
+                    #XXX remplacer par un code plus robuste, peut-être à
+                    # intégrer directement dans template:
+                    case "$distname" in
+                    *.png|*.jpg) ;;
+                    *)
+                        setx distfile=dirname -- "$distfile"
+                        distfile="$distfile/$distname"
+                        updatedfiles+=("${distfile#$PROJDIR/}")
+                        ;;
+                    esac
+                fi
+            done
+        else
+            ewarn "$distfile: fichier introuvable"
+        fi
+    done
     template_process_userfiles
 
     if [ -n "$updated" ]; then
-        if [ $(id -u) -ne 0 ]; then
-            setx userent=getent passwd "$(id -un)"
-            setx userent=qval "$userent"
-            setx groupent=getent group "$(id -gn)"
-            setx groupent=qval "$groupent"
-            sed -i "
+        enote "IMPORTANT: vous devez paramétrer certains fichiers avant de pouvoir construire les images"
+        if [ -n "$updatedenv" ]; then
+            if [ $(id -u) -ne 0 ]; then
+                setx userent=getent passwd "$(id -un)"
+                setx userent=qval "$userent"
+                setx groupent=getent group "$(id -gn)"
+                setx groupent=qval "$groupent"
+                sed -i "
 /^#DEVUSER_.*=/s/^#//
 /^DEVUSER_USERENT=/s/=.*/=${userent//\//\\\/}/
 /^DEVUSER_GROUPENT=/s/=.*/=${groupent//\//\\\/}/
 " "$PROJDIR/$BUILDENV"
+            fi
+            einfo "\
+Veuillez vérifier le fichier $BUILDENV
+    ${EDITOR:-nano} $BUILDENV"
         fi
-
-        enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier $BUILDENV
-    ${EDITOR:-nano} $BUILDENV
-ENSUITE, vous pourrez relancer la commande"
+        [ ${#updatedfiles[*]} -gt 0 ] && einfo "\
+Le cas échéant, veuillez vérifier ce(s) fichier(s)
+    ${EDITOR:-nano} $(qvals "${updatedfiles[@]}")"
+        enote "ENSUITE, vous pourrez relancer la commande"
         return 1
     fi
 }
