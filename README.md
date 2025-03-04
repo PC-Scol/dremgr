@@ -1,4 +1,10 @@
 > [!IMPORTANT]
+> **En cas de livraison d'une nouvelle version de l'application**
+> Prenez le temps de lire [la liste des changements](CHANGES.md) AVANT de
+> commencer à faire quoi que ce soit. Ensuite, vous pourrez consulter la section
+> "Installer une mise à jour" ci-dessous.
+
+> [!IMPORTANT]
 > Si vous voulez mettre à jour votre installation, soyez sûr de prendre le temps
 > de lire les [Release Notes](CHANGES.md) AVANT de commencer à faire quoi que ce
 > soit.
@@ -83,7 +89,7 @@ liens pour avoir des détails sur la procédure.
 ## Installer une mise à jour
 
 IMPORTANT: *AVANT* de commencer à faire quoi que ce soit, prenez le temps de
-lire les [Release Notes](CHANGES.md)
+lire [la liste des changements](CHANGES.md)
 
 Généralement, il faut reconstruire les images avant de relancer les services:
 ~~~sh

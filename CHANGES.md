@@ -6,7 +6,10 @@ consulter le fichier `VERSION.txt`
 cat VERSION.txt
 ~~~
 
-Il vous suffit ensuite de suivre les instructions pour les versions ultérieures ci-dessous
+Il vous suffit ensuite de suivre les instructions pour les versions ultérieures
+ci-dessous
+
+----
 
 ## Release 1.0.2 du 01/03/2025-16:31
 
