@@ -9,11 +9,11 @@ RO="host=pegase-dre.self port=5432 dbname=dre user=reader password=reader"
 conn="$RW"
 inputs=()
 args=(
-    "description"
-    -w,--write conn="$RW"
-    -r,--read conn="$RO"
-    -a,--admin conn="$ADM"
-    -f: inputs
+    "lancer une console psql sur l'instance de dev"
+    -w,--write conn="$RW" "accès en écriture. c'est l'option par défaut"
+    -r,--read conn="$RO" "accès en lecture seule"
+    -a,--admin conn="$ADM" "accès à pgbouncer"
+    -f:,--input:INPUT inputs
 )
 parse_args "$@"; set -- "${args[@]}"
 
