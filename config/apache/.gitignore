@@ -1,3 +1,4 @@
 /setup.conf
-/authnz.conf
+/auth_cas.conf
+/auth_basic.auth
 /certs.conf

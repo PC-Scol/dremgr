@@ -1,12 +1,38 @@
 # Release Notes
 
 Si vous ne savez pas quelle est la version actuellement instalée, vous pouvez
-consulter le fichier `VERSION.txt`
+consulter le fichier `VERSION.txt` (à faire *avant* de lancer `git pull`)
 ~~~sh
 cat VERSION.txt
 ~~~
 
-Il vous suffit ensuite de suivre les instructions pour les versions ultérieures ci-dessous
+Il vous suffit ensuite de suivre les instructions pour les versions ultérieures
+listées ci-dessous.
+
+----
+
+## Release 1.1.0 du 07/03/2025-10:40
+
+Modifications techniques pour support l'authentification basique, utilisée
+principalement par l'instance de démo
+
+La mise à jour nécessite le renommage manuel d'un fichier de configuration
+~~~sh
+# mettre à jour le dépôt
+git pull
+
+# renommer le fichier de configuration
+mv config/apache/authnz.conf config/apache/auth_cas.conf
+
+# reconstruire les images
+./build -r
+
+# redémarrer les services concernés
+./dremgr -r
+~~~
+
+* `ab8a9be` support authentification basique
+* `6a83389` maj doc
 
 ## Release 1.0.2 du 01/03/2025-16:31
 

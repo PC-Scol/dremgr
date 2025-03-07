@@ -5,7 +5,6 @@
 
 # Modules à activer
 ENMODS=(
-    #-auth_cas
     #remoteip
     #rewrite
     headers
@@ -50,6 +49,7 @@ ENSITES=(
 #   #unless var uncomment NUMBER#
 #   #ignore#
 VARS=(
+    AUTH_CAS AUTH_BASIC
     #PROD TEST DEVEL
     #SERVER_NAME
     #BASE_URL
@@ -64,9 +64,13 @@ VARS=(
 # Fichiers supplémentaires dans lesquels faire l'interpolation. Les chemins sont
 # exprimés par rapport à /etc/apache2
 VARS_FILES=(
-    authnz.conf
+    auth_cas.conf
+    auth_basic.conf
 )
 
 # Désactiver le module OPCACHE de PHP. C'est la valeur par défaut si la variable
 # DEVEL est définie
 #APACHE_PHP_DISABLE_OPCACHE=1
+
+# Désactiver le module CAS le cas échéant
+[ -n "$AUTH_CAS" ] || ENMODS+=(-auth_cas)
