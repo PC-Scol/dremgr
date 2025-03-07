@@ -11,12 +11,18 @@ listées ci-dessous.
 
 ----
 
+## Release 1.1.1 du 07/03/2025-11:49
+
+* `dbcff31` granularité fine pour la désactivation de l'écoute
+* `cd807e3` support proxy externe: possibilité de désactiver l'écoute
+
 ## Release 1.1.0 du 07/03/2025-10:40
 
 Modifications techniques pour support l'authentification basique, utilisée
 principalement par l'instance de démo
 
-La mise à jour nécessite le renommage manuel d'un fichier de configuration
+> [!IMPORTANT]
+> La mise à jour nécessite le renommage manuel d'un fichier de configuration
 ~~~sh
 # mettre à jour le dépôt
 git pull
