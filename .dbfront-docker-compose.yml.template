@@ -10,8 +10,8 @@ services:
       - dremgr.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
-    #@@IF:DBPORT@@ports:
-    #@@IF:DBPORT@@  - @@DBVIP@@@@DBPORT@@:5432
+    #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBFRONT@@#@@IF:DBPORT@@ports:
+    #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBFRONT@@#@@IF:DBPORT@@  - @@DBVIP@@@@DBPORT@@:5432
     deploy:
       update_config:
         order: stop-first
