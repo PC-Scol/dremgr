@@ -43,9 +43,9 @@ services:
       default:
     #@@IF:LBNET@@  @@LBNET@@:
     #@@IF:DBNET@@  @@DBNET@@:
-    #@@UL:NO_LISTEN@@#@@IF:LBHTTP@@ports:
-    #@@UL:NO_LISTEN@@#@@IF:LBHTTP@@  - @@LBVIP@@@@LBHTTP@@:80
-    #@@UL:NO_LISTEN@@#@@IF:LBHTTPS@@  - @@LBVIP@@@@LBHTTPS@@:443
+    #@@UL:NO_LISTEN@@#@@UL:NO_LSN_WEBFRONT@@#@@IF:LBHTTP@@ports:
+    #@@UL:NO_LISTEN@@#@@UL:NO_LSN_WEBFRONT@@#@@IF:LBHTTP@@  - @@LBVIP@@@@LBHTTP@@:80
+    #@@UL:NO_LISTEN@@#@@UL:NO_LSN_WEBFRONT@@#@@IF:LBHTTPS@@  - @@LBVIP@@@@LBHTTPS@@:443
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     restart: always
