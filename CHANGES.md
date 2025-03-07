@@ -11,6 +11,10 @@ listées ci-dessous.
 
 ----
 
+## Release 1.1.2 du 07/03/2025-12:32
+
+* `0144514` maj doc
+
 ## Release 1.1.1 du 07/03/2025-11:49
 
 * `dbcff31` granularité fine pour la désactivation de l'écoute
