@@ -112,7 +112,7 @@ Pour la connexion à l'application web, éditez les fichiers suivants:
 * `config/apache/mods-available/auth_cas.conf`
   Par défaut, l'authenfication se fait par CAS. Ce fichier sert à indiquer
   l'adresse du serveur CAS.
-* `config/apache/authnz.conf`
+* `config/apache/auth_cas.conf`
   Ce fichier détaille les utilisateurs autorisés. Par défaut, seul l'utilisateur
   hypothétique `dreuser` est autorisé. Lister les utilisateurs de cette façon:
   ~~~conf
