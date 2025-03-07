@@ -96,7 +96,7 @@ function template_source_envs() {
     [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
     [ -n "$LBVIP" ] && LBVIP="$LBVIP:"
     [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"
-    [ -n "$PRIVAREG" ] && PRIVAREG="$PRIVAREG/"
+    [ -n "$PRIVAREG" ] && PRIVAREG="${PRIVAREG%/}/"
 }
 
 function build_check_env() {

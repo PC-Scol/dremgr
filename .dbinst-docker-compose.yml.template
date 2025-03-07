@@ -18,8 +18,8 @@ services:
     #@@IF:DBNET@@  @@DBNET@@:
     #@@IF:DBNET@@    aliases:
     #@@IF:DBNET@@      - @@Profile@@_db
-    #@@IF:INST_PORT@@ports:
-    #@@IF:INST_PORT@@  - @@INST_VIP@@@@INST_PORT@@:5432
+    #@@UL:NO_LISTEN@@#@@IF:INST_PORT@@ports:
+    #@@UL:NO_LISTEN@@#@@IF:INST_PORT@@  - @@INST_VIP@@@@INST_PORT@@:5432
     deploy:
       update_config:
         order: stop-first
