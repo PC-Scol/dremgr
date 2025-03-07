@@ -4,11 +4,6 @@
 > commencer à faire quoi que ce soit. Ensuite, vous pourrez consulter la section
 > "Installer une mise à jour" ci-dessous.
 
-> [!IMPORTANT]
-> Si vous voulez mettre à jour votre installation, soyez sûr de prendre le temps
-> de lire les [Release Notes](CHANGES.md) AVANT de commencer à faire quoi que ce
-> soit.
-
 # dremgr
 
 dremgr est un environnement pour la gestion d'une ou plusieurs instances de base
