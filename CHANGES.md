@@ -1,13 +1,13 @@
 # Release Notes
 
 Si vous ne savez pas quelle est la version actuellement instalée, vous pouvez
-consulter le fichier `VERSION.txt`
+consulter le fichier `VERSION.txt` (à faire *avant* de lancer `git pull`)
 ~~~sh
 cat VERSION.txt
 ~~~
 
 Il vous suffit ensuite de suivre les instructions pour les versions ultérieures
-ci-dessous
+listées ci-dessous.
 
 ----
 
@@ -18,7 +18,17 @@ principalement par l'instance de démo
 
 La mise à jour nécessite le renommage manuel d'un fichier de configuration
 ~~~sh
+# mettre à jour le dépôt
+git pull
 
+# renommer le fichier de configuration
+mv config/apache/authnz.conf config/apache/auth_cas.conf
+
+# reconstruire les images
+./build -r
+
+# redémarrer les services concernés
+./dremgr -r
 ~~~
 
 * `ab8a9be` support authentification basique
