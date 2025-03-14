@@ -27,7 +27,7 @@ listées ci-dessous.
 
 ## Release 1.1.0 du 07/03/2025-10:40
 
-Modifications techniques pour support l'authentification basique, utilisée
+Modifications techniques pour support de l'authentification basique, utilisée
 principalement par l'instance de démo
 
 > [!IMPORTANT]
