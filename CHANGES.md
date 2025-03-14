@@ -11,6 +11,11 @@ listées ci-dessous.
 
 ----
 
+## Release 1.1.3 du 14/03/2025-14:35
+
+* `c5955e6` augmenter la liste des erreurs non fatales
+* `c536881` ajout de la licence
+
 ## Release 1.1.2 du 07/03/2025-12:32
 
 * `0144514` maj doc
