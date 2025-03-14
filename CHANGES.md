@@ -11,6 +11,10 @@ listées ci-dessous.
 
 ----
 
+## Release 1.2.0 du 14/03/2025-16:00
+
+* `94a0b41` maj src/php
+
 ## Release 1.1.3 du 14/03/2025-14:35
 
 * `c5955e6` augmenter la liste des erreurs non fatales
