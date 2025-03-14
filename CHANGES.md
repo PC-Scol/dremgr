@@ -11,6 +11,10 @@ listées ci-dessous.
 
 ----
 
+## Release 1.2.0 du 14/03/2025-16:00
+
+* `94a0b41` maj src/php
+
 ## Release 1.1.3 du 14/03/2025-14:35
 
 * `c5955e6` augmenter la liste des erreurs non fatales
@@ -27,7 +31,7 @@ listées ci-dessous.
 
 ## Release 1.1.0 du 07/03/2025-10:40
 
-Modifications techniques pour support l'authentification basique, utilisée
+Modifications techniques pour support de l'authentification basique, utilisée
 principalement par l'instance de démo
 
 > [!IMPORTANT]

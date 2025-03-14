@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab7c54ba7438788d7b35da2ebf3fd82f",
+    "content-hash": "4893bf3485f9258d646adf1a0e41a2d6",
     "packages": [
         {
             "name": "nulib/php",
-            "version": "0.3.4p74",
+            "version": "0.4.0p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "d4d51ffcea8ba641900cc7f2114be0b52f0d9e0b"
+                "reference": "559feda663fc99f8baee2ba32f164b19bdd01927"
             },
             "require": {
                 "ext-json": "*",
@@ -50,15 +50,15 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2025-03-01T02:23:16+00:00"
+            "time": "2025-03-14T11:23:41+00:00"
         },
         {
             "name": "nur/ture",
-            "version": "0.3.0p74",
+            "version": "0.4.0p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-ture.git",
-                "reference": "ae4cc5a36b257ba030f6693b173405e26df162dc"
+                "reference": "95d90f4c97c95e02b0a1c98f9932096f9c4214a2"
             },
             "require": {
                 "php": "^7.4"
@@ -91,9 +91,9 @@
                 "ext-sqlite3": "*",
                 "ext-tidy": "*",
                 "ext-zip": "*",
-                "nulib/php": "^0.3.0p74",
-                "nulib/phpss": "^0.3.0p74",
-                "nulib/spout": "^0.3.0p74",
+                "nulib/php": "^0.4.0p74",
+                "nulib/phpss": "^0.4.0p74",
+                "nulib/spout": "^0.4.0p74",
                 "nulib/tests": "^7.4"
             },
             "bin": [
@@ -146,7 +146,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2025-03-01T09:46:02+00:00"
+            "time": "2025-03-14T11:44:47+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
