@@ -8,12 +8,18 @@ source /g/init.env || exit 1
 export PGDATABASE=dre PGUSER="$POSTGRES_USER"
 unset PGHOST PGPORT
 
+function recoverable_curl_error() {
+    case "$1" in
+    5|6|7|22) return 0;;
+    *) return 1;;
+    esac
+}
 DL_MAX=5
 function dl() {
     local r=22 count=0
-    while [ $r -eq 22 ]; do
+    while recoverable_curl_error $r; do
         curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "$DRE_URL/$1"; r=$?
-        if [ $r -eq 22 ]; then
+        if recoverable_curl_error $r; then
             let count=count+1
             [ $count -gt $DL_MAX ] && break
             sleep 30
