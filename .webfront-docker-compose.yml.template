@@ -1,12 +1,14 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
+# NE PAS MODIFIER ce fichier: il sera écrasé à chaque démarrage
 
 services:
   pgadmin:
     image: @@PRIVAREG@@dremgr/pgadmin
     env_file:
       - .proxy.env
-      - .dremgr.env
+      - .defaults.env
       - dremgr.env
+      - .forced.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
     #@@IF:DBNET@@networks:
@@ -17,8 +19,9 @@ services:
     image: @@PRIVAREG@@dremgr/adminer
     env_file:
       - .proxy.env
-      - .dremgr.env
+      - .defaults.env
       - dremgr.env
+      - .forced.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     restart: always
@@ -27,8 +30,9 @@ services:
     image: @@PRIVAREG@@dremgr/web
     env_file:
       - .proxy.env
-      - .dremgr.env
+      - .defaults.env
       - dremgr.env
+      - .forced.env
     environment:
       #@@UL:LBHTTPS@@DEVEL: 1
       #@@UL:LBHTTPS@@BASE_URL: http://@@LBHOST@@:@@LBHTTP@@

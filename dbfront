@@ -56,7 +56,9 @@ function pgbouncer_prompt() {
     if dcrunning "$composefile"; then
         estep "Invite pgbouncer"
         eval "$(
-          source "$DREMGR/dremgr.env"; source "$DREMGR/.dremgr.env"
+          source "$DREMGR/.defaults.env"
+          source "$DREMGR/dremgr.env"
+          source "$DREMGR/.forced.env"
           echo "local user password"
           echo_setv user="$PGBOUNCER_ADMIN_USER"; echo_setv password="$PGBOUNCER_ADMIN_PASS"
         )"

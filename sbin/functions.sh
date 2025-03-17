@@ -66,18 +66,22 @@ DREMGR_TEMPLATE_LIST_VARS=(
 
 function template_dump_vars() {
     echo Profile
-    _template_dump_vars "$DREMGR/.prod_profile.env.dist" "$DREMGR/.build.env.dist"
+    _template_dump_vars \
+        "$DREMGR/.build.env.dist" \
+        "$DREMGR/.defaults.env" \
+        "$DREMGR/.prod_profile.env.dist" \
+        "$DREMGR/.forced.env"
 }
 
 function template_source_envs() {
     local -a source_envs
-    source_envs=("$DREMGR/build.env")
+    source_envs=("$DREMGR/build.env" "$DREMGR/.defaults.env")
     if [ -n "$Profile" ]; then
         source_envs+=("$DREMGR/${Profile}_profile.env")
     elif [ -f "$DREMGR/dremgr.env" ]; then
         source_envs+=("$DREMGR/dremgr.env")
     fi
-    source_envs+=("$DREMGR/.dremgr.env")
+    source_envs+=("$DREMGR/.forced.env")
     _template_source_envs "${source_envs[@]}"
     template_vars+=(IS_DBINST IS_DBFRONT IS_WEBFRONT)
     template_lists=("${DREMGR_TEMPLATE_LIST_VARS[@]}")
