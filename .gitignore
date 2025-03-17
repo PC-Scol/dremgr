@@ -8,6 +8,7 @@
 /var/
 /*_start
 /*-docker-compose.yml
+/*-docker-compose.local.yml
 
 .~lock*#
 .*.swp
