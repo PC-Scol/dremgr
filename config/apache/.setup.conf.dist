@@ -49,7 +49,8 @@ ENSITES=(
 #   #unless var uncomment NUMBER#
 #   #ignore#
 VARS=(
-    AUTH_CAS AUTH_BASIC
+    AUTH_CAS CAS_URL
+    AUTH_BASIC
     #PROD TEST DEVEL
     #SERVER_NAME
     #BASE_URL
@@ -64,8 +65,9 @@ VARS=(
 # Fichiers supplémentaires dans lesquels faire l'interpolation. Les chemins sont
 # exprimés par rapport à /etc/apache2
 VARS_FILES=(
-    auth_cas.conf
     auth_basic.conf
+    auth_cas.conf
+    mods-available/auth_cas.conf
 )
 
 # Désactiver le module OPCACHE de PHP. C'est la valeur par défaut si la variable
