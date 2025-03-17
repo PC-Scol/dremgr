@@ -1,12 +1,14 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
+# NE PAS MODIFIER ce fichier: il sera écrasé à chaque démarrage
 
 services:
   db:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
+      - .defaults.env
       - @@Profile@@_profile.env
-      - .dremgr.env
+      - .forced.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
@@ -29,8 +31,9 @@ services:
     image: @@PRIVAREG@@dremgr/db
     env_file:
       - .proxy.env
+      - .defaults.env
       - @@Profile@@_profile.env
-      - .dremgr.env
+      - .forced.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre

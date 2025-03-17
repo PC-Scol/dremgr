@@ -1,4 +1,5 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
+# NE PAS MODIFIER ce fichier: il sera écrasé à chaque démarrage
 
 services:
   pgbouncer:
@@ -6,8 +7,9 @@ services:
     command: pgbouncer
     env_file:
       - .proxy.env
-      - .dremgr.env
+      - .defaults.env
       - dremgr.env
+      - .forced.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBFRONT@@#@@IF:DBPORT@@ports:
