@@ -11,6 +11,33 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.0 du 17/03/2025-13:05
+
+Correction de la prise en compte du mode d'authentification: la mise à jour
+vers cette version est obligatoire pour rétablir l'authentification CAS
+
+> [!IMPORTANT]
+> La mise à jour nécessite la suppression d'un fichier et le redémarrage forcé
+> du frontal web
+~~~sh
+# mettre à jour le dépôt
+git pull
+
+# forcer la regénération de la configuration apache
+rm -f config/apache/setup.conf
+
+# reconstruire les images si nécessaire
+./build -r
+
+# forcer le redémarrage du frontal web
+./webfront -R
+
+# redémarrer les autres services le cas échéant
+./dremgr -r
+~~~
+
+* `1bff360` corriger la prise en compte des variables
+
 ## Release 1.2.0 du 14/03/2025-16:00
 
 * `94a0b41` maj src/php
