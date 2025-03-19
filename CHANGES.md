@@ -11,6 +11,12 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.1 du 19/03/2025-19:25
+
+* `781fe0f` maj doc
+* `2ecfdcd` maj todo
+* `b3cb2f5` support de la fusion avec des fichiers compose locaux
+
 ## Release 1.3.0 du 17/03/2025-13:05
 
 Correction de la prise en compte du mode d'authentification: la mise à jour

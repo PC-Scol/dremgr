@@ -6,23 +6,36 @@ DREMGR="$MYDIR"
 source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
+function _set_composefiles() {
+    composefile="$DREMGR/dbfront-docker-compose.yml"
+    composefiles=("$composefile")
+    composeargs=(-f "$composefile")
+    localfile="$DREMGR/dbfront-docker-compose.local.yml"
+    if [ -f "$localfile" ]; then
+        composefiles+=("$localfile")
+        composeargs+=(-f "$localfile")
+    fi
+}
+
 function start_dbfront() {
-    local composefile="$DREMGR/dbfront-docker-compose.yml"
+    local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
-    elif dcrunning "$composefile"; then
+    elif dcrunning "${composefiles[@]}"; then
         enote "Le frontal bdd DRE est démarré"
         return
     fi
 
     #local reload
-    #dcrunning "$composefile" && reload=1
+    #dcrunning "${composefiles[@]}" && reload=1
 
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
 
     estep "Démarrage du frontal bdd DRE"
-    docker compose -f "$composefile" up -d --wait || die
+    docker compose "${composeargs[@]}" up -d --wait || die
 
     #if [ -n "$reload" ]; then
     #    estep "Rechargement pgAdmin"
@@ -32,11 +45,13 @@ function start_dbfront() {
 }
 
 function stop_dbfront() {
-    local composefile="$DREMGR/dbfront-docker-compose.yml"
+    local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || return 0
-    if dcrunning "$composefile"; then
+    if dcrunning "${composefiles[@]}"; then
         estep "Arrêt du frontal bdd DRE"
-        docker compose -f "$composefile" down || die
+        docker compose "${composeargs[@]}" down || die
     fi
 }
 
@@ -51,9 +66,11 @@ function restart_dbfront() {
 }
 
 function pgbouncer_prompt() {
-    local composefile="$DREMGR/dbfront-docker-compose.yml"
+    local composefile localfile; local -a composefiles
+    _set_composefiles
+
     [ -f "$composefile" ] || return 0
-    if dcrunning "$composefile"; then
+    if dcrunning "${composefiles[@]}"; then
         estep "Invite pgbouncer"
         eval "$(
           source "$DREMGR/.defaults.env"
@@ -62,7 +79,7 @@ function pgbouncer_prompt() {
           echo "local user password"
           echo_setv user="$PGBOUNCER_ADMIN_USER"; echo_setv password="$PGBOUNCER_ADMIN_PASS"
         )"
-        docker compose -f "$composefile" exec pgbouncer psql -d "dbname=pgbouncer user=$user password=$password" "$@" || die
+        docker compose "${composeargs[@]}" exec pgbouncer psql -d "dbname=pgbouncer user=$user password=$password" "$@" || die
     else
         eerror "Impossible de lancer l'invite pgbouncer: frontal bdd DRE est arrêté"
     fi

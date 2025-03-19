@@ -1,5 +1,7 @@
 # -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
 # NE PAS MODIFIER ce fichier: il sera écrasé à chaque démarrage
+# si vous devez faire des modifications, vous pouvez les ajouter dans
+# dbfront-docker-composer.local.yml, qui sera fusionné avec ce fichier
 
 services:
   pgbouncer:

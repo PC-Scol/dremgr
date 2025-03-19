@@ -36,17 +36,29 @@ function dkrunning() {
 }
 
 function dclsct() {
-    # afficher les containers correspondant à $1(=docker-compose.yml)
-    docker compose ${1:+-f "$1"} ps -q
+    # afficher les containers correspondant à $@ (docker-compose.yml)
+    local composefile; local -a composeargs
+    for composefile in "$@"; do
+        [ -n "$composefile" ] || continue
+        composeargs+=(-f "$composefile")
+    done
+    docker compose "${composeargs[@]}" ps -q
 }
 
 function dcrunning() {
-    # vérifier si les containers correspondant à $1(=docker-compose.yml) tournent
-    # si $2 est spécifié, c'est le nombre de service qui doit tourner
-    if [ -n "$2" ]; then
-        [ "$(dclsct "${@:1:1}" | wc -l)" -eq "$2" ]
+    # vérifier si les containers correspondant à $@ (docker-compose.yml) tournent
+    # si le premier argument est "-c count", c'est le nombre de service qui doit
+    # tourner
+    local count
+    if [ "$1" == -c ]; then
+        count="$2"; shift; shift
+    elif [[ "$1" == -c* ]]; then
+        count="${1#-c}"; shift
+    fi
+    if [ -n "$count" ]; then
+        [ "$(dclsct "$@" | wc -l)" -eq "$count" ]
     else
-        [ -n "$(dclsct "${@:1:1}")" ]
+        [ -n "$(dclsct "$@")" ]
     fi
 }
 

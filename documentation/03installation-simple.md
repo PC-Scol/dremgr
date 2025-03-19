@@ -63,8 +63,16 @@ fichier. par défaut, il s'agit de l'adresse locale:
 ~~~sh
 psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
 ~~~
+NB: cette commande sert à vérifier que la base est bien accessible sur l'adresse
+configurée. Elle nécessite bien entendu que vous ayez le client `psql` installé.
+Si ce n'est pas le cas, vous pouvez l'installer avec la commande suivante:
+~~~sh
+sudo apt install postgresql-client
+~~~
+Vous pouvez aussi utiliser n'importe quel autre client graphique ou en ligne de
+commande.
 
-Bien entendu, pour le moment elle ne contient aucune donnée. On peut forcer le
+Pour le moment, la base ne contient aucune donnée. On peut forcer le
 téléchargement et l'importation:
 ~~~sh
 ./dbinst -i

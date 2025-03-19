@@ -6,12 +6,25 @@ DREMGR="$MYDIR"
 source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
+function _set_composefiles() {
+    composefile="$DREMGR/dbinst-docker-compose.yml"
+    composefiles=("$composefile")
+    composeargs=(-f "$composefile")
+    localfile="$DREMGR/dbinst-docker-compose.local.yml"
+    if [ -f "$localfile" ]; then
+        composefiles+=("$localfile")
+        composeargs+=(-f "$localfile")
+    fi
+}
+
 function start_dbinst() {
-    local composefile="$DREMGR/dbinst-docker-compose.yml"
+     local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
     if [ -n "$ForceStart" ]; then
         :
-    elif dcrunning "$composefile"; then
+    elif dcrunning "${composefiles[@]}"; then
         enote "DRE [$Profile] est démarré"
         return
     fi
@@ -20,15 +33,17 @@ function start_dbinst() {
 
     estep "Démarrage de DRE [$Profile]"
     rsync -rlpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
-    docker compose -f "$composefile" up -d --wait || die
+    docker compose "${composeargs[@]}" up -d --wait || die
 }
 
 function stop_dbinst() {
-    local composefile="$DREMGR/dbinst-docker-compose.yml"
+     local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || return 0
-    if dcrunning "$composefile"; then
+    if dcrunning "${composefiles[@]}"; then
         estep "Arrêt de DRE [$Profile]"
-        docker compose -f "$composefile" down || die
+        docker compose "${composeargs[@]}" down || die
     fi
 }
 
@@ -43,11 +58,13 @@ function restart_dbinst() {
 }
 
 function import_dumps() {
-    local composefile="$DREMGR/dbinst-docker-compose.yml"
+     local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || return 0
-    if dcrunning "$composefile"; then
+    if dcrunning "${composefiles[@]}"; then
         estep "Import des dumps [$Profile]"
-        docker compose -f "$composefile" exec cron dl-dumps "$@" || die
+        docker compose "${composeargs[@]}" exec cron dl-dumps "$@" || die
     else
         eerror "Impossible d'importer les dumps: DRE [$Profile] est arrêté"
     fi
@@ -79,23 +96,27 @@ function import_one_devel() {
 }
 
 function psql_prompt() {
-    local composefile="$DREMGR/dbinst-docker-compose.yml"
+     local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || return 0
-    if dcrunning "$composefile"; then
+    if dcrunning "${composefiles[@]}"; then
         estep "Invite psql [$Profile]"
-        docker compose -f "$composefile" exec db psql "$@" || die
+        docker compose "${composeargs[@]}" exec db psql "$@" || die
     else
         eerror "Impossible de lancer l'invite psql: DRE [$Profile] est arrêté"
     fi
 }
 
 function shell_prompt() {
-    local composefile="$DREMGR/dbinst-docker-compose.yml"
+     local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+
     [ -f "$composefile" ] || return 0
-    if dcrunning "$composefile"; then
+    if dcrunning "${composefiles[@]}"; then
         estep "Invite shell [$Profile]"
         local container="$1"; shift
-        docker compose -f "$composefile" exec "$container" bash "$@" || die
+        docker compose "${composeargs[@]}" exec "$container" bash "$@" || die
     else
         eerror "Impossible de lancer l'invite shell: DRE [$Profile] est arrêté"
     fi

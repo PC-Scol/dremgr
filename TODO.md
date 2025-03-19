@@ -16,6 +16,11 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
     de passe de l'utilisateur unique
 * Possibilité de copier le mot de passe et/ou la chaine de connexion dans le
   presse-papier
-* Envoi journalier des logs par mail
+* Envoi journalier des logs par mail, notamment en cas d'erreur
+* `dremgr` ne redémarre jamais pgbouncer (sauf si explicitement demandé avec
+  par exemple une option --all)
+* `dbfront` offre quelques options courantes pour piloter pgbouncer (e.g
+  rolling restart si plusieurs instances sont configurées -- à voir si ça se
+  justifie)
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
