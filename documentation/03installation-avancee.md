@@ -160,9 +160,18 @@ psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
 # test
 psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=test_dre"
 ~~~
+NB: ces commandes servent à vérifier que la base est bien accessible sur
+l'adresse configurée. Elles nécessitent bien entendu que vous ayez le client
+`psql` installé.  Si ce n'est pas le cas, vous pouvez l'installer avec la
+commande suivante:
+~~~sh
+sudo apt install postgresql-client
+~~~
+Vous pouvez aussi utiliser n'importe quel autre client graphique ou en ligne de
+commande.
 
-Bien entendu, pour le moment, les bases ne contiennent aucune donnée. On peut
-forcer le téléchargement et l'importation:
+Pour le moment, les bases ne contiennent aucune donnée. On peut forcer le
+téléchargement et l'importation:
 ~~~sh
 ./dbinst -Ai
 ~~~
