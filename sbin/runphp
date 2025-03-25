@@ -290,7 +290,6 @@ function host_init_env() {
     ## Charger la configuration
 
     # Recenser les valeur de proxy
-    declare -A PROXY_VARS
     for var in {HTTPS,ALL,NO}_PROXY {http,https,all,no}_proxy; do
         is_defined "$var" && PROXY_VARS[${var,,}]="${!var}"
     done
@@ -447,15 +446,18 @@ OPTIONS
 
 function host_docker_run() {
     # lancer une commande avec docker
-    SOPTS=+w:
-    LOPTS=help,chdir:,no-use-rslave
-    args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
+    if [ "$1" == composer ]; then
+        : # pas d'analyse d'argument pour composer
+    else
+        SOPTS=+w:
+        LOPTS=help,chdir:,no-use-rslave
+        args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
-    while [ $# -gt 0 ]; do
-        case "$1" in
-        --) shift; break;;
-        --help)
-            eecho "\
+        while [ $# -gt 0 ]; do
+            case "$1" in
+            --) shift; break;;
+            --help)
+                eecho "\
 runphp: lancer une commande dans un environnement PHP déterminé
 
 USAGE
@@ -482,14 +484,15 @@ OPTIONS
         aller dans le répertoire spécifié avant de lancer la commande
     --no-use-rslave
         paramètre montage des volumes"
-            exit 0
-            ;;
-        -w|--chdir) shift; Chdir="$1";;
-        --no-use-rslave) UseRslave=;;
-        *) die "$1: option non configurée";;
-        esac
-        shift
-    done
+                exit 0
+                ;;
+            -w|--chdir) shift; Chdir="$1";;
+            --no-use-rslave) UseRslave=;;
+            *) die "$1: option non configurée";;
+            esac
+            shift
+        done
+    fi
 
     args=(
         run -it --rm
@@ -565,20 +568,24 @@ function container_exec() {
         fi
     fi
 
-    SOPTS=+w:
-    LOPTS=chdir:
-    args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
+    if [ "$1" == composer ]; then
+        : # pas d'analyse d'argument pour composer
+    else
+        SOPTS=+w:
+        LOPTS=chdir:
+        args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
-    chdir=
-    action=
-    while [ $# -gt 0 ]; do
-        case "$1" in
-        --) shift; break;;
-        -w|--chdir) shift; chdir="$1";;
-        *) die "$1: option non configurée";;
-        esac
-        shift
-    done
+        chdir=
+        action=
+        while [ $# -gt 0 ]; do
+            case "$1" in
+            --) shift; break;;
+            -w|--chdir) shift; chdir="$1";;
+            *) die "$1: option non configurée";;
+            esac
+            shift
+        done
+    fi
 
     if [ $# -eq 0 ]; then
         die "no command specified"
@@ -604,6 +611,7 @@ function container_exec() {
 
 if [ "$RUNPHP_MODE" != docker ]; then
     # Lancement depuis l'extérieur du container
+    declare -A PROXY_VARS
     host_parse_args "$@"
     host_init_env
 

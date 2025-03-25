@@ -11,6 +11,11 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.2 du 25/03/2025-09:02
+
+* `f16d5f4` documenter la configuration du proxy
+* `7dad869` corriger la prise en compte du proxy
+
 ## Release 1.3.1 du 19/03/2025-19:25
 
 * `781fe0f` maj doc
