@@ -27,8 +27,8 @@ que vous faites. Si c'est la première fois, il est conseillée de cliquer sur l
 liens pour avoir des détails sur la procédure.
 
 * Installez d'abord les pré-requis
-  * Installation des [pré-requis pour Debian](documentation/00prerequis-linux.md)
-    et autres distributions Linux. Ce mode d'installation est celui à
+  * Installation des [pré-requis pour linux](documentation/00prerequis-linux.md)
+    (Debian ou autres distributions Linux). Ce mode d'installation est celui à
     sélectionner pour la production, mais peut aussi être utilisé pour les tests
     ou le développement, notamment si le poste de l'utilisateur est sous Linux.
     ~~~sh
@@ -41,6 +41,12 @@ liens pour avoir des détails sur la procédure.
     [ -n "$(getent group docker)" ] || sudo groupadd docker
     sudo usermod -aG docker $USER
     ~~~
+
+    > [!IMPORTANT]
+    > **Configuration du proxy**
+    > Si vous utilisez un proxy, veuillez consulter la page
+    > [pré-requis pour linux](documentation/00prerequis-linux.md)
+    > pour des instructions sur la façon de le configurer
   * Installation des [pré-requis pour WSL](documentation/00prerequis-wsl.md), le
     sous-système Linux pour Windows. Ce mode d'installation est approprié pour
     les tests ou le développement.
