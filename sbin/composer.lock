@@ -8,11 +8,11 @@
     "packages": [
         {
             "name": "nulib/php",
-            "version": "0.4.0p74",
+            "version": "0.4.1p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "559feda663fc99f8baee2ba32f164b19bdd01927"
+                "reference": "a9f9cbb9e5000bfd13578c2e505b8e24f6a65ffe"
             },
             "require": {
                 "ext-json": "*",
@@ -50,15 +50,15 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2025-03-14T11:23:41+00:00"
+            "time": "2025-03-25T04:47:13+00:00"
         },
         {
             "name": "nur/ture",
-            "version": "0.4.0p74",
+            "version": "0.4.1p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-ture.git",
-                "reference": "95d90f4c97c95e02b0a1c98f9932096f9c4214a2"
+                "reference": "ee0234f6ba352e1dfdfdb8d8e963224181764c6e"
             },
             "require": {
                 "php": "^7.4"
@@ -146,7 +146,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2025-03-14T11:44:47+00:00"
+            "time": "2025-03-17T13:20:07+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
