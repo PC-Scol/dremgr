@@ -134,9 +134,6 @@ Par défaut, le service web sera accessible sur <http://localhost:7081>. Pour
 changer cette valeur, éditer le fichier `dremgr.env` et configurer les variables
 `LBHOST` et `LBHTTP`
 
-Pour configurer l'accès en HTTPS, envoyer un message sur le forum pour avoir la
-procédure exacte.
-
 Ensuite, démarrer les services frontaux
 ~~~sh
 ./dbfront
@@ -188,6 +185,59 @@ cp ~/path/to/monlogo public/brand.png
 ~~~
 
 L'image DOIT avoir une hauteur de 50 pixel. La largeur importe peu.
+
+## Activer l'accès en https
+
+Si vous souhaitez activer l'accès en https, il y a un certain nombre
+d'opérations supplémentaires à effectuer. Le support est géré directement par
+le serveur apache qui fait tourner dremgr.
+
+Modifiez le fichier `dremgr.env` pour indiquer le port sur lequel écouter en
+https (il s'agit habituellemet du port 443)
+~~~sh
+LBHTTPS=443
+~~~
+
+Vous devez bien entendu disposer d'un certificat. Copiez le certificat et la clé
+privée dans le répertoire `config/ssl`
+~~~sh
+cp path/to/mycert.crt path/to/mycert.key config/ssl
+~~~
+
+Si le certificat ne contient pas la chaine autorité, vous devez aussi copier le
+fichier autorité
+~~~sh
+cp path/to/myca.crt config/ssl
+~~~
+NB: vous pouvez aussi inclure directement l'autorité dans le certificat
+
+Ensuite, il faut modifier le fichier `config/apache/certs.conf` pour mentionner les
+certificats
+~~~conf
+SSLCertificateFile    /etc/ssl/certs/mycert.crt
+SSLCertificateKeyFile /etc/ssl/private/mycert.key
+~~~
+
+Si l'autorité est dans un fichier à part, il faut le mentionner aussi
+~~~conf
+SSLCertificateChainFile /etc/ssl/certs/myca.crt
+~~~
+
+Puis relancez le frontal
+~~~sh
+./webfront -R
+~~~
+
+Le service web sera alors accessible sur `https://$LBHOST:$LBHTTPS` tels que
+définis dans le fichier `dremgr.env`
+
+Par exemple, avec les valeurs suivantes
+~~~sh
+LBHOST=dremgr.univ.tld
+LBHTTPS=443
+~~~
+Le serveur devra être accédé et autorisé le cas échéant auprès du serveur CAS
+à l'adresse https://dremgr.univ.tld
 
 ## Installer une version de développement
 
