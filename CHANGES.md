@@ -11,6 +11,8 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.5 du 11/04/2025-14:48
+
 ## Release 1.3.4 du 11/04/2025-14:35
 
 Maj de la doc pour indiquer qu'il ne faut pas désactiver l'écoute en http
