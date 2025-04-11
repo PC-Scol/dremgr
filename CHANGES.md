@@ -11,6 +11,10 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.3 du 11/04/2025-11:09
+
+* `dd726af` documenter la configuration de https
+
 ## Release 1.3.2 du 25/03/2025-09:02
 
 * `f16d5f4` documenter la configuration du proxy
