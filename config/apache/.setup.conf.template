@@ -6,11 +6,10 @@
 # Modules à activer
 ENMODS=(
     #remoteip
-    #rewrite
+    #@@if:LBHTTPS@@rewrite
     headers
     proxy_http
     #@@if:LBHTTPS@@ssl
-    xsendfile
 )
 
 # Sites à activer
