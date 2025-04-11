@@ -11,6 +11,14 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.4 du 11/04/2025-14:35
+
+Maj de la doc pour indiquer qu'il ne faut pas désactiver l'écoute en http
+
+Si l'accès en https est activé, une redirection automatique est mise en place.
+
+* `425a9bc` regénérer systématiquement le fichier setup.conf
+
 ## Release 1.3.3 du 11/04/2025-11:09
 
 * `dd726af` documenter la configuration de https

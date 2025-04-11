@@ -197,6 +197,9 @@ https (il s'agit habituellemet du port 443)
 ~~~sh
 LBHTTPS=443
 ~~~
+> [!IMPORTANT]
+> Il ne faut pas supprimer la valeur de `LBHTTP` qui reste obligatoire. De plus,
+> la redirection vers le port https est activée automatiquement
 
 Vous devez bien entendu disposer d'un certificat. Copiez le certificat et la clé
 privée dans le répertoire `config/ssl`
