@@ -122,4 +122,22 @@ différentes de celles mentionnées ci-dessus.
   * [Installation d'addons](documentation/dreaddons.md)
   * [Développement d'addons](documentation/dreaddons-developpement.md)
 
+## FAQ
+
+**La base de données n'est pas accessible par BO / PowerBI / tout autre client**
+: Par défaut, la base de données n'est accessible que depuis l'hôte local (via
+  Adminer ou en ligne de commande)
+
+  Pour que la base de données soit accessible sur le réseau par des clients
+  génériques, il faut laisser vide la base variable `DBVIP` (ou mettre l'adresse
+  IP de l'interface d'écoute). Bien entendu, il faut relancer les services en
+  cas de changement de configuration.
+
+**Je voudrais créer des schémas supplémentaires**
+: Par défaut, pour minimiser le temps d'indisponibilité, la base est recréée à
+  zéro chaque jour.
+
+  Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md)
+  pour différentes pistes pour pallier cette limitation.
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

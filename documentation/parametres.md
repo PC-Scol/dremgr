@@ -138,8 +138,8 @@ informations à l'utilisateur.
     la quantité de données
   * Créer les tables supplémentaires via un addon. Ce n'est pas forcément
     possible, surtout si ce sont des données créées manuellement.
-  * Créer une autre base de données en parallèle, et utiliser `dblink` pour
-    interagir avec la base DRE
+  * Créer une autre base de données en parallèle (sur le même serveur le cas
+    échéant), et utiliser `dblink` pour interagir avec la base DRE
 
 `HOST_MAPPINGS`
 : Liste de mappings d'hôte à installer dans le container, un par ligne
@@ -223,9 +223,8 @@ FE_DBNAME="$DBNAME"
 : port d'écoute pour le serveur web frontal, pour l'accès sécurisé en https://
 
   si on met une valeur, comme la valeur standard 443, il y a un certain nombre
-  d'actions supplémentaires à faire pour configurer l'accès.
-  ces actions ne sont pas encore documentées, envoyer un message sur le forum
-  pour avoir le détail.
+  d'actions supplémentaires à faire pour configurer l'accès. consultez à cet
+  effet la [documentation d'installation avancée](03installation-avancee.md)
 
 **Paramètres privés non documentés**
 
@@ -253,7 +252,7 @@ ln -s dremgr.env test_profile.env
 **Paramètres courants**
 
 `APP_PROFILES`
-: Liste des profils suportés. Chaque profil permet de piloter une instance de
+: Liste des profils supportés. Chaque profil permet de piloter une instance de
   base de données
 
   pour chacune des variables listées dans `APP_PROFILE_VARS`, et pour chaque

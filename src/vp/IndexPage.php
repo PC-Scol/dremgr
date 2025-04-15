@@ -167,8 +167,8 @@ class IndexPage extends ANavigablePage {
       "Vous pouvez vous connecter à la base DRE avec un outil en ligne",
     ]);
     new CListGroup([
-      "pgAdmin" => ["/pgadmin/", "Un outil simple et ergonomique"],
-      "Adminer" => ["/adminer/", "Une alternative préférée par certains informaticiens"],
+      "Adminer" => ["/adminer/", "Un outil simple et pragmatique. Le choix du chef!"],
+      "pgAdmin" => ["/pgadmin/", "Si vous en avez l'habitude, le même outil que les RDD-Tools"],
     ], [
       "container" => "div",
       "map_func" => function ($item, $title) {
