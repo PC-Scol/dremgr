@@ -11,6 +11,10 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.6 du 15/04/2025-14:37
+
+* `6635b7d` maj doc
+
 ## Release 1.3.5 du 11/04/2025-14:48
 
 ## Release 1.3.4 du 11/04/2025-14:35
