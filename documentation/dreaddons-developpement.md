@@ -137,25 +137,25 @@ Si on veut uniquement réimporter l'addon sur lequel on travaille, il est
 possible de le faire avec l'option `-I`, e.g:
 ~~~sh
 # on ne peut importer que ce qui a été enregistré et poussé
-cd ~/path/to/dreaddon-documentation
+cd ~/path/to/dreaddon-myaddon
 git commit -am "mes modifications" && git push
 
 # puis importer les modifications
 cd ~/path/to/dremgr
-./dbinst -I documentation
+./dbinst -I myaddon
 ~~~
-Dans cet exemple, seul l'addon `dreaddon-documentation` est réimporté, ce qui
-permet de vérifier que les fichiers de documentation proposés sont bien ceux
-attendus.
+Dans cet exemple, seul l'addon `dreaddon-myaddon` est réimporté, ce qui permet
+de vérifier par exemple que que les données sont correctement provisionnées, ou
+que la documentation associée est bien celle attendue.
 
 Pour faciliter le développement, l'option `-J` permet de synchroniser le contenu
 du répertoire local d'addon puis de lancer son import, e.g:
 ~~~sh
-./dbinst -J path/to/dreaddon-documentation
+./dbinst -J path/to/dreaddon-myaddon
 
 # la commande ci-dessus est grossièrement équivalente à:
-rsync -rlp --delete path/to/dreaddon-documentation/ var/prod-dredata/addons/dreaddon-documentation/
-./dbinst -i -- --no-updateao --runao -o dreaddon-documentation -@ latest
+rsync -rlp --delete path/to/dreaddon-myaddon/ var/prod-dredata/addons/dreaddon-myaddon/
+./dbinst -i -- --no-updateao --runao -o dreaddon-myaddon -@ latest
 less var/prod-dredata/import.log
 ~~~
 
