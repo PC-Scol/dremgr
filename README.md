@@ -129,9 +129,9 @@ différentes de celles mentionnées ci-dessus.
   Adminer ou en ligne de commande)
 
   Pour que la base de données soit accessible sur le réseau par des clients
-  génériques, il faut laisser vide la base variable `DBVIP` (ou mettre l'adresse
-  IP de l'interface d'écoute). Bien entendu, il faut relancer les services en
-  cas de changement de configuration.
+  génériques, il faut laisser vide la variable `DBVIP` (ou mettre l'adresse IP
+  de l'interface d'écoute). Bien entendu, il faut relancer les services en cas
+  de changement de configuration.
 
 **Je voudrais créer des schémas supplémentaires**
 : Par défaut, pour minimiser le temps d'indisponibilité, la base est recréée à

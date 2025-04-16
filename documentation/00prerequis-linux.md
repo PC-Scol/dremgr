@@ -59,6 +59,12 @@ Ensuite, il faut installer les programmes requis
 sudo apt update && sudo apt install git curl rsync tar unzip python3 gawk
 ~~~
 
+Certaines universités ont eu des soucis avec apparmor, qu'ils ont résolu en
+installant les paquets suivants:
+~~~sh
+sudo apt install apparmor apparmor-utils
+~~~
+
 Puis installer docker
 ~~~sh
 curl -fsSL https://get.docker.com | sudo sh

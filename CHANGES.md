@@ -11,6 +11,11 @@ listées ci-dessous.
 
 ----
 
+## Release 1.3.7 du 16/04/2025-10:33
+
+* `fd1f38d` maj doc
+* `66fa118` maj doc
+
 ## Release 1.3.6 du 15/04/2025-14:37
 
 * `6635b7d` maj doc
