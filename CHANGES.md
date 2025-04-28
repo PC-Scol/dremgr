@@ -11,6 +11,10 @@ listées ci-dessous.
 
 ----
 
+## Release 1.4.1 du 28/04/2025-14:41
+
+* `33046c0` maj doc
+
 ## Release 1.4.0 du 28/04/2025-13:57
 
 Cette release contient un palliatif pour les dumps qui sont livrés sans la
