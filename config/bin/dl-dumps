@@ -104,7 +104,6 @@ step_import_bin=
 step_import_json=
 step_runao=
 SelectAo=
-step_cleanup=
 Clean=1
 args=(
     "télécharger les dumps"
@@ -113,6 +112,8 @@ args=(
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
+    --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
+    -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
     --checkao step_checkao=1 "++Vérifier les addons"
     -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
     --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
@@ -122,21 +123,18 @@ args=(
     --import-json step_import_json=1 "++Importer seulement les dumps .json"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
-    --cleanup step_cleanup=1 "++Supprimer les fichiers de dumps obsolètes"
-    -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
 )
 parse_args "$@"; set -- "${args[@]}"
 
 keep_import_log=1
 [ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
-if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_cleanup" ]; then
+if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" ]; then
     keep_import_log=
     step_dl=1
     step_checkao=1
     step_import_bin=1
     step_import_json=1
     step_runao=1
-    step_cleanup=1
 fi
 [ -n "$step_import_bin" -o -n "$step_import_json" ] && step_import=1
 [ -n "$step_runao" ] && step_checkao=1
@@ -192,6 +190,14 @@ if [ -n "$step_dl" ]; then
 
     qstep "Vérifications des sommes de contrôle"
     sha256sum --status -c "$Tmpsums" || die
+
+    if [ -n "$Clean" ]; then
+        qstep "Nettoyage des fichiers obsolètes"
+        age="${CRON_MAX_AGE:-30}"
+        find -name "checksums-*" -mtime "+$age" -delete
+        find -name "DRE_VERSION_*" -mtime "+$age" -delete
+        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
+    fi
 elif [ -f "$sums" ]; then
     eval "$(sed 's/^/add_schema /' "$sums")"
 else
@@ -522,16 +528,6 @@ if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
     PGDATABASE="$finaldb"
     runsql "drop database if exists $moridb;"
     eend
-fi
-
-if [ -n "$step_cleanup" ]; then
-    if [ -n "$Clean" ]; then
-        qstep "Nettoyage des fichiers obsolètes"
-        age="${CRON_MAX_AGE:-30}"
-        find -name "checksums-*" -mtime "+$age" -delete
-        find -name "DRE_VERSION_*" -mtime "+$age" -delete
-        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
-    fi
 fi
 
 if [ -n "$step_import" ]; then
