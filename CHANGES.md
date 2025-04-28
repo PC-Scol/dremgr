@@ -11,6 +11,19 @@ listées ci-dessous.
 
 ----
 
+## Release 1.4.0 du 28/04/2025-13:57
+
+Cette release contient un palliatif pour les dumps qui sont livrés sans la
+commande de création de schéma.
+
+Au 28/04/2025, tant qu'un correctif n'a pas été livré par PC-SCOL, il faut
+rajouter la ligne suivante dans `dremgr.env` AVANT de faire la mise à jour
+~~~sh
+FORCE_CREATE_SCHEMAS=keycloak
+~~~
+
+* `9eb0ee2` support des dumps sans schéma
+
 ## Release 1.3.7 du 16/04/2025-10:33
 
 * `fd1f38d` maj doc
