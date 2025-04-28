@@ -4,12 +4,16 @@ source /etc/nulib.sh || exit 1
 
 SOURCE=root@pegase-dre2023.univ.run:dremgr
 
+profile=
 date=
 sync=
 import=
 args=(
     "synchroniser les données depuis le serveur de prod (aide pour le développement)"
     #"usage"
+    -g:,--profile profile=
+    -P,--prod profile=prod
+    -T,--test profile=test
     -@:,--date date=
     -u,--sync sync=1
     -i,--import import=1
@@ -24,7 +28,14 @@ parse_args "$@"; set -- "${args[@]}"
 cd "$MYDIR/.."
 
 if [ -n "$sync" ]; then
-    rsync -vrltp --include "*$date*" --exclude "*" --delete-excluded "$SOURCE/var/prod-dredata/downloads/" var/prod-dredata/downloads/
+    [ -n "$profile" ] || profile=prod
+    args=(
+        -vrltp
+        --include "*$date*" --exclude "*" --delete-excluded
+        "$SOURCE/var/${profile}-dredata/downloads/"
+        "var/${profile}-dredata/downloads/"
+    )
+    rsync "${args[@]}"
 fi
 
 if [ -n "$import" ]; then
