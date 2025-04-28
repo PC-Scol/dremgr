@@ -148,7 +148,16 @@ informations à l'utilisateur.
   contiennent pas cette commande. Il faut donc forcer la création du schéma
   avant d'importer le dump.
 
-  La valeur par défaut est "keycloak"
+  Par exemple, si les logs d'importation de dump contiennent cette erreur:
+  ~~~text
+  pg_restore: erreur : could not execute query: ERROR:  schema "schema_keycloak" does not exist
+  ~~~
+  Cela signifie que le dump `DOMAIN-YYYYmmdd-keycloak.bin` ne contient pas la
+  commande de création du schéma `schema_keycloak`
+
+  Pour pallier ce problème, il faut définir `FORCE_CREATE_SCHEMA=keycloak` et
+  redémarrer les services afin que le schéma soit créé avant l'importation du
+  dump.
 
 `HOST_MAPPINGS`
 : Liste de mappings d'hôte à installer dans le container, un par ligne

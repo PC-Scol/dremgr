@@ -329,19 +329,27 @@ if [ -n "$step_import" ]; then
         PGDATABASE=
 
         etitle "Nettoyage des bases de données temporaires"
-        setx -a tmpdbs=psql -t --csv -c "select datname from pg_database where datname like 'dre_tmp%' or datname like 'dre_delete%';"
+        setx -a tmpdbs=psql -t --csv -c "\
+select datname from pg_database where datname like 'dre_tmp%' or datname like 'dre_delete%';
+"
         for tmpdb in "${tmpdbs[@]}"; do
             estep "$tmpdb"
-            runsql "drop database if exists $tmpdb with (force);" || die
+            runsql "\
+drop database if exists $tmpdb with (force);
+" || die
         done
         eend
 
         tmpdb="dre_tmp$$"
         moridb="dre_delete$$"
         etitle "Création de la base de données temporaire $tmpdb"
-        runsql "create database $tmpdb;"
+        runsql "\
+create database $tmpdb;
+" || die
         PGDATABASE="$tmpdb"
-        runsql "alter default privileges in schema public grant select on tables to reader;"
+        runsql "\
+alter default privileges in schema public grant select on tables to reader;
+" || die
     else
         etitle "Suppression des anciens schémas"
         schema_list=
@@ -349,7 +357,9 @@ if [ -n "$step_import" ]; then
             qstep "$schema"
             schema_list="${schema_list}${schema_list:+, }${schema}"
         done
-        runsql "drop schema if exists $schema_list cascade;" || die
+        runsql "\
+drop schema if exists $schema_list cascade;
+" || die
         eend
     fi
 fi
@@ -357,7 +367,7 @@ fi
 if [ -n "$step_import_bin" ]; then
     etitle "Importation des schémas (pgsql)"
     for schema in "${FORCE_CREATE_SCHEMAS[@]}"; do
-        schema="schema_$schema"
+        schema="schema_${schema#schema_}"
         qstep "$schema: create schema"
         runsql "\
 create schema if not exists $schema;
