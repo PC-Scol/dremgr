@@ -141,6 +141,15 @@ informations à l'utilisateur.
   * Créer une autre base de données en parallèle (sur le même serveur le cas
     échéant), et utiliser `dblink` pour interagir avec la base DRE
 
+`FORCE_CREATE_SCHEMAS`
+: Liste des dumps qui ne contiennent pas la commande de création de schéma. En
+  effet, les dumps pour les schémas standards contiennent une commande
+  permettant de créer le schéma. Mais il arrive que certains dumps ne
+  contiennent pas cette commande. Il faut donc forcer la création du schéma
+  avant d'importer le dump.
+
+  La valeur par défaut est "keycloak"
+
 `HOST_MAPPINGS`
 : Liste de mappings d'hôte à installer dans le container, un par ligne
 

@@ -99,11 +99,8 @@ cd dremgr
 # mettre à jour le dépôt
 git pull
 
-# reconstruire les images si nécessaire
-./build -r
-
-# redémarrer les services le cas échéant
-./dremgr -r
+# reconstruire les images si nécessaire puis redémarrer les services le cas échéant
+./dremgr -rb
 ~~~
 Cependant, la liste des changements peut parfois contenir des instructions
 différentes de celles mentionnées ci-dessus.
