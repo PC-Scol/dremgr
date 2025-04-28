@@ -11,6 +11,14 @@ listées ci-dessous.
 
 ----
 
+## Release 1.4.2 du 28/04/2025-15:34
+
+Cette release contient des modifications supplémentaires pour éviter la
+surutilisation de l'espace disque en cas de problème d'import ou de
+téléchargement
+
+* `8f11acc` supprimer les fichiers de dumps obsolètes juste après un téléchargement réussi
+
 ## Release 1.4.1 du 28/04/2025-14:41
 
 * `33046c0` maj doc
@@ -25,6 +33,9 @@ rajouter la ligne suivante dans `dremgr.env` AVANT de faire la mise à jour
 ~~~sh
 FORCE_CREATE_SCHEMAS=keycloak
 ~~~
+
+De plus, une modification a été intégrée pour s'assurer que les bases de
+données temporaires sont nettoyées en cas d'échec d'import
 
 * `9eb0ee2` support des dumps sans schéma
 
