@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4893bf3485f9258d646adf1a0e41a2d6",
+    "content-hash": "be2c81c2655e8443963b6107e04fa9f9",
     "packages": [
         {
             "name": "nulib/php",
-            "version": "0.4.1p74",
+            "version": "0.5.0p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "a9f9cbb9e5000bfd13578c2e505b8e24f6a65ffe"
+                "reference": "4037bf20424eb48708e5fdf9fc8e10f2ef71d134"
             },
             "require": {
                 "ext-json": "*",
@@ -22,6 +22,8 @@
             "require-dev": {
                 "ext-curl": "*",
                 "ext-pcntl": "*",
+                "ext-pdo": "*",
+                "ext-pgsql": "*",
                 "ext-posix": "*",
                 "ext-sqlite3": "*",
                 "nulib/tests": "^7.4"
@@ -50,15 +52,15 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2025-03-25T04:47:13+00:00"
+            "time": "2025-04-30T00:32:10+00:00"
         },
         {
             "name": "nur/ture",
-            "version": "0.4.1p74",
+            "version": "0.5.0p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-ture.git",
-                "reference": "ee0234f6ba352e1dfdfdb8d8e963224181764c6e"
+                "reference": "e4860b1b39af539dfe3b74b34248cba357714107"
             },
             "require": {
                 "php": "^7.4"
@@ -91,14 +93,16 @@
                 "ext-sqlite3": "*",
                 "ext-tidy": "*",
                 "ext-zip": "*",
-                "nulib/php": "^0.4.0p74",
-                "nulib/phpss": "^0.4.0p74",
-                "nulib/spout": "^0.4.0p74",
+                "nulib/php": "^0.5.0p74",
+                "nulib/phpss": "^0.5.0p74",
+                "nulib/spout": "^0.5.0p74",
                 "nulib/tests": "^7.4"
             },
             "bin": [
                 "bin/dumpser.php",
                 "bin/csv2xlsx.php",
+                "bin/json2yml.php",
+                "bin/yml2json.php",
                 "nur_bin/compctl.php",
                 "nur_bin/compdep.php",
                 "nur_bin/datectl.php",
@@ -119,9 +123,7 @@
             },
             "autoload": {
                 "psr-4": {
-                    "nulib\\": "src_glue",
-                    "nur\\sery\\wip\\": "src",
-                    "nur\\sery\\": "src_app",
+                    "nulib\\": "src",
                     "nur\\": "nur_src"
                 },
                 "files": [
@@ -130,7 +132,7 @@
             },
             "autoload-dev": {
                 "psr-4": {
-                    "nur\\sery\\": "tests",
+                    "nulib\\": "tests",
                     "nur\\": "nur_tests"
                 }
             },
@@ -146,7 +148,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2025-03-17T13:20:07+00:00"
+            "time": "2025-04-30T01:32:08+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
