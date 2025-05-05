@@ -1,15 +1,7 @@
-# Release Notes
+## Release 1.4.3 du 05/05/2025-11:19
 
-Si vous ne savez pas quelle est la version actuellement instalée, vous pouvez
-consulter le fichier `VERSION.txt` (à faire *avant* de lancer `git pull`)
-~~~sh
-cat VERSION.txt
-~~~
-
-Il vous suffit ensuite de suivre les instructions pour les versions ultérieures
-listées ci-dessous.
-
-----
+* `76dd9be` tenir compte de FORCE_CREATE_SCHEMAS dans le cron
+* `9b8d38f` maj doc
 
 ## Release 1.4.2 du 28/04/2025-15:34
 
@@ -132,11 +124,8 @@ git pull
 # renommer le fichier de configuration
 mv config/apache/authnz.conf config/apache/auth_cas.conf
 
-# reconstruire les images
-./build -r
-
-# redémarrer les services concernés
-./dremgr -r
+# reconstruire les images si nécessaire puis redémarrer les services le cas échéant
+./dremgr -rb
 ~~~
 
 * `ab8a9be` support authentification basique
@@ -146,6 +135,3 @@ mv config/apache/authnz.conf config/apache/auth_cas.conf
 
 Cette version est la première livraison publique de dremgr. Elle utilise un
 canal de mise à jour pérenne.
-
-La mise à jour se fait "normalement", en suivant les
-[instructions de la page d'accueil](README.md)
