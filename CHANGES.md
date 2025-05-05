@@ -1,3 +1,8 @@
+## Release 1.4.3 du 05/05/2025-11:19
+
+* `76dd9be` tenir compte de FORCE_CREATE_SCHEMAS dans le cron
+* `9b8d38f` maj doc
+
 ## Release 1.4.2 du 28/04/2025-15:34
 
 Cette release contient des modifications supplémentaires pour éviter la
