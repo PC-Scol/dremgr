@@ -16,6 +16,27 @@ if [ ! -f "$DREMGR/.proxy.env" ]; then
     done
 fi
 
+function ensure_dirs() {
+    # créer les répertoires de profil
+    mkdir -p "$DREMGR/var"
+    local -a profiles; local profile datadir
+    if [ -n "$Profile" ]; then
+        profiles=("$Profile")
+    elif [ -n "$APP_PROFILES" ]; then
+        read -a profiles <<<"${APP_PROFILES//
+/ }"
+    else
+        profiles=(prod)
+    fi
+    for profile in "${profiles[@]}"; do
+        datadir="$DREMGR/var/${profile}-dredata"
+        mkdir -p "$datadir/downloads"
+        mkdir -p "$datadir/addons"
+        mkdir -p "$datadir/cron-config"
+        mkdir -p "$datadir/local-bin"
+    done
+}
+
 function dklsnet() {
     docker network ls --no-trunc --format '{{.Name}}' -f name="$1" 2>/dev/null
 }

@@ -111,6 +111,8 @@ run_check_env || exit 0
 
 Profile=
 ForceStart=
+ensure_dirs
+
 case "$action" in
 start) start_dbfront "$@";;
 stop) stop_dbfront "$@";;

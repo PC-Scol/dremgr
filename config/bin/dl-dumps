@@ -245,10 +245,10 @@ if [ -n "$step_checkao" ]; then
         origUpdateAo="$UpdateAo"
         if [ ! -d "$aodir" ]; then
             # Il faut cloner le dépôt
-            qstep "clone $aourl${branch:+#$branch} --> $aodir"
-            quietc git clone "$aourl${branch:+#$branch}" "$aodir" || continue
-            # si un commit est spécifié, forcer une mise à jour
-            [ -n "$commit" ] && UpdateAo=1
+            qstep "clone $aourl --> $aodir"
+            quietc git clone "$aourl" "$aodir" || continue
+            # si une branche ou un commit sont spécifiés, forcer une mise à jour
+            [ -n "$branch" -o -n "$commit" ] && UpdateAo=1
         fi
         if [ -n "$UpdateAo" ]; then
             # il faut mettre à jour le dépôt
@@ -356,6 +356,10 @@ create database $tmpdb;
         runsql "\
 alter default privileges in schema public grant select on tables to reader;
 " || die
+        if [ -n "$PDBNAME" ]; then
+            qstep "configuration $PDBNAME"
+            quietc setup-pdata.sh
+        fi
     else
         etitle "Suppression des anciens schémas"
         schema_list=

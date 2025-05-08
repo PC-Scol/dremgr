@@ -32,7 +32,8 @@ function start_dbinst() {
     "$DREMGR/build" ${Rebuild:+--rebuild} || die
 
     estep "Démarrage de DRE [$Profile]"
-    rsync -rlpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
+    rsync -rLpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
+    rsync -rLpt "$DREMGR/config/bin/" "$DREDATA/local-bin/"
     docker compose "${composeargs[@]}" up -d --wait || die
 }
 
@@ -193,20 +194,18 @@ fi
 Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
 envfile="$DREMGR/${Profile}_profile.env"
+DREDATA="$DREMGR/var/${Profile}-dredata"
 
 IS_DBINST=1
 run_check_env || exit 22
 [ -f "$envfile" ] || die "$Profile: profil invalide (${envfile#$DREMGR/}: fichier de profil introuvable)"
 
-DREDATA="$DREMGR/var/${Profile}-dredata"
-for dir in addons downloads; do
-    mkdir -p "$DREDATA/$dir"
-done
-
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
 ForceStart=
+ensure_dirs
+
 case "$action" in
 start) start_dbinst "$@";;
 stop) stop_dbinst "$@";;
