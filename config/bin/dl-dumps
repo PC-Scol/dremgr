@@ -97,6 +97,7 @@ step_dl=
 Timestamp=
 ForceDlSums=
 step_checkao=
+Klone=
 UpdateAo=1
 MinimizeDowntime="$MINIMIZE_DOWNTIME"
 step_import=
@@ -115,6 +116,8 @@ args=(
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
     --checkao step_checkao=1 "++Vérifier les addons"
+    --klone Klone=1 "++Refaire le clone des dépôts des addons au lieu de simplement les mettre à jour
+(c'est parfois nécessaire parce que la mise à jour ne se fait pas correctement)"
     -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
     --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
     --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
@@ -209,6 +212,9 @@ eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')
 
 if [ -n "$step_checkao" ]; then
     estep "Vérification des addons"
+    if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
+        [ -d "$AODIR/dreaddon-$SelectAo" ] && SelectAo="dreaddon-$SelectAo"
+    fi
 
     setx -a aourls=echo "$ADDON_URLS"
     for aourl in "${aourls[@]}"; do
@@ -238,9 +244,18 @@ if [ -n "$step_checkao" ]; then
 
         setx aoname=basename "$aourl"
         aodir="$AODIR/${aoname%.git}"
+
+        [ -z "$SelectAo" -o "${aoname%.git}" == "$SelectAo" ] || continue
+
+        if [ -n "$Klone" ]; then
+            qstep "klean $aodir"
+            rm -rf "$aodir"
+        fi
+
         # ajouter le répertoire safe.directory pour pallier les problèmes éventuels d'ownership
         git config --global --get-all safe.directory | grep -qxF "$aodir" ||
             git config --global --add safe.directory "$aodir"
+
         # cloner ou mettre à jour
         origUpdateAo="$UpdateAo"
         if [ ! -d "$aodir" ]; then
@@ -250,9 +265,10 @@ if [ -n "$step_checkao" ]; then
             # si une branche ou un commit sont spécifiés, forcer une mise à jour
             [ -n "$branch" -o -n "$commit" ] && UpdateAo=1
         fi
+
         if [ -n "$UpdateAo" ]; then
             # il faut mettre à jour le dépôt
-            qstep "update $aodir"
+            qstep "update $aodir${branch:+#$branch}${commit:+^$commit}"
             (
                 cd "$aodir"
                 quietc git fetch || exit 1
