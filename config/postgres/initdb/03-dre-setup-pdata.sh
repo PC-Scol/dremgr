@@ -17,5 +17,9 @@ create user mapping if not exists
 for $FE_USER
 server $PDBNAME
 options (password_required 'false');
+
+import foreign schema public
+from server pdata
+into public;
 EOF
 fi
