@@ -34,7 +34,7 @@ function start_dbinst() {
     estep "Démarrage de DRE [$Profile]"
     rsync -rLpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
     rsync -rLpt "$DREMGR/config/bin/" "$DREDATA/local-bin/"
-    docker compose "${composeargs[@]}" up -d --wait || die
+    docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 }
 
 function stop_dbinst() {
@@ -54,7 +54,8 @@ function refresh_dbinst() {
 }
 
 function restart_dbinst() {
-    stop_dbinst "$@"
+    local ForceStart=1
+    local Recreate=1
     start_dbinst "$@"
 }
 
@@ -204,6 +205,7 @@ run_check_env || exit 22
 [ "$action" == none ] && exit 0
 
 ForceStart=
+Recreate=
 ensure_dirs
 
 case "$action" in

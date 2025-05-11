@@ -35,7 +35,7 @@ function start_dbfront() {
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
 
     estep "Démarrage du frontal bdd DRE"
-    docker compose "${composeargs[@]}" up -d --wait || die
+    docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 
     #if [ -n "$reload" ]; then
     #    estep "Rechargement pgAdmin"
@@ -61,7 +61,8 @@ function refresh_dbfront() {
 }
 
 function restart_dbfront() {
-    stop_dbfront "$@"
+    local ForceStart=1
+    local Recreate=1
     start_dbfront "$@"
 }
 
@@ -111,6 +112,7 @@ run_check_env || exit 0
 
 Profile=
 ForceStart=
+Recreate=
 ensure_dirs
 
 case "$action" in
