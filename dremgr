@@ -25,7 +25,7 @@ args=(
     -k,--stop action=stop "Arrêter les services"
     -r,--refresh action=refresh "(Re)démarrer les services si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage des services"
-    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -b,-B,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"
 

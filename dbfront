@@ -95,7 +95,7 @@ args=(
     -k,--stop action=stop "Arrêter le frontal bdd"
     -r,--refresh action=refresh "(Re)démarrer le frontal bdd si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage du frontal bdd"
-    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -b,-B,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -q,--pgbouncer action=pgbouncer "++Lancer une invite psql pour piloter pgbouncer"
 )
 parse_args "$@"; set -- "${args[@]}"

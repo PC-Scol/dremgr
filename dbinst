@@ -143,7 +143,7 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -k,--stop action=stop "Arrêter DRE"
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
-    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -b,-B,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -i,--import-all action=import_all "Lancer l'import complet maintenant, sans attendre la planification"
     -I,--import-one action=import_one "\
 ++Lancer l'import d'un unique addon sans attendre la planification
