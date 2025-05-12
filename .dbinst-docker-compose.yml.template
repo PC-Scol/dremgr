@@ -47,6 +47,7 @@ services:
         ADDON_URLS
         CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
         FORCE_CREATE_SCHEMAS
+        PDBNAME
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
