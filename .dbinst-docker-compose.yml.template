@@ -43,11 +43,12 @@ services:
       UPDATE_CRON_FILES: dl-dumps
       UPDATE_CRON_VARS: >
         APP_PROFILE APP_DATADIR
+        DBNAME PDBNAME
         POSTGRES_USER POSTGRES_PASSWORD
+        FE_USER
         ADDON_URLS
         CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
         FORCE_CREATE_SCHEMAS
-        PDBNAME
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
