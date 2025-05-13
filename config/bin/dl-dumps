@@ -4,7 +4,10 @@ source /etc/nulib.sh || exit 1
 source /g/init.env || exit 1
 
 : "${APP_DATADIR:=/data/dre}"
-: "${DLDIR:=$APP_DATADIR/downloads}" "${AODIR:=$APP_DATADIR/addons}" "${DOCDIR:=$APP_DATADIR/documentation}" "${WORKDIR:=$APP_DATADIR/tmp.$$}"
+: "${DLDIR:=$APP_DATADIR/downloads}"
+: "${AODIR:=$APP_DATADIR/addons}"
+: "${DOCDIR:=$APP_DATADIR/documentation}"
+: "${WORKDIR:=$APP_DATADIR/tmp.$$}"
 export PGDATABASE=dre PGUSER="$POSTGRES_USER"
 unset PGHOST PGPORT
 

@@ -126,8 +126,19 @@ function shell_prompt() {
 
 case "$MYNAME" in
 *_dbinst) Profile="${MYNAME%_dbinst}";;
-*) Profile=prod;;
+*)
+    Profile=prod
+    if [ -f "$DREMGR/dremgr.env" ]; then
+        eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+        if [ -n "$APP_PROFILES" ]; then
+            read -a profiles <<<"${APP_PROFILES//
+/ }"
+            Profile="${profiles[0]}"
+        fi
+    fi
+    ;;
 esac
+
 action=auto
 Rebuild=
 args=(
