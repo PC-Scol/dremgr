@@ -151,7 +151,7 @@ Visiter <http://localhost:7081> pour connaitre les paramètres de connexion à
 chaque instance de base DRE. par défaut, il s'agit de l'adresse locale:
 ~~~sh
 # prod
-psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
+psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=prod_dre"
 ~~~
 ~~~sh
 # test
@@ -174,6 +174,15 @@ téléchargement et l'importation:
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
 définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h30
+
+NB: Les bases de données sont accessibles sur l'adresse IP spécifiée avec le
+paramètre `DBVIP`. par défaut, il s'agit de l'adresse locale, ce qui signifie
+que les bases de données ne sont pas accessibles depuis les autres machines du
+réseau.
+
+Pour que les bases de données soient accessibles sur le réseau, il faut laisser
+vide le paramètre `DBVIP` (ou mettre l'adresse IP de l'interface d'écoute). Bien
+entendu, il faut relancer les services en cas de changement de configuration.
 
 ## Modification du logo
 
@@ -239,7 +248,7 @@ Par exemple, avec les valeurs suivantes
 LBHOST=dremgr.univ.tld
 LBHTTPS=443
 ~~~
-Le serveur devra être accédé et autorisé le cas échéant auprès du serveur CAS
+Le serveur devra être accédé (et le cas échéant autorisé auprès du serveur CAS)
 à l'adresse https://dremgr.univ.tld
 
 ## Installer une version de développement

@@ -112,7 +112,7 @@ que ce soit.
   Adminer ou en ligne de commande)
 
   Pour que la base de données soit accessible sur le réseau par des clients
-  génériques, il faut laisser vide la variable `DBVIP` (ou mettre l'adresse IP
+  génériques, il faut laisser vide le paramètre `DBVIP` (ou mettre l'adresse IP
   de l'interface d'écoute). Bien entendu, il faut relancer les services en cas
   de changement de configuration.
 
@@ -122,5 +122,28 @@ que ce soit.
 
   Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md)
   pour différentes pistes pour pallier cette limitation.
+
+**Je voudrais que la base de données de prod soit accessible avec le nom `dre` au lieu de `prod_dre`**
+: Dans le mode d'installation avancée, les bases de données sont accédées avec
+  un nom de la forme `<PROFILE>_dre`
+
+  Si on veut accéder à la base de prod avec le nom `dre` au lieu de `prod_dre`,
+  il faut faire les modifications suivantes dans `dremgr.env`
+  ~~~sh
+  # supprimer ces lignes
+  PGBOUNCER_DBS="$DBNAME $PDBNAME"
+
+  # ajouter ces lignes
+  __ALL__PGBOUNCER_DBS="$DBNAME $PDBNAME"
+  prod_PGBOUNCER_DBS="$DBNAME:$DBNAME $PDBNAME:$PDBNAME"
+
+  # modifier ces lignes
+  prod_FE_DBNAME="$DBNAME"
+  ~~~
+
+  Puis relancer les services
+  ~~~sh
+  ./dremgr -r
+  ~~~
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
