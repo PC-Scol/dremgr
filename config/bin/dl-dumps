@@ -535,11 +535,33 @@ fi
 
 if [ -n "$step_import_bin" ]; then
     estep "Maj version"
-    runsql "\
-create table if not exists version (majeure int, mineure int, patch int, prerelease varchar(8), timestamp varchar(8));
+    profile="${APP_PROFILE^^}"
+    <"$version" runsql "\
+create table if not exists version (
+  majeure varchar
+, mineure varchar
+, patch varchar
+, prerelease varchar
+, timestamp varchar
+, profile varchar
+, source_json jsonb
+);
 truncate table version;
-insert into version(majeure, mineure, patch, prerelease, timestamp)
-values ($majeure, $mineure, $patch, '$prerelease', '$Timestamp');
+copy version(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
+update version set
+  majeure = source_json->>'majeure'
+, mineure = source_json->>'mineure'
+, patch = source_json->>'patch'
+, prerelease = source_json->>'prerelease'
+, timestamp = '$Timestamp'
+, profile = '$profile'
+;
+
+create table if not exists \"_infos_$profile\" (description varchar);
+truncate table \"_infos_$profile\";
+insert into \"_infos_$profile\" (description) values
+('Cette base de données est sur l''instance du profil $profile')
+;
 " || die
 fi
 
