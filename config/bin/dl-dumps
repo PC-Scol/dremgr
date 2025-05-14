@@ -536,6 +536,7 @@ fi
 if [ -n "$step_import_bin" ]; then
     estep "Maj version"
     profile="${APP_PROFILE^^}"
+    lprofile="$APP_PROFILE"
     <"$version" runsql "\
 create table if not exists version (
   majeure varchar
@@ -554,7 +555,7 @@ update version set
 , patch = source_json->>'patch'
 , prerelease = source_json->>'prerelease'
 , timestamp = '$Timestamp'
-, profile = '$profile'
+, profile = '$lprofile'
 ;
 
 create table if not exists \"_infos_$profile\" (description varchar);
