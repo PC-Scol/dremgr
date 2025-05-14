@@ -86,6 +86,9 @@ liens pour avoir des détails sur la procédure.
     (un peu) plus de travail.
     [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
 
+> [!TIP]
+> Une interrogation? Un doute? Consultez la [foire aux questions](FAQ.md)
+
 ## Installer une mise à jour
 
 Veuillez suivre [ces instructions](UPDATE.md) AVANT de commencer à faire quoi
@@ -104,46 +107,5 @@ que ce soit.
 * Les addons permettent de rajouter des fonctionnalités à DRE.
   * [Installation d'addons](documentation/dreaddons.md)
   * [Développement d'addons](documentation/dreaddons-developpement.md)
-
-## FAQ
-
-**La base de données n'est pas accessible par BO / PowerBI / tout autre client**
-: Par défaut, la base de données n'est accessible que depuis l'hôte local (via
-  Adminer ou en ligne de commande)
-
-  Pour que la base de données soit accessible sur le réseau par des clients
-  génériques, il faut laisser vide le paramètre `DBVIP` (ou mettre l'adresse IP
-  de l'interface d'écoute). Bien entendu, il faut relancer les services en cas
-  de changement de configuration.
-
-**Je voudrais créer des schémas supplémentaires**
-: Par défaut, pour minimiser le temps d'indisponibilité, la base est recréée à
-  zéro chaque jour.
-
-  Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md)
-  pour différentes pistes pour pallier cette limitation.
-
-**Je voudrais que la base de données de prod soit accessible avec le nom `dre` au lieu de `prod_dre`**
-: Dans le mode d'installation avancée, les bases de données sont accédées avec
-  un nom de la forme `<PROFILE>_dre`
-
-  Si on veut accéder à la base de prod avec le nom `dre` au lieu de `prod_dre`,
-  il faut faire les modifications suivantes dans `dremgr.env`
-  ~~~sh
-  # supprimer ces lignes
-  PGBOUNCER_DBS="$DBNAME $PDBNAME"
-
-  # ajouter ces lignes
-  __ALL__PGBOUNCER_DBS="$DBNAME $PDBNAME"
-  prod_PGBOUNCER_DBS="$DBNAME:$DBNAME $PDBNAME:$PDBNAME"
-
-  # modifier ces lignes
-  prod_FE_DBNAME="$DBNAME"
-  ~~~
-
-  Puis relancer les services
-  ~~~sh
-  ./dremgr -r
-  ~~~
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

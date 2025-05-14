@@ -132,14 +132,17 @@ informations à l'utilisateur.
 
   Cependant, à cause de ce mode opératoire, toutes les tables et données qui ont
   été créées "manuellement" dans la base de données DRE sont perdues, puisqu'on
-  repart toujours d'une base vide. Il y a plusieurs solutions:
-  * Désactiver cette fonctionnalité (i.e `MINIMIZE_DOWNTINE=`) mais le temps
-    d'indisponibilité va de 10 à 15 minutes en fonction du nombre d'addons et de
-    la quantité de données
+  repart toujours d'une base vide. Il y a plusieurs solutions, par ordre de
+  préférence:
+  * Créer les tables dans le schéma `public` de la base de données `pdata` :
+    Elles sont importées automatiquement dans le schéma `public` de la base de
+    données `dre` à chaque fois.
+    C'est sans doute la méthode la plus simple et la plus efficace.
   * Créer les tables supplémentaires via un addon. Ce n'est pas forcément
     possible, surtout si ce sont des données créées manuellement.
-  * Créer une autre base de données en parallèle (sur le même serveur le cas
-    échéant), et utiliser `dblink` pour interagir avec la base DRE
+  * Désactiver cette fonctionnalité (i.e `MINIMIZE_DOWNTINE=`) mais le temps
+    d'indisponibilité va de 10 à 15 minutes voire plus en fonction du nombre
+    d'addons et de la quantité de données.
 
 `FORCE_CREATE_SCHEMAS`
 : Liste des dumps qui ne contiennent pas la commande de création de schéma. En
