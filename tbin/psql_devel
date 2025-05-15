@@ -37,7 +37,7 @@ fi
 if [ ${#inputs[*]} -gt 0 ]; then
     for input in "${inputs[@]}"; do
         estep "$input"
-        psql -d "$conn" "$@" -f "$input"
+        psql -d "$conn" -v ON_ERROR_STOP=1 "$@" -f "$input" || die
     done
 else
     exec psql -d "$conn" "$@"
