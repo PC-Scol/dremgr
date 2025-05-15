@@ -34,8 +34,20 @@ function dl() {
     done
     return $r
 }
+
+export RUNSQL_IGNORE_ERRORS=1
+RUNSQL_ARGS=()
+function runsql_ignore_errors() {
+    if [ -n "$1" ]; then
+        RUNSQL_IGNORE_ERRORS=1
+        RUNSQL_ARGS=()
+    else
+        RUNSQL_IGNORE_ERRORS=
+        RUNSQL_ARGS=(-v ON_ERROR_STOP=1)
+    fi
+}
 function runsql() {
-    quietc psql -c "$@"
+    quietc psql "${RUNSQL_ARGS[@]}" -c "$@"
 }
 function rundir() {
     local -a files; local file
@@ -45,12 +57,16 @@ function rundir() {
         case "$file" in
         *.sql)
             estep "psql $filename"
-            quietc psql -f "$file" || die
+            if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
+                [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
+            fi
             ;;
         *.sh)
             if [ -x "$file" ]; then
                 estep "exec $filename"
-                quietc "$file" || die
+                if ! quietc "$file"; then
+                    [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
+                fi
             fi
             ;;
         esac
@@ -470,6 +486,7 @@ if [ -n "$step_runao" ]; then
     etitle "Installation des addons"
     mkdir -p "$WORKDIR"
 
+    have_ignore_errors=
     for addon in "${ADDONS[@]}"; do
         etitle "$addon"; quietc_echo "* install $addon"
         if [[ "$addon" == *:* ]]; then
@@ -480,39 +497,46 @@ if [ -n "$step_runao" ]; then
             vxx=
         fi
         SCHEMAS=()
-        eval "$(SCHEMAS=(); source "$aodir/dreaddon.conf"; echo "SCHEMAS+=(${SCHEMAS[*]})")"
+        eval "$(SCHEMAS=(); IGNORE_ERRORS=; source "$aodir/dreaddon.conf"; echo "SCHEMAS+=(${SCHEMAS[*]}); IGNORE_ERRORS=$IGNORE_ERRORS")"
+        runsql_ignore_errors "$IGNORE_ERRORS"
+        [ -n "$IGNORE_ERRORS" ] && have_ignore_errors=1
+        errors=
 
         if [ -d "$aodir/prepare" ]; then
             estep "Préparation"
             # Les scripts de préparation peuvent créer les schémas nécessaires ou
             # faire toute autre opération utile
-            rundir "$aodir/prepare"
+            rundir "$aodir/prepare" || errors=1
         fi
-        # S'assurer tout de même que les schémas mentionnés existent
-        for schema in "${SCHEMAS[@]}"; do
-            qstep "$schema: create schema"
-            runsql "create schema if not exists $schema;" || die
-        done
+        if [ -z "$errors" ]; then
+            # S'assurer tout de même que les schémas mentionnés existent
+            for schema in "${SCHEMAS[@]}"; do
+                qstep "$schema: create schema"
+                runsql "create schema if not exists $schema;" || errors=1
+            done
+        fi
 
         have_vxx=
-        if [ -n "$vxx" -a -d "$aodir/$vxx" ]; then
+        if [ -z "$errors" -a -n "$vxx" -a -d "$aodir/$vxx" ]; then
             have_vxx=1
-            rundir "$aodir/$vxx"
+            rundir "$aodir/$vxx" || errors=1
         fi
 
-        if [ -d "$aodir/updates" ]; then
+        if [ -z "$errors" -a -d "$aodir/updates" ]; then
             [ -z "$have_vxx" ] && estep "Mises à jour"
-            rundir "$aodir/updates"
+            rundir "$aodir/updates" || errors=1
         fi
-        # Donner un accès complet en lecture au compte reader
-        for schema in "${SCHEMAS[@]}"; do
-            qstep "$schema: maj authnz"
-            runsql "\
+        if [ -z "$errors" ]; then
+            # Donner un accès complet en lecture au compte reader
+            for schema in "${SCHEMAS[@]}"; do
+                qstep "$schema: maj authnz"
+                runsql "\
 grant usage on schema $schema to reader;
 grant select on all tables in schema $schema to reader;
 grant select on all sequences in schema $schema to reader;
-" || die
-        done
+" || errors=1
+            done
+        fi
 
         if [ -d "$aodir/documentation" ]; then
             estep "Documentation générale"
@@ -522,6 +546,10 @@ grant select on all sequences in schema $schema to reader;
             estep "Documentation $vxx"
             rsync -rl --copy-unsafe-links "$aodir/documentation/$vxx/" "$WORKDIR/documentation/"
         fi
+
+        if [ -n "$errors" ]; then
+            eimportant "Des erreurs se sont produites. l'installation de cet addon est incomplète"
+        fi
         eend
     done
 
@@ -530,6 +558,11 @@ grant select on all sequences in schema $schema to reader;
     rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
 
     rm -rf "$WORKDIR"
+
+    if [ -n "$have_ignore_errors" ] && grep -q "ERROR:" "$APP_DATADIR/import.log"; then
+        eimportant "Des erreurs se sont produites pendant l'import. Veuillez consulter les logs"
+    fi
+
     eend
 fi
 
