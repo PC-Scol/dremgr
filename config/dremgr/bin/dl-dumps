@@ -14,54 +14,6 @@ unset PGHOST PGPORT
 read -a FORCE_CREATE_SCHEMAS <<<"${FORCE_CREATE_SCHEMAS//
 / }"
 
-read -a user_access <<<"$FE_USER:rw ${FE_ACCESSS//
-/ }"
-declare -A tgrants sgrants
-for user in "${user_access[@]}"; do
-    access="${user#*:}"
-    user="${user%%:*}"
-    case "$access" in
-    admin|all|a)
-        tgrant="all privileges"
-        sgrant="update"
-        ;;
-    write|rw|w)
-        tgrant="select, insert, update, delete, truncate"
-        sgrant="usage"
-        ;;
-    read|ro|r|*)
-        tgrant="select"
-        sgrant="select"
-        ;;
-    esac
-    grants["$user"]="$grant"
-done
-
-read -a users <<<"$FE_USER: ${FE_USERS//
-/ }"
-
-grant_default_privileges=""
-for user in "${users[@]}"; do
-    user="${user%%:*}"
-    tgrant="${tgrants[$user]:-select}"
-    sgrant="${sgrants[$user]:-select}"
-    grant_default_privileges="$grant_default_privileges
-alter default privileges in schema public grant $tgrant on tables to $user;
-alter default privileges in schema public grant $sgrant on sequences to $user;"
-done
-function grant_schema_privileges() {
-    local schema="${1:-public}"
-    for user in "${users[@]}"; do
-        user="${user%%:*}"
-        tgrant="${tgrants[$user]:-select}"
-        sgrant="${sgrants[$user]:-select}"
-        echo "\
-grant usage on schema $schema to $user;
-grant $tgrant on all tables in schema $schema to $user;
-grant $sgrant on all sequences in schema $schema to $user;"
-    done
-}
-
 function recoverable_curl_error() {
     case "$1" in
     5|6|7|22) return 0;;
@@ -436,7 +388,7 @@ drop database if exists $tmpdb with (force);
 create database $tmpdb;
 " || die
         PGDATABASE="$tmpdb"
-        runsql "$grant_default_privileges" || die
+        runsql "$(_grant_default_privileges)" || die
         if [ -n "$PDBNAME" ]; then
             qstep "configuration $PDBNAME"
             quietc setup-pdata.sh
@@ -476,7 +428,7 @@ drop extension if exists unaccent, pg_trgm cascade;
 
         qstep "$schema: import $file"
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
-        runsql "$(grant_schema_privileges "$schema")" || die
+        runsql "$(_grant_schema_privileges "$schema")" || die
     done
     eend
 fi
@@ -515,7 +467,7 @@ copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'
         schema="mongo_$schema"
 
         qstep "$schema: maj authnz"
-        runsql "$(grant_schema_privileges "$schema")" || die
+        runsql "$(_grant_schema_privileges "$schema")" || die
     done
     eend
 fi
@@ -568,7 +520,7 @@ if [ -n "$step_runao" ]; then
             # Donner un accès complet en lecture aux comptes
             for schema in "${SCHEMAS[@]}"; do
                 qstep "$schema: maj authnz"
-                runsql "$(grant_schema_privileges "$schema")" || errors=1
+                runsql "$(_grant_schema_privileges "$schema")" || errors=1
             done
         fi
 

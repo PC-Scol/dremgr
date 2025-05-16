@@ -54,8 +54,6 @@ services:
       - ./var/@@Profile@@-run:/run/postgresql
       - ./var/@@Profile@@-dredata:/data/dre
       - ./var/@@Profile@@-dredata/cron-config:/cron-config
-      - ./var/@@Profile@@-dredata/local-bin/dl-dumps:/usr/local/bin/dl-dumps
-      - ./var/@@Profile@@-dredata/local-bin/setup-pdata.sh:/usr/local/bin/setup-pdata.sh
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:

@@ -14,4 +14,7 @@ RUN /g/pkg i @ssl @git
 COPY --from=postgres /g/ /g/
 RUN /g/build -a @postgres
 
+COPY config/dremgr/ /g/dremgr/
+RUN /g/build dremgr
+
 ENTRYPOINT ["/g/entrypoint"]

@@ -33,7 +33,6 @@ function start_dbinst() {
 
     estep "Démarrage de DRE [$Profile]"
     rsync -rLpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
-    rsync -rLpt "$DREMGR/config/bin/" "$DREDATA/local-bin/"
     docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 }
 

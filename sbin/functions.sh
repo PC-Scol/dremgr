@@ -33,7 +33,6 @@ function ensure_dirs() {
         mkdir -p "$datadir/downloads"
         mkdir -p "$datadir/addons"
         mkdir -p "$datadir/cron-config"
-        mkdir -p "$datadir/local-bin"
     done
 }
 

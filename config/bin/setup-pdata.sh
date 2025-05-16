@@ -1,1 +1,0 @@
-../postgres/initdb/03-dre-setup-pdata.sh
