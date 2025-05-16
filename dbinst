@@ -117,8 +117,15 @@ function shell_prompt() {
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
         local container="$1"; shift
-        estep "Invite shell $container [$Profile]"
-        docker compose "${composeargs[@]}" exec "$container" bash "$@" || die
+        local -a cmd
+        if [ $# -gt 0 ]; then
+            cmd=("$@")
+            estep "$container [$Profile] $1"
+        else
+            cmd=(bash)
+            estep "$container [$Profile] Invite shell"
+        fi
+        docker compose "${composeargs[@]}" exec "$container" "${cmd[@]}" || die
     else
         eerror "Impossible de lancer l'invite shell $container: DRE [$Profile] est arrêté"
     fi
