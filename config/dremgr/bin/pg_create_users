@@ -3,10 +3,14 @@
 
 read -a users <<<"$FE_USER:$FE_PASSWORD ${FE_USERS//
 / }"
+echo 'do $$ begin'
 for user in "${users[@]}"; do
     password="${user#*:}"
     user="${user%%:*}"
     echo "\
-create user $user with password '$password';
+  if not exists (select from pg_user where usename = '$user') then
+    create user $user with password '$password';
+  end if;
 "
 done
+echo 'end $$;'

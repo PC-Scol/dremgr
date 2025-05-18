@@ -8,6 +8,6 @@ create database $PDBNAME;
 
 \connect $PDBNAME
 
-$(_grant_default_privileges)
+$(pg_grant_default_privileges)
 EOF
 fi

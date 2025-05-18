@@ -1,1 +1,1 @@
-/g/dremgr/bin/setup-pdata.sh
+/g/dremgr/bin/setup-pdb.sh

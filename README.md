@@ -87,7 +87,7 @@ liens pour avoir des détails sur la procédure.
     [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
 
 > [!TIP]
-> Une interrogation? Un doute? Consultez la [foire aux questions](FAQ.md)
+> Une interrogation? Un doute? Consultez la [foire aux questions](documentation/faq.md)
 
 ## Installer une mise à jour
 

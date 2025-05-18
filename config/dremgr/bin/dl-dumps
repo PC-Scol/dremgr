@@ -388,10 +388,10 @@ drop database if exists $tmpdb with (force);
 create database $tmpdb;
 " || die
         PGDATABASE="$tmpdb"
-        runsql "$(_grant_default_privileges)" || die
+        runsql "$(pg_grant_default_privileges)" || die
         if [ -n "$PDBNAME" ]; then
             qstep "configuration $PDBNAME"
-            quietc setup-pdata.sh
+            quietc setup-pdb.sh
         fi
     else
         etitle "Suppression des anciens schémas"
@@ -428,7 +428,7 @@ drop extension if exists unaccent, pg_trgm cascade;
 
         qstep "$schema: import $file"
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
-        runsql "$(_grant_schema_privileges "$schema")" || die
+        runsql "$(pg_grant_schema_privileges "$schema")" || die
     done
     eend
 fi
@@ -467,7 +467,7 @@ copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'
         schema="mongo_$schema"
 
         qstep "$schema: maj authnz"
-        runsql "$(_grant_schema_privileges "$schema")" || die
+        runsql "$(pg_grant_schema_privileges "$schema")" || die
     done
     eend
 fi
@@ -520,7 +520,7 @@ if [ -n "$step_runao" ]; then
             # Donner un accès complet en lecture aux comptes
             for schema in "${SCHEMAS[@]}"; do
                 qstep "$schema: maj authnz"
-                runsql "$(_grant_schema_privileges "$schema")" || errors=1
+                runsql "$(pg_grant_schema_privileges "$schema")" || errors=1
             done
         fi
 
