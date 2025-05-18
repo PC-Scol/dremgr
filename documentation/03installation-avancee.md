@@ -102,8 +102,8 @@ Maintenant que les instances de bases de données sont configurées, il faut
 configurer les services frontaux. Ces services frontaux comprennent:
 * un proxy pgbouncer qui permet de servir plusieurs bases postgresql sur la même
   adresse IP.
-* pgAdmin pour accéder à la base de façon graphique
-* adminer, alternative pour accéder à la base de façon graphique
+* adminer pour accéder à la base de façon graphique
+* pgAdmin, alternative pour accéder à la base de façon graphique
 * une application web destinée aux utilisateurs autorisés qui affiche les
   informations de connexion à la base de données, et met à disposition de la
   documentation technique et/ou fonctionnelle

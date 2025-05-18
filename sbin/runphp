@@ -33,7 +33,7 @@ BUILDENV0=.build.env.dist
 BUILDENV=build.env
 
 # Listes des images que le script build construit automatiquement
-BUILD_IMAGES=(db web pgadmin adminer)
+BUILD_IMAGES=(db web adminer pgadmin)
 BUILD_FLAVOUR=
 
 ## En ce qui concerne DIST et IMAGENAME, les valeurs dans BUILDENV prennent le

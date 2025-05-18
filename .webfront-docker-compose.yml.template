@@ -4,6 +4,17 @@
 # webfront-docker-composer.local.yml, qui sera fusionné avec ce fichier
 
 services:
+  adminer:
+    image: @@PRIVAREG@@dremgr/adminer
+    env_file:
+      - .proxy.env
+      - .defaults.env
+      - dremgr.env
+      - .forced.env
+    #@@IF:DBNET@@networks:
+    #@@IF:DBNET@@  @@DBNET@@:
+    restart: always
+
   pgadmin:
     image: @@PRIVAREG@@dremgr/pgadmin
     env_file:
@@ -13,17 +24,6 @@ services:
       - .forced.env
     volumes:
       - ./var/pgadmindata:/var/lib/pgadmin
-    #@@IF:DBNET@@networks:
-    #@@IF:DBNET@@  @@DBNET@@:
-    restart: always
-
-  adminer:
-    image: @@PRIVAREG@@dremgr/adminer
-    env_file:
-      - .proxy.env
-      - .defaults.env
-      - dremgr.env
-      - .forced.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     restart: always
