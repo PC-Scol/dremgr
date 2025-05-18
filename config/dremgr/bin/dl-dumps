@@ -130,7 +130,7 @@ args=(
     --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
     --keep-import-log clean_import_log=no "++Interdire le vidage du fichier import.log avant de démarrer"
     --download step_dl=1 "++Télécharger les fichiers du jour"
-    -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
+    -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
@@ -179,6 +179,7 @@ if [ -z "$DRE_PREFIX" ]; then
 fi
 
 cd "$DLDIR"
+[ -n "$Timestamp" ] && Clean=
 if [ "$Timestamp" == latest ]; then
     # prendre le dernier fichier checksums. utile pour --runao
     latest="$(ls checksums-* 2>/dev/null | tail -n1)"
