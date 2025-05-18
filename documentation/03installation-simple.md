@@ -27,18 +27,24 @@ suivantes peuvent être configurées le cas échéant:
 : URL, utilisateur et mot de passe permettant de télécharger les dumps DRE
 
 `DBVIP`
-: Adresse sur laquelle l'instance de la base DRE est disponible. Laisser vide
-  pour écouter sur toutes les interfaces.
+: Adresse sur laquelle l'instance de la base DRE est disponible.
+  NB: avec le paramètre par défaut, la base de données n'est accessible que
+  depuis l'hôte local en ligne de commande.
+
+  Ce paramétrage est surtout approprié pour un poste de développement. *Laisser
+  vide* pour écouter sur toutes les interfaces.
 
 `POSTGRES_PASSWORD`
 : mot de passe de l'utilisateur administrateur de la base de données
 
 `FE_PASSWORD`
-: mot de passe de l'utilisateur en lecture seule de la base de données
+: mot de passe de l'utilisateur `dreadmin`. Cet utilisateur a un accès en
+  lecture uniquement à la base de données DRE, et un accès en modification à la
+  base de données persistante.
 
 `ADDON_URLS`
 : Liste d'URLs de dépôts git contenant des "addons" de dremgr. Par défaut, les
-  trois URLs de github suivants sont listés:
+  deux URLs de github suivants sont listés:
   * `PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
   * `PC-Scol/dreaddon-pilotage.git`
@@ -61,7 +67,11 @@ Une fois le fichier configuré, l'instance peut être démarrée
 La base de données est accessible sur l'adresse IP spécifiée dans le
 fichier. par défaut, il s'agit de l'adresse locale:
 ~~~sh
-psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=dre"
+# base de données DRE
+psql -d "host=localhost port=5432 user=dreadmin password=PASSWORD dbname=dre"
+
+# base de données persistante
+psql -d "host=localhost port=5432 user=dreadmin password=PASSWORD dbname=pdata"
 ~~~
 NB: cette commande sert à vérifier que la base est bien accessible sur l'adresse
 configurée. Elle nécessite bien entendu que vous ayez le client `psql` installé.

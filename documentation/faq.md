@@ -28,7 +28,7 @@ schéma `public` de `pdata` sont importées automatiquement en tant que "tables
 Ainsi, les tables de la base de données `pdata` sont utilisables directement,
 comme si elles faisaient partie de la base de données `dre`
 
-Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md)
+Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md#minimize_downtine)
 pour d'autres pistes si l'utilisation de la base de données `pdata` ne convient pas.
 
 NB: dans la configuration par défaut via pgbouncer, l'accès aux bases est
@@ -84,5 +84,15 @@ Puis relancer les services
 ~~~sh
 ./dremgr -r
 ~~~
+
+## Je voudrais créer des utilisateurs supplémentaires
+
+Cette fonctionnalité existe mais elle n'est pas documentée en détail, parce
+qu'elle doit être remaniée pour être dynamique. Actuellement, tout changement
+dans la liste des utilisateurs nécessite le redémarrage complet des instances.
+
+Si vous souhaitez tout de même créer des utilisateurs supplémentaires, notamment
+pour faciliter le suivi et le controle de l'accès à la base de données DRE,
+suivez [la documentation dédiée](documentation/setup-users.md)
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

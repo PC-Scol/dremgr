@@ -119,6 +119,7 @@ informations à l'utilisateur.
 : Nombre de jours au terme duquel un fichier téléchargé est supprimé. Par
   défaut, ne garder que les 15 derniers jours
 
+<a name="minimize_downtine"></a>
 `MINIMIZE_DOWNTINE`
 : Si ce paramètre est activé, l'importation des dumps et des addons se fait de
   façon à minimiser le temps d'indisponibilité de la base de données DRE:

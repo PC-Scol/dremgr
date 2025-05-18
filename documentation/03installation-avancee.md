@@ -37,14 +37,30 @@ variables suivantes peuvent être configurées le cas échéant:
 : URL, utilisateur et mot de passe permettant de télécharger les dumps DRE
 
 `DBVIP`
-: Adresse sur laquelle les instances de bases DRE sont disponibles. Laisser vide
-  pour écouter sur toutes les interfaces.
+: Adresse sur laquelle les instances de bases DRE sont disponibles.
+  NB: avec le paramètre par défaut, la base de données n'est accessible que
+  depuis l'hôte local (via Adminer ou en ligne de commande).
+
+  Ce paramétrage est surtout approprié pour un poste de développement. *Laisser
+  vide* pour écouter sur toutes les interfaces.
 
 `POSTGRES_PASSWORD`
+: mot de passe de l'utilisateur administrateur de la base de données. Dans la
+  configuration par défaut, ce mot de passe est partagé par toutes les
+  instances.
+
 `FE_PASSWORD`
-: mot de passe respectivement de l'utilisateur administrateur et de
-  l'utilisateur en lecture seule de la base de données. Dans la configuration
-  par défaut, ces mots de passe sont partagés par toutes les instances.
+: mot de passe de l'utilisateur `dreadmin`. Cet utilisateur a un accès en
+  lecture uniquement à la base de données DRE, et un accès en modification à la
+  base de données persistante. Dans la configuration par défaut, ce mot de passe
+  est partagé par toutes les instances.
+
+`LBHTTP`
+: port d'écoute du frontal web. la valeur par défaut est surtout appropriée pour
+  un poste de développpement.
+
+  pour une installation à destination des utilisateurs, la valeur standard `80`
+  est plus appropriée
 
 `ADDON_URLS`
 : Liste d'URLs de dépôts git contenant des "addons" de dremgr. Par défaut, les
@@ -132,7 +148,12 @@ Pour la connexion à l'application web, éditez les fichiers suivants:
 
 Par défaut, le service web sera accessible sur <http://localhost:7081>. Pour
 changer cette valeur, éditer le fichier `dremgr.env` et configurer les variables
-`LBHOST` et `LBHTTP`
+`LBHOST` et `LBHTTP`. Par exemple, avec la configuration suivante, l'adresse du
+service devient <http://dremgr.univ.tld>
+~~~sh
+LBHOST=dremgr.univ.tld
+LBHTTP=80
+~~~
 
 Ensuite, démarrer les services frontaux
 ~~~sh
@@ -150,12 +171,20 @@ services concernés
 Visiter <http://localhost:7081> pour connaitre les paramètres de connexion à
 chaque instance de base DRE. par défaut, il s'agit de l'adresse locale:
 ~~~sh
-# prod
+## profil prod
+# base de données DRE
 psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=prod_dre"
+
+# base de données persistante
+psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=prod_pdata"
 ~~~
 ~~~sh
-# test
+## profil test
+# base de données DRE
 psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=test_dre"
+
+# base de données persistante
+psql -d "host=localhost port=5432 user=reader password=PASSWORD dbname=test_pdata"
 ~~~
 NB: ces commandes servent à vérifier que la base est bien accessible sur
 l'adresse configurée. Elles nécessitent bien entendu que vous ayez le client
@@ -253,6 +282,7 @@ Le serveur devra être accédé (et le cas échéant autorisé auprès du serveu
 
 ## Installer une version de développement
 
+<a name="install-develop"></a>
 La release courante est sur la branche `master`. Pour tester des fonctionnalités
 qui ne sont pas encore stabilisées, il faut basculer sur la branche `develop` ou
 une autre branche qui vous est indiquée.

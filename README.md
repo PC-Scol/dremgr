@@ -6,10 +6,16 @@
 # dremgr
 
 dremgr est un environnement pour la gestion d'une ou plusieurs instances de base
-DRE
+de données DRE
 
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
 accès à un export journalier des bases de données d'une instance PEGASE
+
+Par défaut, la base de données DRE est recréée à zéro tous les jours, à chaque
+import. Une base de données persistante est aussi disponible, dans laquelle
+peuvent être conservées des données annexes. A chaque fois qu'elle est recréée,
+un mécanisme importe toutes les tables de la base de données persistante dans la
+base de données DRE, afin d'offrir une vue consolidée aux données.
 
 > [!TIP]
 > **Obtenir de l'aide**
@@ -87,7 +93,8 @@ liens pour avoir des détails sur la procédure.
     [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
 
 > [!TIP]
-> Une interrogation? Un doute? Consultez la [foire aux questions](documentation/faq.md)
+> Vous avez fait l'installation, mais vous avez une interrogation? Un doute?
+> Consultez la [foire aux questions](documentation/faq.md)
 
 ## Installer une mise à jour
 
@@ -103,7 +110,7 @@ que ce soit.
 * Pour tester des fonctionnalités qui ne sont pas encore stabilisées, il est
   possible de basculer une installation en mode "développement". ATTENTION!
   Cette opération ne devrait pas être effectuée en production.
-  [Installer une version de développement](documentation/03installation-avancee.md)
+  [Installer une version de développement](documentation/03installation-avancee.md#install-develop)
 * Les addons permettent de rajouter des fonctionnalités à DRE.
   * [Installation d'addons](documentation/dreaddons.md)
   * [Développement d'addons](documentation/dreaddons-developpement.md)
