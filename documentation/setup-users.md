@@ -44,6 +44,7 @@ Puis il faut lancer la commande pour créer les nouveaux comptes
 ~~~sh
 ./dbinst -Ax create-pgusers.sh
 ~~~
-NB: les comptes existant ne sont pas modifiés
+NB: seuls les nouveaux comptes sont créés. les comptes existant ne sont pas
+modifiés
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
