@@ -2,12 +2,13 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 source /etc/nulib.sh || exit 1
 
-ADM="host=pegase-dre.self port=5432 dbname=pgbouncer user=pgbouncer password=admin"
-RW="host=pegase-dre.self port=5432 dbname=PROFILE_dre user=postgres password=admin"
+PGBOUNCER="host=pegase-dre.self port=5432 dbname=pgbouncer user=pgbouncer password=admin"
+ADMIN="host=pegase-dre.self port=5432 dbname=PROFILE_dre user=postgres password=admin"
+RW="host=pegase-dre.self port=5432 dbname=PROFILE_dre user=dreadmin password=admin"
 RO="host=pegase-dre.self port=5432 dbname=PROFILE_dre user=reader password=reader"
 
 profile=prod
-conn="$RW"
+conn="$ADMIN"
 inputs=()
 input_all=
 args=(
@@ -15,9 +16,10 @@ args=(
     -g:,--profile profile= "se connecter à l'instance correspondant au profil spécifié"
     -P,--prod profile=prod "se connecter à l'instance prod"
     -T,--test profile=test "se connecter à l'instance test"
+    -b,--front conn="$PGBOUNCER" "accès à pgbouncer"
+    -a,--admin conn="$ADMIN" "accès administrateur"
     -w,--write conn="$RW" "accès en écriture. c'est l'option par défaut"
     -r,--read conn="$RO" "accès en lecture seule"
-    -a,--admin conn="$ADM" "accès à pgbouncer"
     -f:,--input:INPUT inputs "spécifier un fichier à importer"
     -F,--input-all input_all=1 "importer tous les fichiers mentionnés en argument"
 )

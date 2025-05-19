@@ -1,3 +1,7 @@
+## Release 1.5.3 du 19/05/2025-21:46
+
+* `5e134c1` changer le répertoire courant avant de lancer un script
+
 ## Release 1.5.2 du 19/05/2025-05:37
 
 Cette release contient de nombreuses modifications, notamment:
