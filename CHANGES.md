@@ -1,8 +1,4 @@
-## Release 1.5.1 du 19/05/2025-04:56
-
-* `39c0f54` maj doc
-
-## Release 1.5.0 du 19/05/2025-04:05
+## Release 1.5.2 du 19/05/2025-05:37
 
 Cette release contient de nombreuses modifications, notamment:
 - création d'une base de données persistante
