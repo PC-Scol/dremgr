@@ -60,7 +60,7 @@ function _runfile() {
     *.sh)
         if [ -x "$file" ]; then
             estep "exec $file"
-            if ! quietc "$file"; then
+            if ! quietc "./$file"; then
                 [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
             fi
         fi
