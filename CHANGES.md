@@ -12,7 +12,7 @@ IMPORTANT: après la mise à jour, il faut suivre les instructions de
 [setup-pdata.md](documentation/setup-pdata.md) pour créer la base de données
 persistante
 
-Notez que l'utilisateur `\$FE_USER` a par défaut les droits d'accès en
+Notez que l'utilisateur `$FE_USER` a par défaut les droits d'accès en
 modification sur la base de données persistante. si vous souhaitez un accès en
 lecture uniquement, il faut créer un utilisateur supplémentaire
 
