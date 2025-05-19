@@ -6,10 +6,16 @@
 # dremgr
 
 dremgr est un environnement pour la gestion d'une ou plusieurs instances de base
-DRE
+de données DRE
 
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
 accès à un export journalier des bases de données d'une instance PEGASE
+
+Par défaut, la base de données DRE est recréée à zéro tous les jours, à chaque
+import. Une base de données persistante est aussi disponible, dans laquelle
+peuvent être conservées des données annexes. A chaque fois qu'elle est recréée,
+un mécanisme importe toutes les tables de la base de données persistante dans la
+base de données DRE, afin d'offrir une vue consolidée aux données.
 
 > [!TIP]
 > **Obtenir de l'aide**
@@ -86,6 +92,10 @@ liens pour avoir des détails sur la procédure.
     (un peu) plus de travail.
     [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
 
+> [!TIP]
+> Vous avez fait l'installation, mais vous avez une interrogation? Un doute?
+> Consultez la [foire aux questions](documentation/faq.md)
+
 ## Installer une mise à jour
 
 Veuillez suivre [ces instructions](UPDATE.md) AVANT de commencer à faire quoi
@@ -100,27 +110,9 @@ que ce soit.
 * Pour tester des fonctionnalités qui ne sont pas encore stabilisées, il est
   possible de basculer une installation en mode "développement". ATTENTION!
   Cette opération ne devrait pas être effectuée en production.
-  [Installer une version de développement](documentation/03installation-avancee.md)
+  [Installer une version de développement](documentation/03installation-avancee.md#install-develop)
 * Les addons permettent de rajouter des fonctionnalités à DRE.
   * [Installation d'addons](documentation/dreaddons.md)
   * [Développement d'addons](documentation/dreaddons-developpement.md)
-
-## FAQ
-
-**La base de données n'est pas accessible par BO / PowerBI / tout autre client**
-: Par défaut, la base de données n'est accessible que depuis l'hôte local (via
-  Adminer ou en ligne de commande)
-
-  Pour que la base de données soit accessible sur le réseau par des clients
-  génériques, il faut laisser vide la variable `DBVIP` (ou mettre l'adresse IP
-  de l'interface d'écoute). Bien entendu, il faut relancer les services en cas
-  de changement de configuration.
-
-**Je voudrais créer des schémas supplémentaires**
-: Par défaut, pour minimiser le temps d'indisponibilité, la base est recréée à
-  zéro chaque jour.
-
-  Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md)
-  pour différentes pistes pour pallier cette limitation.
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

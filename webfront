@@ -35,7 +35,7 @@ function start_webfront() {
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
 
     estep "Démarrage du frontal web DRE"
-    docker compose "${composeargs[@]}" up -d --wait || die
+    docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 
     #if [ -n "$reload" ]; then
     #    estep "Rechargement pgAdmin"
@@ -61,7 +61,8 @@ function refresh_webfront() {
 }
 
 function restart_webfront() {
-    stop_webfront "$@"
+    local ForceStart=1
+    local Recreate=1
     start_webfront "$@"
 }
 
@@ -75,7 +76,7 @@ args=(
     -k,--stop action=stop "Arrêter le frontal web"
     -r,--refresh action=refresh "(Re)démarrer le frontal web si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage du frontal web"
-    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -b,-B,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -90,6 +91,9 @@ run_check_env || exit 0
 
 Profile=
 ForceStart=
+Recreate=
+ensure_dirs
+
 case "$action" in
 start) start_webfront "$@";;
 stop) stop_webfront "$@";;

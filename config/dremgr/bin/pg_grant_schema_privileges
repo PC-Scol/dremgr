@@ -1,0 +1,40 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+
+read -a users <<<"$FE_USER: ${FE_USERS//
+/ }"
+
+read -a user_access <<<"$FE_USER:rw ${FE_ACCESSS//
+/ }"
+declare -A tgrants sgrants
+for user in "${user_access[@]}"; do
+    access="${user#*:}"
+    user="${user%%:*}"
+    case "$access" in
+    admin|all|a)
+        tgrant="all privileges"
+        sgrant="update"
+        ;;
+    write|rw|w)
+        tgrant="select, insert, update, delete, truncate"
+        sgrant="usage"
+        ;;
+    read|ro|r|*)
+        tgrant="select"
+        sgrant="select"
+        ;;
+    esac
+    grants["$user"]="$grant"
+done
+
+schema="${1:-public}"
+for user in "${users[@]}"; do
+    user="${user%%:*}"
+    tgrant="${tgrants[$user]:-select}"
+    sgrant="${sgrants[$user]:-select}"
+    echo "\
+grant usage on schema $schema to $user;
+grant $tgrant on all tables in schema $schema to $user;
+grant $sgrant on all sequences in schema $schema to $user;
+"
+done

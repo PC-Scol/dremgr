@@ -3,23 +3,41 @@
 source /etc/nulib.sh || exit 1
 
 ADM="host=pegase-dre.self port=5432 dbname=pgbouncer user=pgbouncer password=admin"
-RW="host=pegase-dre.self port=5432 dbname=dre user=root password=admin"
-RO="host=pegase-dre.self port=5432 dbname=dre user=reader password=reader"
+RW="host=pegase-dre.self port=5432 dbname=PROFILE_dre user=postgres password=admin"
+RO="host=pegase-dre.self port=5432 dbname=PROFILE_dre user=reader password=reader"
 
+profile=prod
 conn="$RW"
 inputs=()
+input_all=
 args=(
     "lancer une console psql sur l'instance de dev"
+    -g:,--profile profile= "se connecter à l'instance correspondant au profil spécifié"
+    -P,--prod profile=prod "se connecter à l'instance prod"
+    -T,--test profile=test "se connecter à l'instance test"
     -w,--write conn="$RW" "accès en écriture. c'est l'option par défaut"
     -r,--read conn="$RO" "accès en lecture seule"
     -a,--admin conn="$ADM" "accès à pgbouncer"
-    -f:,--input:INPUT inputs
+    -f:,--input:INPUT inputs "spécifier un fichier à importer"
+    -F,--input-all input_all=1 "importer tous les fichiers mentionnés en argument"
 )
 parse_args "$@"; set -- "${args[@]}"
 
+if [ -n "$profile" ]; then
+    conn="${conn//PROFILE/$profile}"
+else
+    conn="${conn//PROFILE_/}"
+fi
+
+if [ -n "$input_all" ]; then
+    inputs=("$@")
+    set --
+fi
+
 if [ ${#inputs[*]} -gt 0 ]; then
     for input in "${inputs[@]}"; do
-        psql -d "$conn" "$@" -f "$input"
+        estep "$input"
+        psql -d "$conn" -v ON_ERROR_STOP=1 "$@" -f "$input" || die
     done
 else
     exec psql -d "$conn" "$@"

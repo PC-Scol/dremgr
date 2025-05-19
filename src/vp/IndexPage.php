@@ -113,6 +113,31 @@ class IndexPage extends ANavigablePage {
 
   protected $docdir, $docs;
 
+  const HAVE_JQUERY = true;
+
+  function printJquery(): void {
+    ?>
+    <script type="text/javascript">
+      jQuery.noConflict()(function($) {
+        if (navigator.clipboard) {
+          $(".copy-btn").click(function() {
+            var $action = $(this);
+            var $data = $action.closest(".copy-container").find(".copy-data");
+            navigator.clipboard.writeText($data.text());
+            $action.addClass("btn-success").text("Copié!");
+            window.setTimeout(function() {
+              $action.removeClass("btn-success").text("Copier");
+            }, 1000);
+            return false;
+          });
+        } else {
+          $(".copy-btn").addClass("hidden");
+        }
+      });
+    </script>
+    <?php
+  }
+
   function print(): void {
     $this->printProfileTabs();
 
@@ -222,7 +247,10 @@ class IndexPage extends ANavigablePage {
     $sm = new showmorePlugin();
     $sm->printStartc();
     vo::h2("Connexion postgresql");
-    $sm->printInvite("Afficher les informations de connexion à postgresql...");
+    $sm->printInvite([
+      "accesskey" => "s",
+      "Afficher les informations de connexion à postgresql...",
+    ]);
 
     $sm->printStartp();
     vo::p([
@@ -236,12 +264,19 @@ class IndexPage extends ANavigablePage {
       "Nom de la base de données" => $conninfo["dbname"],
       "Compte utilisateur" => $conninfo["user"],
       "Mot de passe" => [
+        "class" => "copy-container",
         v::span([
           "class" => "hpc",
           v::span([
-            "class" => "hp password",
+            "class" => "hp password copy-data",
             $conninfo["password"],
           ]),
+        ]),
+        "&nbsp;&nbsp;",
+        v::a([
+          "class" => "btn btn-default btn-sm copy-btn",
+          "href" => "#",
+          icon::copy("Copier"),
         ]),
       ],
     ]], [
@@ -262,11 +297,20 @@ class IndexPage extends ANavigablePage {
       }
     }
     vo::p([
+      "class" => "copy-container",
       "Si une chaine de connexion est demandée, vous pouvez utiliser la valeur suivante:",
       "<br/>",
       v::span([
         "class" => "hpc connstring",
-        $connstring,
+        v::span([
+          "class" => "copy-data",
+          $connstring,
+        ]),
+      ]),
+      v::a([
+        "class" => "btn btn-default btn-sm copy-btn",
+        "href" => "#",
+        icon::copy("Copier"),
       ]),
     ]);
     $sm->printEnd();

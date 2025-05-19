@@ -1,0 +1,14 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+
+read -a users <<<"$FE_USER: ${FE_USERS//
+/ }"
+for user in "${users[@]}"; do
+    user="${user%%:*}"
+    echo "\
+create user mapping if not exists
+for $user
+server $PDBNAME
+options (password_required 'false');
+"
+done

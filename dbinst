@@ -32,8 +32,8 @@ function start_dbinst() {
     "$DREMGR/build" ${Rebuild:+--rebuild} || die
 
     estep "Démarrage de DRE [$Profile]"
-    rsync -rlpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
-    docker compose "${composeargs[@]}" up -d --wait || die
+    rsync -rLpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
+    docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 }
 
 function stop_dbinst() {
@@ -53,7 +53,8 @@ function refresh_dbinst() {
 }
 
 function restart_dbinst() {
-    stop_dbinst "$@"
+    local ForceStart=1
+    local Recreate=1
     start_dbinst "$@"
 }
 
@@ -114,18 +115,36 @@ function shell_prompt() {
 
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
-        estep "Invite shell [$Profile]"
         local container="$1"; shift
-        docker compose "${composeargs[@]}" exec "$container" bash "$@" || die
+        local -a cmd
+        if [ $# -gt 0 ]; then
+            cmd=("$@")
+            estep "$container [$Profile] $1"
+        else
+            cmd=(bash)
+            estep "$container [$Profile] Invite shell"
+        fi
+        docker compose "${composeargs[@]}" exec "$container" "${cmd[@]}" || die
     else
-        eerror "Impossible de lancer l'invite shell: DRE [$Profile] est arrêté"
+        eerror "Impossible de lancer l'invite shell $container: DRE [$Profile] est arrêté"
     fi
 }
 
 case "$MYNAME" in
 *_dbinst) Profile="${MYNAME%_dbinst}";;
-*) Profile=prod;;
+*)
+    Profile=prod
+    if [ -f "$DREMGR/dremgr.env" ]; then
+        eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+        if [ -n "$APP_PROFILES" ]; then
+            read -a profiles <<<"${APP_PROFILES//
+/ }"
+            Profile="${profiles[0]}"
+        fi
+    fi
+    ;;
 esac
+
 action=auto
 Rebuild=
 args=(
@@ -142,7 +161,7 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -k,--stop action=stop "Arrêter DRE"
     -r,--refresh action=refresh "(Re)démarrer DRE si nécessaire"
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
-    -b,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
+    -b,-B,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -i,--import-all action=import_all "Lancer l'import complet maintenant, sans attendre la planification"
     -I,--import-one action=import_one "\
 ++Lancer l'import d'un unique addon sans attendre la planification
@@ -193,20 +212,19 @@ fi
 Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
 envfile="$DREMGR/${Profile}_profile.env"
+DREDATA="$DREMGR/var/${Profile}-dredata"
 
 IS_DBINST=1
 run_check_env || exit 22
 [ -f "$envfile" ] || die "$Profile: profil invalide (${envfile#$DREMGR/}: fichier de profil introuvable)"
 
-DREDATA="$DREMGR/var/${Profile}-dredata"
-for dir in addons downloads; do
-    mkdir -p "$DREDATA/$dir"
-done
-
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
 ForceStart=
+Recreate=
+ensure_dirs
+
 case "$action" in
 start) start_dbinst "$@";;
 stop) stop_dbinst "$@";;

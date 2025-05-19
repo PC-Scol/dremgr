@@ -1,0 +1,50 @@
+# Créer des utilisateurs supplémentaires
+
+Vous pouvez spécifier des utilisateurs supplémentaires à créer. Cela permet de
+faciliter le suivi et le controle d'accès à la base de données DRE.
+
+Dans le mode d'installation avancé, il faut commencer par modifier la définition
+de `PGBOUNCER_USERS`
+~~~sh
+# remplacer la définition de PGBOUNCER_USERS par cette valeur
+PGBOUNCER_USERS="$FE_USER:$FE_PASSWORD $FE_USERS"
+~~~
+Cela permet de se connecter avec les nouveaux utilisateurs via le frontal
+pgbouncer
+
+Puis, *avant* la ligne `PGBOUNCER_USERS` il faut définir les paramètres
+`FE_USERS` et `FE_ACCESS`
+~~~sh
+# utilisateurs supplémentaires à créer, un par ligne. la syntaxe à utiliser est
+#     user:password
+FE_USERS="
+alice:s3cret
+bob:l3tme1n
+"
+# droits d'accès à accorder aux utilisateurs, un par ligne. la syntaxe à
+# utiliser est
+#     user:access
+# les utilisateurs ont toujours un accès en lecture sur la base de données DRE.
+# le type d'accès à la base de données pdata dépend de la valeur de access: en
+# lecture si access vaut ro, en écriture si access vaut rw. la valeur par défaut
+# est ro (si access n'est pas spécifié ou si l'utilisateur n'est pas mentionné)
+FE_ACCESS="
+alice:rw
+bob:ro
+"
+~~~
+
+Si l'un des paramètres `FE_USERS` et/ou `FE_ACCESS` est modifié, il faut
+redémarrer les instances
+~~~sh
+./dremgr -r
+~~~
+
+Puis il faut lancer la commande pour créer les nouveaux comptes
+~~~sh
+./dbinst -Ax create-pgusers.sh
+~~~
+NB: seuls les nouveaux comptes sont créés. les comptes existant ne sont pas
+modifiés
+
+-*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

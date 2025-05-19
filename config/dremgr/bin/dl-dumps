@@ -4,8 +4,11 @@ source /etc/nulib.sh || exit 1
 source /g/init.env || exit 1
 
 : "${APP_DATADIR:=/data/dre}"
-: "${DLDIR:=$APP_DATADIR/downloads}" "${AODIR:=$APP_DATADIR/addons}" "${DOCDIR:=$APP_DATADIR/documentation}" "${WORKDIR:=$APP_DATADIR/tmp.$$}"
-export PGDATABASE=dre PGUSER="$POSTGRES_USER"
+: "${DLDIR:=$APP_DATADIR/downloads}"
+: "${AODIR:=$APP_DATADIR/addons}"
+: "${DOCDIR:=$APP_DATADIR/documentation}"
+: "${WORKDIR:=$APP_DATADIR/tmp.$$}"
+export PGDATABASE="$DBNAME" PGUSER="$POSTGRES_USER"
 unset PGHOST PGPORT
 
 read -a FORCE_CREATE_SCHEMAS <<<"${FORCE_CREATE_SCHEMAS//
@@ -31,8 +34,20 @@ function dl() {
     done
     return $r
 }
+
+export RUNSQL_IGNORE_ERRORS=1
+RUNSQL_ARGS=()
+function runsql_ignore_errors() {
+    if [ -n "$1" ]; then
+        RUNSQL_IGNORE_ERRORS=1
+        RUNSQL_ARGS=()
+    else
+        RUNSQL_IGNORE_ERRORS=
+        RUNSQL_ARGS=(-v ON_ERROR_STOP=1)
+    fi
+}
 function runsql() {
-    quietc psql -c "$@"
+    quietc psql "${RUNSQL_ARGS[@]}" -c "$@"
 }
 function rundir() {
     local -a files; local file
@@ -42,12 +57,16 @@ function rundir() {
         case "$file" in
         *.sql)
             estep "psql $filename"
-            quietc psql -f "$file" || die
+            if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
+                [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
+            fi
             ;;
         *.sh)
             if [ -x "$file" ]; then
                 estep "exec $filename"
-                quietc "$file" || die
+                if ! quietc "$file"; then
+                    [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
+                fi
             fi
             ;;
         esac
@@ -97,6 +116,7 @@ step_dl=
 Timestamp=
 ForceDlSums=
 step_checkao=
+Klone=
 UpdateAo=1
 MinimizeDowntime="$MINIMIZE_DOWNTIME"
 step_import=
@@ -110,11 +130,13 @@ args=(
     --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
     --keep-import-log clean_import_log=no "++Interdire le vidage du fichier import.log avant de démarrer"
     --download step_dl=1 "++Télécharger les fichiers du jour"
-    -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD"
+    -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
     --checkao step_checkao=1 "++Vérifier les addons"
+    --klone Klone=1 "++Refaire le clone des dépôts des addons au lieu de simplement les mettre à jour
+(c'est parfois nécessaire parce que la mise à jour ne se fait pas correctement)"
     -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
     --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
     --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
@@ -157,6 +179,7 @@ if [ -z "$DRE_PREFIX" ]; then
 fi
 
 cd "$DLDIR"
+[ -n "$Timestamp" ] && Clean=
 if [ "$Timestamp" == latest ]; then
     # prendre le dernier fichier checksums. utile pour --runao
     latest="$(ls checksums-* 2>/dev/null | tail -n1)"
@@ -209,6 +232,9 @@ eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')
 
 if [ -n "$step_checkao" ]; then
     estep "Vérification des addons"
+    if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
+        [ -d "$AODIR/dreaddon-$SelectAo" ] && SelectAo="dreaddon-$SelectAo"
+    fi
 
     setx -a aourls=echo "$ADDON_URLS"
     for aourl in "${aourls[@]}"; do
@@ -238,21 +264,31 @@ if [ -n "$step_checkao" ]; then
 
         setx aoname=basename "$aourl"
         aodir="$AODIR/${aoname%.git}"
+
+        [ -z "$SelectAo" -o "${aoname%.git}" == "$SelectAo" ] || continue
+
+        if [ -n "$Klone" ]; then
+            qstep "klean $aodir"
+            rm -rf "$aodir"
+        fi
+
         # ajouter le répertoire safe.directory pour pallier les problèmes éventuels d'ownership
         git config --global --get-all safe.directory | grep -qxF "$aodir" ||
             git config --global --add safe.directory "$aodir"
+
         # cloner ou mettre à jour
         origUpdateAo="$UpdateAo"
         if [ ! -d "$aodir" ]; then
             # Il faut cloner le dépôt
-            qstep "clone $aourl${branch:+#$branch} --> $aodir"
-            quietc git clone "$aourl${branch:+#$branch}" "$aodir" || continue
-            # si un commit est spécifié, forcer une mise à jour
-            [ -n "$commit" ] && UpdateAo=1
+            qstep "clone $aourl --> $aodir"
+            quietc git clone "$aourl" "$aodir" || continue
+            # si une branche ou un commit sont spécifiés, forcer une mise à jour
+            [ -n "$branch" -o -n "$commit" ] && UpdateAo=1
         fi
+
         if [ -n "$UpdateAo" ]; then
             # il faut mettre à jour le dépôt
-            qstep "update $aodir"
+            qstep "update $aodir${branch:+#$branch}${commit:+^$commit}"
             (
                 cd "$aodir"
                 quietc git fetch || exit 1
@@ -353,9 +389,11 @@ drop database if exists $tmpdb with (force);
 create database $tmpdb;
 " || die
         PGDATABASE="$tmpdb"
-        runsql "\
-alter default privileges in schema public grant select on tables to reader;
-" || die
+        runsql "$(pg_grant_default_privileges)" || die
+        if [ -n "$PDBNAME" ]; then
+            qstep "configuration $PDBNAME"
+            quietc setup-pdb.sh
+        fi
     else
         etitle "Suppression des anciens schémas"
         schema_list=
@@ -391,11 +429,7 @@ drop extension if exists unaccent, pg_trgm cascade;
 
         qstep "$schema: import $file"
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
-        runsql "\
-grant usage on schema $schema to reader;
-grant select on all tables in schema $schema to reader;
-grant select on all sequences in schema $schema to reader;
-" || die
+        runsql "$(pg_grant_schema_privileges "$schema")" || die
     done
     eend
 fi
@@ -434,11 +468,7 @@ copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'
         schema="mongo_$schema"
 
         qstep "$schema: maj authnz"
-        runsql "\
-grant usage on schema $schema to reader;
-grant select on all tables in schema $schema to reader;
-grant select on all sequences in schema $schema to reader;
-" || die
+        runsql "$(pg_grant_schema_privileges "$schema")" || die
     done
     eend
 fi
@@ -447,6 +477,7 @@ if [ -n "$step_runao" ]; then
     etitle "Installation des addons"
     mkdir -p "$WORKDIR"
 
+    have_ignore_errors=
     for addon in "${ADDONS[@]}"; do
         etitle "$addon"; quietc_echo "* install $addon"
         if [[ "$addon" == *:* ]]; then
@@ -457,39 +488,42 @@ if [ -n "$step_runao" ]; then
             vxx=
         fi
         SCHEMAS=()
-        eval "$(SCHEMAS=(); source "$aodir/dreaddon.conf"; echo "SCHEMAS+=(${SCHEMAS[*]})")"
+        eval "$(SCHEMAS=(); IGNORE_ERRORS=; source "$aodir/dreaddon.conf"; echo "SCHEMAS+=(${SCHEMAS[*]}); IGNORE_ERRORS=$IGNORE_ERRORS")"
+        runsql_ignore_errors "$IGNORE_ERRORS"
+        [ -n "$IGNORE_ERRORS" ] && have_ignore_errors=1
+        errors=
 
         if [ -d "$aodir/prepare" ]; then
             estep "Préparation"
             # Les scripts de préparation peuvent créer les schémas nécessaires ou
             # faire toute autre opération utile
-            rundir "$aodir/prepare"
+            rundir "$aodir/prepare" || errors=1
         fi
-        # S'assurer tout de même que les schémas mentionnés existent
-        for schema in "${SCHEMAS[@]}"; do
-            qstep "$schema: create schema"
-            runsql "create schema if not exists $schema;" || die
-        done
+        if [ -z "$errors" ]; then
+            # S'assurer tout de même que les schémas mentionnés existent
+            for schema in "${SCHEMAS[@]}"; do
+                qstep "$schema: create schema"
+                runsql "create schema if not exists $schema;" || errors=1
+            done
+        fi
 
         have_vxx=
-        if [ -n "$vxx" -a -d "$aodir/$vxx" ]; then
+        if [ -z "$errors" -a -n "$vxx" -a -d "$aodir/$vxx" ]; then
             have_vxx=1
-            rundir "$aodir/$vxx"
+            rundir "$aodir/$vxx" || errors=1
         fi
 
-        if [ -d "$aodir/updates" ]; then
+        if [ -z "$errors" -a -d "$aodir/updates" ]; then
             [ -z "$have_vxx" ] && estep "Mises à jour"
-            rundir "$aodir/updates"
+            rundir "$aodir/updates" || errors=1
         fi
-        # Donner un accès complet en lecture au compte reader
-        for schema in "${SCHEMAS[@]}"; do
-            qstep "$schema: maj authnz"
-            runsql "\
-grant usage on schema $schema to reader;
-grant select on all tables in schema $schema to reader;
-grant select on all sequences in schema $schema to reader;
-" || die
-        done
+        if [ -z "$errors" ]; then
+            # Donner un accès complet en lecture aux comptes
+            for schema in "${SCHEMAS[@]}"; do
+                qstep "$schema: maj authnz"
+                runsql "$(pg_grant_schema_privileges "$schema")" || errors=1
+            done
+        fi
 
         if [ -d "$aodir/documentation" ]; then
             estep "Documentation générale"
@@ -499,6 +533,10 @@ grant select on all sequences in schema $schema to reader;
             estep "Documentation $vxx"
             rsync -rl --copy-unsafe-links "$aodir/documentation/$vxx/" "$WORKDIR/documentation/"
         fi
+
+        if [ -n "$errors" ]; then
+            eimportant "Des erreurs se sont produites. l'installation de cet addon est incomplète"
+        fi
         eend
     done
 
@@ -507,16 +545,44 @@ grant select on all sequences in schema $schema to reader;
     rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
 
     rm -rf "$WORKDIR"
+
+    if [ -n "$have_ignore_errors" ] && grep -q "ERROR:" "$APP_DATADIR/import.log"; then
+        eimportant "Des erreurs se sont produites pendant l'import. Veuillez consulter les logs"
+    fi
+
     eend
 fi
 
 if [ -n "$step_import_bin" ]; then
     estep "Maj version"
-    runsql "\
-create table if not exists version (majeure int, mineure int, patch int, prerelease varchar(8), timestamp varchar(8));
+    profile="${APP_PROFILE^^}"
+    lprofile="$APP_PROFILE"
+    <"$version" runsql "\
+create table if not exists version (
+  majeure varchar
+, mineure varchar
+, patch varchar
+, prerelease varchar
+, timestamp varchar
+, profile varchar
+, source_json jsonb
+);
 truncate table version;
-insert into version(majeure, mineure, patch, prerelease, timestamp)
-values ($majeure, $mineure, $patch, '$prerelease', '$Timestamp');
+copy version(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
+update version set
+  majeure = source_json->>'majeure'
+, mineure = source_json->>'mineure'
+, patch = source_json->>'patch'
+, prerelease = source_json->>'prerelease'
+, timestamp = '$Timestamp'
+, profile = '$lprofile'
+;
+
+create table if not exists \"_infos_$profile\" (description varchar);
+truncate table \"_infos_$profile\";
+insert into \"_infos_$profile\" (description) values
+('Cette base de données est sur l''instance du profil $profile')
+;
 " || die
 fi
 

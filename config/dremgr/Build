@@ -1,0 +1,8 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+source /g/nulib/load.sh || exit 1
+
+setx -a cmds=ls_files /g/dremgr/bin
+for cmd in "${cmds[@]}"; do
+    ln -s "/g/dremgr/bin/$cmd" "/usr/local/bin/$cmd"
+done

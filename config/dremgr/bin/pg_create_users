@@ -1,0 +1,16 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+
+read -a users <<<"$FE_USER:$FE_PASSWORD ${FE_USERS//
+/ }"
+echo 'do $$ begin'
+for user in "${users[@]}"; do
+    password="${user#*:}"
+    user="${user%%:*}"
+    echo "\
+  if not exists (select from pg_user where usename = '$user') then
+    create user $user with password '$password';
+  end if;
+"
+done
+echo 'end $$;'
