@@ -47,4 +47,11 @@ Puis il faut lancer la commande pour créer les nouveaux comptes
 NB: seuls les nouveaux comptes sont créés. les comptes existant ne sont pas
 modifiés
 
+IMPORTANT: notez que les nouveaux utilisateurs n'ont pas d'accès aux données
+avant la prochaine importation, soit le lendemain. S'il faut leur donner l'accès
+de suite, il faut forcer la réimportation des fichiers
+~~~sh
+./dbinst -Ai -- -@latest
+~~~
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
