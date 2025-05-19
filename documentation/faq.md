@@ -28,7 +28,7 @@ schéma `public` de `pdata` sont importées automatiquement en tant que "tables
 Ainsi, les tables de la base de données `pdata` sont utilisables directement,
 comme si elles faisaient partie de la base de données `dre`
 
-Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](documentation/parametres.md#minimize_downtine)
+Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](parametres.md#minimize_downtine)
 pour d'autres pistes si l'utilisation de la base de données `pdata` ne convient pas.
 
 NB: dans la configuration par défaut via pgbouncer, l'accès aux bases est
@@ -93,6 +93,54 @@ dans la liste des utilisateurs nécessite le redémarrage complet des instances.
 
 Si vous souhaitez tout de même créer des utilisateurs supplémentaires, notamment
 pour faciliter le suivi et le controle de l'accès à la base de données DRE,
-suivez [la documentation dédiée](documentation/setup-users.md)
+suivez [la documentation dédiée](setup-users.md)
+
+## Je voudrais que l'utilisateur `reader` soit réellement en lecture seule
+
+Les nouvelles installations créent un utilisateur `dreadmin` qui a les droits
+d'accès en lecture seule sur la base de données `dre` et en modification sur la
+base de données `pdata`. Avant la version `1.5.0` cet utilisateur était appelé
+`reader` et n'avait qu'un accès en lecture seule.
+
+La conséquence est qu'après la mise à jour, on se retrouve avec un utilisateur
+`reader` qui a un accès en modification à une base de données, ce qui est
+légèrement perturbant si on aime que les mots aient un sens :-)
+
+Suivez les instructions suivantes pour:
+- créer l'utilisateur `dreadmin` comme pour une nouvelle installation
+- rétablir l'accès en lecture seule à l'utilisateur `reader`
+
+On part de la situation suivante
+~~~sh
+FE_USER=reader
+FE_PASSWORD=<mdpReader>
+~~~
+
+Modifier le fichier de paramètres pour avoir
+~~~sh
+FE_USER=dreadmin
+FE_PASSWORD=<mdpAdmin>
+FE_USERS="
+reader:<mdpReader>
+"
+FE_ACCESS="
+reader:ro
+"
+~~~
+
+Relancer les services
+~~~sh
+./dremgr -r
+~~~
+
+Créer les utilisateurs
+~~~sh
+./dbinst -Ax create-pgusers.sh
+~~~
+
+Puis relancer l'importation pour rétablir les accès
+~~~sh
+./dbinst -Ai -- -@latest
+~~~
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
