@@ -35,6 +35,15 @@ Les variables suivantes peuvent être configurées:
   avec ces informations, les scripts appropriés sont disponibles et utilisés
   aussitôt que la base DRE est dans la bonne version.
 
+`IGNORE_ERRORS`
+: demander à ignorer les erreurs lors de l'exécution des scripts de l'addon
+
+  normalement, si une erreur se produit, le script est arrêté et un message dans
+  les logs indique que l'installation de l'addon n'est pas complète.
+
+  dans certains cas, on peut souhaiter que les scripts soient lancés jusqu'au
+  bout, même si certaines requêtes sont en erreur.
+
 ## Scripts SQL
 
 L'importation des schémas DRE se fait de cette manière:
@@ -65,14 +74,34 @@ Pour chaque addon, les scripts SQL sont lancés depuis les répertoires suivants
   Une autre façon de le dire est que si le répertoire `vMM` existe, il est
   utilisé par toutes les versions de DRE égales ou supérieures à `MM`, jusqu'à
   ce qu'une version spécifique soit livrée.
-* l'accès à toutes les tables des schémas est donné à l'utilisateur `reader`
-  configuré dans dremgr. puis les scripts du répertoire `updates` sont lancés.
+* l'accès en lecture à toutes les tables des schémas est donné aux utilisateurs
+  configurés dans dremgr. puis les scripts du répertoire `updates` sont lancés.
 
 Cette section parle de scripts SQL, mais en réalité, les fichiers `*.sql` et
 `*.sh` (s'ils sont exécutables) sont considérés
 
 Comme l'environnement est configuré comme il se doit par dremgr, les scripts
-`*.sh` peuvent lancer directement psql pour attaquer la base de données. 
+`*.sh` peuvent lancer directement psql pour attaquer la base de données.
+
+---
+
+Une précision concernant l'organisation des fichiers et l'ordre de lancement des
+scripts: d'abord les scripts de "prepare", puis ceux de "vXX", puis ceux de
+"updates". Au sein de chaque répertoire, les scripts sont exécutés par ordre
+alphabétique
+
+Dans le principe, on s'attend à ce qu'il y a soit un répertoire vXX (pour un
+addon dépendant de la version de la release), soit un répertoire "updates" (pour
+un addon indépendant de la version de la release), mais pas les deux (bien que
+ce soit techniquement possible et justifié dans certains cas). Si les deux
+existent, l'ordre sélectionné est celui indiqué ci-dessus
+
+Le raisonnement est le suivant: pour un addon qui dépend de la version de la
+release, tous les fichiers sont dans un répertoire vXX. Si jamais il faut
+mettre à jour les scripts pour une release supérieure, *tout* le répertoire vXX
+est copié dans vYY, puis les fichiers sont adaptés au besoin. Ça simplifie la
+maintenance: pas besoin de fusionner mentalement la liste des fichiers de
+plusieurs répertoires pour savoir ce qui est exécuté.
 
 ## Documentation
 
