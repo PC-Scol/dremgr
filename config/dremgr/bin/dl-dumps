@@ -49,28 +49,45 @@ function runsql_ignore_errors() {
 function runsql() {
     quietc psql "${RUNSQL_ARGS[@]}" -c "$@"
 }
-function rundir() {
-    local -a files; local file
-    setx -a files=ls_files "$1" "*.sql" "*.sh"
-    for filename in "${files[@]}"; do
-        file="$1/$filename"
-        case "$file" in
-        *.sql)
-            estep "psql $filename"
-            if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
+function _runfile() {
+    case "$file" in
+    *.sql)
+        estep "psql $file"
+        if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
+            [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
+        fi
+        ;;
+    *.sh)
+        if [ -x "$file" ]; then
+            estep "exec $file"
+            if ! quietc "$file"; then
                 [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
             fi
-            ;;
-        *.sh)
-            if [ -x "$file" ]; then
-                estep "exec $filename"
-                if ! quietc "$file"; then
-                    [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
-                fi
-            fi
-            ;;
-        esac
+        fi
+        ;;
+    esac
+}
+function runfile() {
+    local cwd dir file r
+    setx dir=dirname -- "$1"
+    setx file=basename -- "$1"
+    setx cwd=pwd
+    cd "$dir"
+    _runfile; r=$?
+    cd "$cwd"
+    return $r
+}
+function rundir() {
+    local -a files; local cwd file r
+    setx cwd=pwd
+    cd "$1"
+    setx -a files=ls_files . "*.sql" "*.sh"
+    for file in "${files[@]}"; do
+        _runfile; r=$?
+        [ $r -eq 0 ] || break
     done
+    cd "$cwd"
+    return $r
 }
 
 DL_FILES=()
