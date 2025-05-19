@@ -294,12 +294,13 @@ DBVIP=127.0.0.1
 DBHOST=localhost
 DBPORT=5432
 DBNAME=dre
+PDBNAME=pdata
 LBNET=
 LBHTTP=7081
 LBHTTPS=
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=XXX_a_modifier
-FE_USER=reader
+FE_USER=dreadmin
 FE_PASSWORD=XXX_a_modifier
 ~~~
 
@@ -313,7 +314,7 @@ LBHOST="$DBHOST"
 <profil>_FE_HOST="$DBHOST"
 <profil>_FE_PORT="$DBPORT"
 <profil>_FE_DBNAME="<profil>_$DBNAME"
-PGBOUNCER_DBS="$DBNAME"
+PGBOUNCER_DBS="$DBNAME $PDBNAME"
 PGBOUNCER_USERS="${FE_USER}:${FE_PASSWORD}"
 PGADMIN_USER="$FE_USER"
 PGADMIN_PASSWORD="$FE_PASSWORD"
@@ -354,14 +355,19 @@ précisions suivantes:
   S'il faut définir un mot de passe différent suivant le profil, il faudra aussi
   définir des noms différents pour les comptes, e.g
   ~~~sh
-  prod_POSTGRES_USER=prod_admin
+  prod_POSTGRES_USER=prod_postgres
   prod_POSTGRES_PASSWORD=XXX_a_modifier
-  prod_FE_USER=prod_reader
+  prod_FE_USER=prod_dreadmin
   prod_FE_PASSWORD=XXX_a_modifier
-  test_POSTGRES_USER=test_admin
+  test_POSTGRES_USER=test_postgres
   test_POSTGRES_PASSWORD=XXX_a_modifier
-  test_FE_USER=test_reader
+  test_FE_USER=test_dreadmin
   test_FE_PASSWORD=XXX_a_modifier
+  ~~~
+  Bien entendu, il faut aussi redéfinir le paramètre `PGBOUNCER_USERS` en
+  conséquence
+  ~~~sh
+  PGBOUNCER_USERS="$prod_FE_USER:$prod_FE_PASSWORD $test_FE_USER:$test_FE_PASSWORD"
   ~~~
 
 **Paramètres privés non documentés**
