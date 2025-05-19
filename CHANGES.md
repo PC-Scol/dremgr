@@ -1,3 +1,30 @@
+## Release 1.5.0 du 19/05/2025-04:05
+
+Cette release contient de nombreuses modifications, notamment:
+- création d'une base de données persistante
+- possibilité de créer des utilisateurs supplémentaires
+
+IMPORTANT: après la mise à jour, il faut suivre les instructions de
+[setup-pdata.md](documentation/setup-pdata.md) pour créer la base de données
+persistante
+
+Notez que l'utilisateur `\$FE_USER` a par défaut les droits d'accès en
+modification sur la base de données persistante. si vous souhaitez un accès en
+lecture uniquement, il faut créer un utilisateur supplémentaire
+
+* `06b16bb` bouton pour copier le mot de passe ou la chaine de connexion
+* `1875152` réorganisation des fichiers
+* `e083d57` faciliter le lancement des commandes
+* `9e91b44` support création plusieurs utilisateurs
+* `255e3cb` possiblité d'ignorer les erreurs. afficher s'il y a des erreurs
+* `24feaf2` rajouter une indication sur le profil courant dans la base de données
+* `a769880` support des installations sans profil prod
+* `a4a6d67` l'option -R recrée les container au lieu de les redémarrer
+* `2f59500` accepter l'option -B pour --rebuild
+* `a967089` importer les tables de pdata automatiquement
+* `2f13888` ajouter l'option --klone à dl-dumps
+* `ba49754` support base de données persistante
+
 ## Release 1.4.3 du 05/05/2025-11:19
 
 * `76dd9be` tenir compte de FORCE_CREATE_SCHEMAS dans le cron
@@ -20,8 +47,8 @@ téléchargement
 Cette release contient un palliatif pour les dumps qui sont livrés sans la
 commande de création de schéma.
 
-Au 28/04/2025, tant qu'un correctif n'a pas été livré par PC-SCOL, il faut
-rajouter la ligne suivante dans `dremgr.env` AVANT de faire la mise à jour
+~~Au 28/04/2025, tant qu'un correctif n'a pas été livré par PC-SCOL, il faut rajouter la ligne suivante dans `dremgr.env` AVANT de faire la mise à jour~~
+Edit: au 06/05/2025, cette modification n'est plus nécessaire
 ~~~sh
 FORCE_CREATE_SCHEMAS=keycloak
 ~~~
