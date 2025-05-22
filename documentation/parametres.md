@@ -284,6 +284,13 @@ ln -s dremgr.env test_profile.env
   * si la variable `prod_MAVAR` existe, c'est cette valeur qui est sélectionnée
   * sinon, c'est la valeur de la variable `MAVAR` qui est sélectionnée
 
+`APP_PROFILES_AUTO`
+: Liste des profils à considérer en mode "automatique"
+
+  Si ce paramètre est défini, `dbinst -A` effectue l'opération demandée sur tous
+  les profils spécifiés. Sinon, faire l'opération sur tous les profils listés
+  dans `APP_PROFILES`
+
 **Paramètres partagés**
 
 Le fichier livré contient des définitions permettant de changer en une seule
