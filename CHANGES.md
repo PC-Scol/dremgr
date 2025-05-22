@@ -1,3 +1,8 @@
+## Release 1.5.4 du 22/05/2025-17:58
+
+* `f9b3103` transporter les informations de proxy dans le cron
+* `1c62781` ajout du paramètre APP_PROFILES_AUTO
+
 ## Release 1.5.3 du 19/05/2025-21:46
 
 * `5e134c1` changer le répertoire courant avant de lancer un script
@@ -12,7 +17,7 @@ IMPORTANT: après la mise à jour, il faut suivre les instructions de
 [setup-pdata.md](documentation/setup-pdata.md) pour créer la base de données
 persistante
 
-Notez que l'utilisateur `$FE_USER` a par défaut les droits d'accès en
+Notez que l'utilisateur `\$FE_USER` a par défaut les droits d'accès en
 modification sur la base de données persistante. si vous souhaitez un accès en
 lecture uniquement, il faut créer un utilisateur supplémentaire
 
