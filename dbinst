@@ -186,7 +186,11 @@ parse_args "$@"; set -- "${args[@]}"
 
 if [ "$Profile" == ALL ]; then
     [ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
-    eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+    eval "$(
+        source "$DREMGR/dremgr.env"
+        echo_setv APP_PROFILES="$APP_PROFILES"
+        echo_setv APP_PROFILES_AUTO="$APP_PROFILES_AUTO"
+    )"
     [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(
