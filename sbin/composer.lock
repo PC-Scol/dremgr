@@ -4,20 +4,23 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be2c81c2655e8443963b6107e04fa9f9",
+    "content-hash": "2f7c6bb270e04e775bab39c2899366e7",
     "packages": [
         {
-            "name": "nulib/php",
-            "version": "0.5.0p74",
+            "name": "nulib/base",
+            "version": "0.6.0p74",
             "source": {
                 "type": "git",
-                "url": "https://git.univ-reunion.fr/sda-php/nulib.git",
-                "reference": "4037bf20424eb48708e5fdf9fc8e10f2ef71d134"
+                "url": "https://git.univ-reunion.fr/sda-php/nulib-base.git",
+                "reference": "ea531c41bcb054250b0efc334c6aaa6f77543070"
             },
             "require": {
                 "ext-json": "*",
                 "php": "^7.4",
                 "symfony/yaml": "^5.0"
+            },
+            "replace": {
+                "nulib/php": "<0.6.0"
             },
             "require-dev": {
                 "ext-curl": "*",
@@ -52,15 +55,15 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2025-04-30T00:32:10+00:00"
+            "time": "2025-05-30T18:35:54+00:00"
         },
         {
             "name": "nur/ture",
-            "version": "0.5.0p74",
+            "version": "0.6.0p74",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nur-ture.git",
-                "reference": "e4860b1b39af539dfe3b74b34248cba357714107"
+                "reference": "e7643a38fcf0d1c088bcbae77c8c49edff5cc012"
             },
             "require": {
                 "php": "^7.4"
@@ -93,9 +96,9 @@
                 "ext-sqlite3": "*",
                 "ext-tidy": "*",
                 "ext-zip": "*",
-                "nulib/php": "^0.5.0p74",
-                "nulib/phpss": "^0.5.0p74",
-                "nulib/spout": "^0.5.0p74",
+                "nulib/base": "^0.6.0p74",
+                "nulib/phpss": "^0.6.0p74",
+                "nulib/spout": "^0.6.0p74",
                 "nulib/tests": "^7.4"
             },
             "bin": [
@@ -111,8 +114,8 @@
                 "nur_bin/ldap-delete.php",
                 "nur_bin/ldap-get-infos.php",
                 "nur_bin/ldap-search.php",
-                "nur_bin/sqlite-storage.php",
-                "nur_bin/mysql-storage.php"
+                "nur_bin/storage.sqlite.php",
+                "nur_bin/storage.mysql.php"
             ],
             "type": "library",
             "extra": {
@@ -136,11 +139,6 @@
                     "nur\\": "nur_tests"
                 }
             },
-            "scripts": {
-                "uc": [
-                    "@php sbin/update_classes.php"
-                ]
-            },
             "authors": [
                 {
                     "name": "Jephte Clain",
@@ -148,7 +146,7 @@
                 }
             ],
             "description": "espace de maturation pour les librairies",
-            "time": "2025-04-30T01:32:08+00:00"
+            "time": "2025-05-30T19:36:36+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -219,7 +217,7 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.31.0",
+            "version": "v1.32.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
@@ -278,7 +276,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.31.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.32.0"
             },
             "funding": [
                 {

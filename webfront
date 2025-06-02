@@ -3,7 +3,7 @@
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 "$MYDIR/sbin/runphp" --bs --ue --ci || exit 1
 DREMGR="$MYDIR"
-source "$DREMGR/sbin/vendor/nulib/php/load.sh" || exit 1
+source "$DREMGR/sbin/vendor/nulib/base/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
 function _set_composefiles() {

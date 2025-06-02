@@ -16,7 +16,7 @@
       <path value="$PROJECT_DIR$/sbin/vendor/symfony/yaml" />
       <path value="$PROJECT_DIR$/sbin/vendor/nur/sery" />
       <path value="$PROJECT_DIR$/sbin/vendor/symfony/deprecation-contracts" />
-      <path value="$PROJECT_DIR$/sbin/vendor/nulib/php" />
+      <path value="$PROJECT_DIR$/sbin/vendor/nulib/base" />
       <path value="$PROJECT_DIR$/sbin/vendor/composer" />
       <path value="$PROJECT_DIR$/sbin/vendor/nur/ture" />
     </include_path>

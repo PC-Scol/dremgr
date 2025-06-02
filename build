@@ -8,7 +8,7 @@ PROJDIR=; COMPOSERDIR=; COMPOSERPHAR=; VENDORDIR=; BUILDENV0=; BUILDENV=
 BUILD_IMAGES=(php-apache mariadb10); export BUILD_FLAVOUR=; DIST=; IMAGENAME=
 DISTFILES=(); TEMPLATEFILES=(); VARFILES=()
 source "$RUNPHP" || exit 1
-source "$PROJDIR/$VENDORDIR/nulib/php/load.sh" || exit 1
+source "$PROJDIR/$VENDORDIR/nulib/base/load.sh" || exit 1
 require: template
 
 # recenser les valeur de proxy
@@ -149,9 +149,9 @@ function _build() {
         dockerfiles=(
             "$MYDIR/Dockerfile.$1.local"
             "$MYDIR/Dockerfile.$1$BUILD_FLAVOUR"
-            "$PROJDIR/$VENDORDIR/nulib/php/dockerfiles/Dockerfile.$1$BUILD_FLAVOUR"
+            "$PROJDIR/$VENDORDIR/nulib/base/dockerfiles/Dockerfile.$1$BUILD_FLAVOUR"
             "$MYDIR/Dockerfile.$1"
-            "$PROJDIR/$VENDORDIR/nulib/php/dockerfiles/Dockerfile.$1"
+            "$PROJDIR/$VENDORDIR/nulib/base/dockerfiles/Dockerfile.$1"
         )
         for dockerfile in "${dockerfiles[@]}"; do
             [ -f "$dockerfile" ] && break
