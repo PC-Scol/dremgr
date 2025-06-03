@@ -254,34 +254,50 @@ class IndexPage extends ANavigablePage {
       new CListGroup($docs, [
         "container" => "ul",
         "map_func" => function ($file) use ($markdown) {
+          $name = $file["name"];
           $title = $file["title"];
-          if (!$file["isa_file"]) $title = icon::new_window($title);
-          $desc = $file["desc"];
-          if ($desc !== null) {
-            return [
-              v::p([
+          if ($file["isa_file"]) {
+            if ($title !== $name) {
+              $link = [
                 v::b($title),
                 " : ",
                 v::a([
                   "href" => page::bu("", [
                     "p" => $this->profile,
-                    "dl" => $file["name"],
+                    "dl" => $name,
                   ]),
                   "target" => $file["target"],
-                  icon::download($file["name"]),
+                  icon::download($name),
                 ]),
+              ];
+            } else {
+              $link = v::a([
+                "href" => page::bu("", [
+                  "p" => $this->profile,
+                  "dl" => $name,
+                ]),
+                "target" => $file["target"],
+                $title,
+              ]);
+            }
+          } else {
+            $link = v::a([
+              "href" => page::bu("", [
+                "p" => $this->profile,
+                "dl" => $name,
               ]),
+              "target" => $file["target"],
+              icon::new_window($title),
+            ]);
+          }
+          $desc = $file["desc"];
+          if ($desc !== null) {
+            return [
+              v::p($link),
               $markdown->convert($desc),
             ];
           } else {
-            return v::a([
-              "href" => page::bu("", [
-                "p" => $this->profile,
-                "dl" => $file["name"],
-              ]),
-              "target" => $file["target"],
-              $title,
-            ]);
+            return $link;
           }
         },
         "autoprint" => true,
