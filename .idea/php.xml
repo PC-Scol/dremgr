@@ -16,9 +16,16 @@
       <path value="$PROJECT_DIR$/sbin/vendor/symfony/yaml" />
       <path value="$PROJECT_DIR$/sbin/vendor/nur/sery" />
       <path value="$PROJECT_DIR$/sbin/vendor/symfony/deprecation-contracts" />
-      <path value="$PROJECT_DIR$/sbin/vendor/nulib/php" />
+      <path value="$PROJECT_DIR$/sbin/vendor/nulib/base" />
       <path value="$PROJECT_DIR$/sbin/vendor/composer" />
       <path value="$PROJECT_DIR$/sbin/vendor/nur/ture" />
+      <path value="$PROJECT_DIR$/sbin/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/sbin/vendor/psr/event-dispatcher" />
+      <path value="$PROJECT_DIR$/sbin/vendor/nette/utils" />
+      <path value="$PROJECT_DIR$/sbin/vendor/nette/schema" />
+      <path value="$PROJECT_DIR$/sbin/vendor/dflydev/dot-access-data" />
+      <path value="$PROJECT_DIR$/sbin/vendor/league/commonmark" />
+      <path value="$PROJECT_DIR$/sbin/vendor/league/config" />
     </include_path>
   </component>
   <component name="PhpProjectServersManager">
@@ -33,6 +40,11 @@
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4" />
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings custom_loader_path="$PROJECT_DIR$/sbin/vendor/autoload.php" />
+    </phpunit_settings>
   </component>
   <component name="PsalmOptionsConfiguration">
     <option name="transferred" value="true" />

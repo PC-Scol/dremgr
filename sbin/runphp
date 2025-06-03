@@ -211,7 +211,7 @@ function host_check_projdir() {
     [ -n "$RUNPHP_STANDALONE" ] && return
 
     local install
-    if [ ! -f "$PROJDIR/$VENDORDIR/nulib/php/load.sh" ]; then
+    if [ ! -f "$PROJDIR/$VENDORDIR/nulib/base/load.sh" ]; then
         install=1
     elif [ ! -f "$PROJDIR/.composer.lock.runphp" ]; then
         install=1

@@ -254,6 +254,7 @@ if [ -n "$step_checkao" ]; then
     fi
 
     setx -a aourls=echo "$ADDON_URLS"
+    aonames=()
     for aourl in "${aourls[@]}"; do
         # ignorer lignes vides
         [ -n "$aourl" ] || continue
@@ -280,9 +281,10 @@ if [ -n "$step_checkao" ]; then
         fi
 
         setx aoname=basename "$aourl"
-        aodir="$AODIR/${aoname%.git}"
+        aoname="${aoname%.git}"
+        aodir="$AODIR/$aoname"
 
-        [ -z "$SelectAo" -o "${aoname%.git}" == "$SelectAo" ] || continue
+        [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
 
         if [ -n "$Klone" ]; then
             qstep "klean $aodir"
@@ -317,6 +319,7 @@ if [ -n "$step_checkao" ]; then
             )
         fi
         UpdateAo="$origUpdateAo"
+        aonames+=("$aoname")
     done
 
     if [ -n "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
@@ -327,9 +330,8 @@ if [ -n "$step_checkao" ]; then
         fi
     fi
 
-    setx -a aodirs=ls_dirs "$AODIR"
     ADDONS=()
-    for aoname in "${aodirs[@]}"; do
+    for aoname in "${aonames[@]}"; do
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
         aodir="$AODIR/$aoname"
 
@@ -558,6 +560,7 @@ if [ -n "$step_runao" ]; then
     done
 
     [ -d "$WORKDIR/documentation" ] && estep "Installation de la documentation"
+    # créer à vide si nécessaire, pour que la synchro efface les fichiers obsolètes
     mkdir -p "$WORKDIR/documentation"
     rsync -rl --delete "$WORKDIR/documentation/" "$DOCDIR/"
 

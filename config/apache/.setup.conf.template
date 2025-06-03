@@ -10,6 +10,7 @@ ENMODS=(
     headers
     proxy_http
     #@@if:LBHTTPS@@ssl
+    xsendfile
 )
 
 # Sites à activer

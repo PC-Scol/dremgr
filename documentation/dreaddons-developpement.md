@@ -121,8 +121,25 @@ dans la documentation.
 ~~~json
 {"url": "https://monsite.fr/madoc"
 , "title": "Lien vers madoc"
+, "desc": "Description longue au format markdown"
+, "target": "_blank"
 }
 ~~~
+`desc` et `target` sont optionnels
+
+Le fichier `metadata.yml` est aussi traité de façon particulière: il permet de
+spécifier des informations supplémentaires associé à un fichier téléchargeable.
+Il est de la forme
+~~~yaml
+files:
+  monfichier.doc:
+    title: Titre du fichier
+    desc: |
+      description longue du fichier
+      au format markdown
+~~~
+La documentation affichera le titre et la description spécifiés en plus du lien
+vers `monfichier.doc`
 
 ## Tester un addon en cours de développement
 
