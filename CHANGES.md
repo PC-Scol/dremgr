@@ -1,3 +1,10 @@
+## Release 1.6.0 du 03/06/2025-11:38
+
+* `6648dc4` maj doc
+* `8c69f59` bug avec le calcul des répertoires de doc
+* `678f7d7` améliorer la prise en charge de la documentation
+* `38eff89` migration vers nulib/base
+
 ## Release 1.5.5 du 23/05/2025-10:51
 
 * `e4dc2ac` bug dans la prise en compte de APP_PROFILES_AUTO
@@ -21,7 +28,7 @@ IMPORTANT: après la mise à jour, il faut suivre les instructions de
 [setup-pdata.md](documentation/setup-pdata.md) pour créer la base de données
 persistante
 
-Notez que l'utilisateur `\\$FE_USER` a par défaut les droits d'accès en
+Notez que l'utilisateur `\$FE_USER` a par défaut les droits d'accès en
 modification sur la base de données persistante. si vous souhaitez un accès en
 lecture uniquement, il faut créer un utilisateur supplémentaire
 
