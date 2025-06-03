@@ -4,6 +4,9 @@ namespace app\vp;
 use app\app\ANavigablePage;
 use app\q\tools;
 use Exception;
+use League\CommonMark\GithubFlavoredMarkdownConverter;
+use nulib\ext\yaml;
+use nulib\file;
 use nur\b\date\Hour;
 use nur\json;
 use nur\m\pgsql\PgsqlConn;
@@ -41,9 +44,12 @@ class IndexPage extends ANavigablePage {
   ];
 
   const url_SCHEMA = [
-    "url" => "string",
+    "name" => "?string",
+    "isa_file" => "bool",
+    "url" => "?string",
     "title" => "?string",
     "target" => "?string",
+    "desc" => "?string",
   ];
 
   function setup(): void {
@@ -51,27 +57,53 @@ class IndexPage extends ANavigablePage {
     $profile = $this->profile;
 
     $this->docdir = $docdir = path::join("/data", $profile, "documentation");
-    $tmpdocs = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    $metadata = file::try_ext("$docdir/metadata.yml", ".yaml");
+    if ($metadata !== null) $metadata = yaml::load($metadata);
+    $files = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
     $docs = [];
-    foreach ($tmpdocs as $doc) {
-      if (fnmatch("*.url", $doc)) {
+    foreach ($files as $file) {
+      if ($file === "metadata.yml" || $file === "metadata.yaml") continue;
+      if (fnmatch("*.url", $file)) {
         try {
-          $data = json::load(path::join($docdir, $doc));
+          $data = json::load(path::join($docdir, $file));
           md::ensure_schema($data, self::url_SCHEMA);
           $url = $data["url"];
-          $title = $data["title"]?? $doc;
-          $target = $data["target"]?? "_blank";
-          $doc = [
-            "name" => $doc,
+          $target = $data["target"] ?? "_blank";
+          $title = $data["title"] ?? $file;
+          $desc = $data["desc"] ?? null;
+          $file = [
+            "name" => $file,
+            "isa_file" => false,
             "url" => $url,
-            "title" => $title,
             "target" => $target,
+            "title" => $title,
+            "desc" => $desc,
           ];
         } catch (Exception $e) {
         }
+      } else {
+        $data = $metadata["files"][$file] ?? null;
+        if ($data !== null) {
+          md::ensure_schema($data, self::url_SCHEMA);
+          $data["name"] = $file;
+          $data["isa_file"] = true;
+          $data["url"] = null;
+          $data["title"] ??= $file;
+          $file = $data;
+        }
       }
-      if (is_array($doc)) $docs[$doc["name"]] = $doc;
-      else $docs[$doc] = $doc;
+      if (is_array($file)) {
+        $docs[$file["name"]] = $file;
+      } else {
+        $docs[$file] = [
+          "name" => $file,
+          "isa_file" => true,
+          "url" => null,
+          "title" => $file,
+          "target" => null,
+          "desc" => null,
+        ];
+      }
     }
     if ($this->download($docdir, $docs)) return;
     $this->docs = $docs;
@@ -211,30 +243,46 @@ class IndexPage extends ANavigablePage {
     vo::h1("Documentation");
     $docs = $this->docs;
     if ($docs) {
+      $markdown = new GithubFlavoredMarkdownConverter([
+        'html_input' => 'strip',
+        'allow_unsafe_links' => false,
+      ]);
       vo::p([
         "Une documentation technique et fonctionnelle est disponible. ",
         "Vous y trouverez notamment le schéma de la base de données",
       ]);
       new CListGroup($docs, [
-        "container" => "div",
-        "map_func" => function ($file) {
-          if (is_array($file)) {
-            $name = $file["name"];
-            $title = icon::new_window($file["title"]);
-            $target = $file["target"];
+        "container" => "ul",
+        "map_func" => function ($file) use ($markdown) {
+          $title = $file["title"];
+          if (!$file["isa_file"]) $title = icon::new_window($title);
+          $desc = $file["desc"];
+          if ($desc !== null) {
+            return [
+              v::p([
+                v::b($title),
+                " : ",
+                v::a([
+                  "href" => page::bu("", [
+                    "p" => $this->profile,
+                    "dl" => $file["name"],
+                  ]),
+                  "target" => $file["target"],
+                  icon::download($file["name"]),
+                ]),
+              ]),
+              $markdown->convert($desc),
+            ];
           } else {
-            $name = $file;
-            $title = $file;
-            $target = null;
+            return v::a([
+              "href" => page::bu("", [
+                "p" => $this->profile,
+                "dl" => $file["name"],
+              ]),
+              "target" => $file["target"],
+              $title,
+            ]);
           }
-          return [
-            "href" => page::bu("", [
-              "p" => $this->profile,
-              "dl" => $name,
-            ]),
-            "target" => $target,
-            $title,
-          ];
         },
         "autoprint" => true,
       ]);

@@ -11,6 +11,7 @@
 	"require": {
 		"nulib/base": "^0.6.0p74",
 		"nur/ture": "^0.6.0p74",
+		"league/commonmark": "^2.7.0",
 		"php": "^7.4"
 	},
 	"autoload": {
