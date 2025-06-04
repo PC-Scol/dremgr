@@ -285,6 +285,7 @@ if [ -n "$step_checkao" ]; then
         aodir="$AODIR/$aoname"
 
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
+        aonames+=("$aoname")
 
         if [ -n "$Klone" ]; then
             qstep "klean $aodir"
@@ -319,12 +320,13 @@ if [ -n "$step_checkao" ]; then
             )
         fi
         UpdateAo="$origUpdateAo"
-        aonames+=("$aoname")
     done
 
     if [ -n "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
         if [ -d "$AODIR/dreaddon-$SelectAo" ]; then
+            array_del aonames "$SelectAo"
             SelectAo="dreaddon-$SelectAo"
+            aonames+=("$SelectAo")
         else
             ewarn "$SelectAo: addon non installé"
         fi
