@@ -1,3 +1,8 @@
+## Release 1.6.1 du 04/06/2025-10:50
+
+* `967e998` corriger les conditions d'utilisations de APP_PROFILES_AUTO
+* `5f69d49` corriger sélection des addons
+
 ## Release 1.6.0 du 03/06/2025-11:38
 
 * `6648dc4` maj doc
@@ -28,7 +33,7 @@ IMPORTANT: après la mise à jour, il faut suivre les instructions de
 [setup-pdata.md](documentation/setup-pdata.md) pour créer la base de données
 persistante
 
-Notez que l'utilisateur `\$FE_USER` a par défaut les droits d'accès en
+Notez que l'utilisateur `\\$FE_USER` a par défaut les droits d'accès en
 modification sur la base de données persistante. si vous souhaitez un accès en
 lecture uniquement, il faut créer un utilisateur supplémentaire
 
