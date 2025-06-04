@@ -288,8 +288,9 @@ ln -s dremgr.env test_profile.env
 : Liste des profils à considérer en mode "automatique"
 
   Si ce paramètre est défini, `dbinst -A` effectue l'opération demandée sur tous
-  les profils spécifiés. Sinon, faire l'opération sur tous les profils listés
-  dans `APP_PROFILES`
+  les profils spécifiés pour les actions suivantes: import, invite sql, invite
+  shell. Sinon, faire l'opération sur tous les profils listés dans
+  `APP_PROFILES`
 
 **Paramètres partagés**
 
