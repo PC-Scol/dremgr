@@ -253,7 +253,8 @@ if [ -n "$step_checkao" ]; then
         [ -d "$AODIR/dreaddon-$SelectAo" ] && SelectAo="dreaddon-$SelectAo"
     fi
 
-    setx -a aourls=echo "$ADDON_URLS"
+    read -a aourls <<<"${ADDON_URLS//
+/ }"
     aonames=()
     for aourl in "${aourls[@]}"; do
         # ignorer lignes vides
