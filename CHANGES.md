@@ -1,3 +1,7 @@
+## Release 1.7.0 du 07/06/2025-22:39
+
+* `d13fd16` support des configuration postgresql personnalisées
+
 ## Release 1.6.2 du 04/06/2025-11:02
 
 ## Release 1.6.1 du 04/06/2025-10:50
