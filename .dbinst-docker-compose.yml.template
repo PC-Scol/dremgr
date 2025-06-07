@@ -6,6 +6,10 @@
 services:
   db:
     image: @@PRIVAREG@@dremgr/db
+    command:
+      - postgres
+      - "-c"
+      - config_file=/etc/postgresql/postgresql.conf
     env_file:
       - .proxy.env
       - .defaults.env
@@ -14,8 +18,10 @@ services:
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
+    shm_size: 1G
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
+      - ./var/@@Profile@@-dredata/postgresql.conf:/etc/postgresql/postgresql.conf
       - ./var/@@Profile@@-pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
     #@@IF:DBNET@@networks:
