@@ -143,4 +143,78 @@ Puis relancer l'importation pour rétablir les accès
 ./dbinst -Ai -- -@latest
 ~~~
 
+## Je voudrais changer les paramètres de lancement de PostgreSQL
+
+Les paramètres de lancement de la base de données sont dans un fichier
+`postgresql.conf` et permettent d'optimiser l'utilisation de la mémoire
+
+Le fichier utilisé par défaut est `config/postgres/postgresql.conf`
+
+Pour changer les paramètres de lancement de toutes les bases de données, il
+suffit de modifier ce fichier et de relancer les instances.
+
+Pour spécifier des paramètres particuliers pour certains profils, copier le
+fichier par défaut avec le nom `<PROFIL>_postgresql.conf`
+~~~sh
+cp config/postgres/postgresql.conf prod_postgresql.conf
+~~~
+et relancez l'instance
+
+Pour afficher paramètres modifiés, utilisez l'option `--show-conf`
+~~~sh
+./dbinst --show-conf
+~~~
+Il s'agit des différences entre la configuration actuelle et la configuration
+par défaut à l'installation
+
+Pour changer la quantité de mémoire partagée disponible au conteneur pour
+préparer les requêtes, il faut adapter le paramètres `shm_size` en créant un
+fichier `dbinst-docker-compose.local.yml`
+~~~yaml
+services:
+  db:
+    shm_size: 2G
+~~~
+Dans cet exemple, on augmente la valeur par défaut de 1Go à 2Go
+
+## Comment optimiser les performances de la base de données?
+
+Je ne suis pas spécialiste de la chose :-(
+
+Vous trouverez sans doute des choses intéressantes sur les sites suivants:
+* https://www.postgresql.org/docs/current/performance-tips.html
+* https://postgresqlco.nf/tuning-guide
+
+La configuration par défaut livrée avec dremgr est plus ou moins taillée pour un
+serveur avec 4Go de RAM et un disque SSD
+
+Les valeurs suivantes sont modifiées par rapport aux valeurs par défaut:
+* docker
+  ~~~
+  shm_size = 1G
+  ~~~
+* postgresql
+  ~~~
+  shared_buffers = 1GB
+  work_mem = 16MB
+  maintenance_work_mem = 256MB
+  max_wal_size = 4GB
+  min_wal_size = 1GB
+  random_page_cost = 1.1
+  ~~~
+
+La configuration par défaut de PostgreSQL est faite pour s'assurer de la
+durabilité des données (i.e pas de perte de données en cas de crash ou
+d'extinction brutale de la machine)
+
+Cependant, la base de données DRE étant principalement utilisée en lecture seule
+et reconstruite tous les jours, la durabilité n'est peut-être pas une prérequis
+absolu. Dans ce cas, les paramètres suivants peuvent augmenter les performances:
+~~~
+fsync = off
+synchronous_commit = off
+full_page_writes = off
+~~~
+A utiliser à vos risques et périls!
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

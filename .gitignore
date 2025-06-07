@@ -3,6 +3,7 @@
 /.proxy.env
 /build.env
 /*_profile.env
+/*_postgresql.conf
 /dremgr.env
 
 /var/

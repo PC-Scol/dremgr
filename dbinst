@@ -31,8 +31,18 @@ function start_dbinst() {
 
     "$DREMGR/build" ${Rebuild:+--rebuild} || die
 
+    local -a pgconfs; local pgconf
+    pgconfs=(
+        "$DREMGR/${Profile}_postgresql.conf"
+        "$DREMGR/config/postgres/postgresql.conf"
+    )
+    for pgconf in "${pgconfs[@]}"; do
+        [ -f "$pgconf" ] && break
+    done
+
     estep "Démarrage de DRE [$Profile]"
     rsync -rLpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
+    rsync -Lpt "$pgconf" "$DREDATA/postgresql.conf"
     docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 }
 
@@ -180,6 +190,7 @@ cf la documentation pour les détails"
   cf la documentation pour les détails"
     -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
     --shell-db action=shell_db "++Lancer une invite bash dans le container db"
+    --show-conf action=show_conf "++Afficher la configuration postgresql.conf"
     -x,--shell-cron action=shell_cron "++Lancer une invite bash dans le container cron"
 )
 parse_args "$@"; set -- "${args[@]}"
@@ -244,5 +255,6 @@ import_one) import_one "$@";;
 import_one_devel) import_one_devel "$@";;
 psql) psql_prompt "$@";;
 shell_*) shell_prompt "${action#shell_}" "$@";;
+show_conf) shell_prompt db show-conf.sh;;
 *) die "$action: action non implémentée";;
 esac
