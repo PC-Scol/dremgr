@@ -94,7 +94,7 @@ liens pour avoir des détails sur la procédure.
 
 > [!TIP]
 > Vous avez fait l'installation, mais vous avez une interrogation? Un doute?
-> Consultez la [foire aux questions](documentation/faq.md)
+> Consultez la [foire aux questions](documentation/FAQ.md)
 
 ## Installer une mise à jour
 
