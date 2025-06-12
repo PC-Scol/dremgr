@@ -146,7 +146,8 @@ Puis relancer l'importation pour rétablir les accès
 ## Je voudrais changer les paramètres de lancement de PostgreSQL
 
 Les paramètres de lancement de la base de données sont dans un fichier
-`postgresql.conf` et permettent d'optimiser l'utilisation de la mémoire
+`postgresql.conf` et permettent d'optimiser l'utilisation de la mémoire et
+d'autres resources.
 
 Le fichier utilisé par défaut est `config/postgres/postgresql.conf`
 
@@ -154,13 +155,14 @@ Pour changer les paramètres de lancement de toutes les bases de données, il
 suffit de modifier ce fichier et de relancer les instances.
 
 Pour spécifier des paramètres particuliers pour certains profils, copier le
-fichier par défaut avec le nom `<PROFIL>_postgresql.conf`
+fichier par défaut avec le nom `<PROFIL>_postgresql.conf` *à la racine du
+projet* dans le même répertoire que le fichier `<PROFIL>_profile.env`
 ~~~sh
 cp config/postgres/postgresql.conf prod_postgresql.conf
 ~~~
 et relancez l'instance
 
-Pour afficher paramètres modifiés, utilisez l'option `--show-conf`
+Pour afficher les paramètres modifiés, utilisez l'option `--show-conf`
 ~~~sh
 ./dbinst --show-conf
 ~~~
@@ -186,21 +188,21 @@ Vous trouverez sans doute des choses intéressantes sur les sites suivants:
 * https://postgresqlco.nf/tuning-guide
 
 La configuration par défaut livrée avec dremgr est plus ou moins taillée pour un
-serveur avec 4Go de RAM et un disque SSD
+serveur avec 4Go de RAM, 2 coeurs et un disque SSD
 
 Les valeurs suivantes sont modifiées par rapport aux valeurs par défaut:
 * docker
   ~~~
-  shm_size = 1G
+  shm_size = 1G                      # valeur par défaut 64M
   ~~~
 * postgresql
   ~~~
-  shared_buffers = 1GB
-  work_mem = 16MB
-  maintenance_work_mem = 256MB
-  max_wal_size = 4GB
-  min_wal_size = 1GB
-  random_page_cost = 1.1
+  shared_buffers = 1GB               # valeur par défaut 128MB
+  work_mem = 16MB                    # valeur par défaut 4MB
+  maintenance_work_mem = 256MB       # valeur par défaut 64MB
+  min_wal_size = 1GB                 # valeur par défaut 80MB
+  max_wal_size = 4GB                 # valeur par défaut 1GB
+  random_page_cost = 1.1             # valeur par défaut 4.0
   ~~~
 
 La configuration par défaut de PostgreSQL est faite pour s'assurer de la
@@ -215,6 +217,7 @@ fsync = off
 synchronous_commit = off
 full_page_writes = off
 ~~~
-A utiliser à vos risques et périls!
+A utiliser avec précaution. Un grand pouvoir implique de grandes responsabilités
+:-)
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
