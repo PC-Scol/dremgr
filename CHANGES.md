@@ -1,3 +1,7 @@
+## Release 1.7.1 du 12/06/2025-07:32
+
+* `8142f39` maj doc
+
 ## Release 1.7.0 du 07/06/2025-22:39
 
 * `d13fd16` support des configuration postgresql personnalisées
