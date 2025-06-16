@@ -20,5 +20,9 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
 * `dbfront` offre quelques options courantes pour piloter pgbouncer (e.g
   rolling restart si plusieurs instances sont configurées -- à voir si ça se
   justifie)
+* prendre par défaut le fichier `dremgr.env` pour la configuration. n'utiliser
+  `<PROFIL>_profile.env` que si le fichier existe. de cette façon,
+  l'installation et la documentation sont simplifiés puisqu'il n'y a toujours
+  qu'un seul fichier de configuration, quelle que soit la méthode d'installation
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
