@@ -29,5 +29,9 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
 * possibilité de spécifier que le répertoire de téléchargement d'un profil est
   celui d'un autre profil. dans ce cas, il n'y a pas de nettoyage du répertoire
   destination après traitement.
+* support dans dreaddons d'un script à lancer *après* que la base de données a
+  été complètement importée. cela permet de générer par exemple des
+  notifications pour des services externes, qui se basent sur le contenu de la
+  base DRE
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
