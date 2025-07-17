@@ -15,6 +15,8 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
 * Même si pas d'historisation, possibilité de restaurer une base de données
   correspondant à une date spécifique dans une base temporaire
 * Envoi journalier des logs par mail, notamment en cas d'erreur
+  deux adresses: une "spam" pour les logs quels que soit le résultat
+  et une "ham" pour les logs d'erreurs
 * `dremgr` ne redémarre jamais pgbouncer (sauf si explicitement demandé avec
   par exemple une option --all)
 * `dbfront` offre quelques options courantes pour piloter pgbouncer (e.g
@@ -24,5 +26,8 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
   `<PROFIL>_profile.env` que si le fichier existe. de cette façon,
   l'installation et la documentation sont simplifiés puisqu'il n'y a toujours
   qu'un seul fichier de configuration, quelle que soit la méthode d'installation
+* possibilité de spécifier que le répertoire de téléchargement d'un profil est
+  celui d'un autre profil. dans ce cas, il n'y a pas de nettoyage du répertoire
+  destination après traitement.
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
