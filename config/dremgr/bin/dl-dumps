@@ -90,41 +90,64 @@ function rundir() {
     return $r
 }
 
+declare -A ALL_FILES
 DL_FILES=()
 DROP_SCHEMA_SCHEMAS=()
 IMPORT_SCHEMA_SCHEMAS=()
 DROP_MONGO_SCHEMAS=()
 IMPORT_MONGO_SCHEMAS=()
 IMPORT_MONGO_COLLECTIONS=()
-function add_schema() {
-    local sum="$1" file="$2" schema
-    if [[ "$file" == "$DRE_PREFIX"* ]]; then
-        [ -f "$file" ] || quietc_echo "$file: OK ce fichier sera téléchargé"
-        [ -n "$Tmpsums" ] && echo "$sum $(pwd)/$file" >>"$Tmpsums"
-    else
+function add2all_files() {
+    local file="$2"
+    ALL_FILES["$file"]=1
+}
+function _add_bin() {
+    local file="$1" schema="$1"
+    schema="${schema%.bin}"
+    schema="${schema##*-$Timestamp-}"
+    DROP_SCHEMA_SCHEMAS+=("schema_$schema")
+    IMPORT_SCHEMA_SCHEMAS+=("$schema")
+    _add_file=1
+}
+function _add_json() {
+    local file="$1" schema="$1"
+    schema="${schema%.gz}"
+    schema="${schema%.json}"
+    schema="${schema##*-$Timestamp-}"
+    collection="${schema#*-}"
+    schema="${schema%%-*}"
+    if ! array_contains IMPORT_MONGO_SCHEMAS "$schema"; then
+        DROP_MONGO_SCHEMAS+=("mongo_$schema")
+        IMPORT_MONGO_SCHEMAS+=("$schema")
+    fi
+    IMPORT_MONGO_COLLECTIONS+=("$schema:$collection")
+    _add_file=1
+}
+function add2dl_files() {
+    local sum="$1" file="$2"
+
+    if [[ "$file" != "$DRE_PREFIX"* ]]; then
         quietc_echo "$file: KO ce fichier sera ignoré"
         return
     fi
-    DL_FILES+=("$file")
+
+    local _add_file
     if [[ "$file" == *.bin ]]; then
-        schema="$file"
-        schema="${schema%.bin}"
-        schema="${schema##*-$Timestamp-}"
-        DROP_SCHEMA_SCHEMAS+=("schema_$schema")
-        IMPORT_SCHEMA_SCHEMAS+=("$schema")
+        _add_bin "$file"
     elif [[ "$file" == *.json ]]; then
-        schema="$file"
-        schema="${schema%.json}"
-        schema="${schema##*-$Timestamp-}"
-        collection="${schema#*-}"
-        schema="${schema%%-*}"
-        if ! array_contains IMPORT_MONGO_SCHEMAS "$schema"; then
-            DROP_MONGO_SCHEMAS+=("mongo_$schema")
-            IMPORT_MONGO_SCHEMAS+=("$schema")
+        if [ -z "${ALL_FILES[$file.gz]:-}" ]; then
+            # n'inclure le .json que si .json.gz n'existe pas déjà
+            _add_json "$file"
         fi
-        IMPORT_MONGO_COLLECTIONS+=("$schema:$collection")
+    elif [[ "$file" == *.json.gz ]]; then
+        _add_json "$file"
     else
         ewarn "$file: format non reconnu. le fichier sera ignoré"
+    fi
+    if [ -n "$_add_file" ]; then
+        [ -f "$file" ] || quietc_echo "$file: OK ce fichier sera téléchargé"
+        [ -n "$Tmpsums" ] && echo "$sum $(pwd)/$file" >>"$Tmpsums"
+        DL_FILES+=("$file")
     fi
 }
 
@@ -215,7 +238,8 @@ if [ -n "$step_dl" ]; then
         dl "$sums" || die
     fi
     ac_set_tmpfile Tmpsums
-    eval "$(sed 's/^/add_schema /' "$sums")"
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
 
     if [ ! -f "$version" ]; then
         qstep "dl $version"
@@ -239,7 +263,9 @@ if [ -n "$step_dl" ]; then
         find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
     fi
 elif [ -f "$sums" ]; then
-    eval "$(sed 's/^/add_schema /' "$sums")"
+    Tmpsums=
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
 else
     die "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
 fi
@@ -469,13 +495,20 @@ create schema if not exists $schema;
     eend
 
     etitle "Importation des collections (json)"
+    function cat_json() {
+        local file="$1"
+        case "$file" in
+        *.json) cat "$file";;
+        *.json.gz) gzip -dc "$file";;
+        esac
+    }
     function import_json() {
         local schema="$1" collection="$2" file="$3"
         qstep "$schema: $collection: import $file"
         runsql "
 create table if not exists $schema.$collection (source_json jsonb);
 " || die
-        <"$file" runsql "
+        cat_json "$file" | runsql "
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
 " || die
     }
