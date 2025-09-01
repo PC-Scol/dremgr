@@ -226,7 +226,14 @@ if [ "$Timestamp" == latest ]; then
     Timestamp="${latest#checksums-}"
     enote "Autosélection de -@ $Timestamp"
 fi
-[ -n "$Timestamp" ] || setx Timestamp=date +%Y%m%d
+if [ -z "$Timestamp" ]; then
+    if [ -n "$V29FIX_DY" ]; then
+        setx Timestamp=awk 'BEGIN { print strftime("%Y%m%d", mktime(strftime("%Y %m %d 00 00 00")) - 86400); }'
+        enote "Sélection de -@ $Timestamp (v29fix_dy)"
+    else
+        setx Timestamp=date +%Y%m%d
+    fi
+fi
 sums="checksums-$Timestamp"
 version="DRE_VERSION_$Timestamp"
 
