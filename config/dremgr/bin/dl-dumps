@@ -511,6 +511,8 @@ create schema if not exists $schema;
     }
     function import_json() {
         local schema="$1" collection="$2" file="$3"
+        [ -f "$file.gz" ] && file="$file.gz"
+
         qstep "$schema: $collection: import $file"
         runsql "
 create table if not exists $schema.$collection (source_json jsonb);
