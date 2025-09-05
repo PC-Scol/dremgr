@@ -1,3 +1,11 @@
+## Release 1.8.0 du 05/09/2025-09:36
+
+* `cd5d024` corriger l'import des fichiers .json.gz
+* `f48f355` fix temporaire pour bug v29
+* `04cfb8b` support des fichiers .json.gz
+* `ed95a52` ajout du paramètre DRE_FILES_FROM
+* `235bbc6` dbinst peut sauvegarder et restaurer
+
 ## Release 1.7.1 du 12/06/2025-07:32
 
 * `8142f39` maj doc
