@@ -92,7 +92,7 @@ Dans cet exemple, seules les variables `http_proxy` et `https_proxy` sont
 configurées, mais ce n'est pas gênant
 
 Si aucune de ces variable n'est définie, vous pouvez vous rapprocher de notre
-administrateur système pour avoir les inforamtions nécessaires (il s'agit
+administrateur système pour avoir les informations nécessaires (il s'agit
 habituellement de renseigner le fichier `/etc/environment`)
 
 Cette configuration présente dans votre environnement est automatiquement

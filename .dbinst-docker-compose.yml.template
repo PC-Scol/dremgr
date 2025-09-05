@@ -56,11 +56,13 @@ services:
         ADDON_URLS
         CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
         FORCE_CREATE_SCHEMAS
+        V29FIX_DY
     command: cron
     volumes:
       - ./var/@@Profile@@-run:/run/postgresql
-      - ./var/@@Profile@@-dredata:/data/dre
       - ./var/@@Profile@@-dredata/cron-config:/cron-config
+      - ./var/@@Profile@@-dredata:/data/dre
+      #@@IF:DlProfile@@- ./var/@@DlProfile@@-dredata/downloads:/data/dre/downloads
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:

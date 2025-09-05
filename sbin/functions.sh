@@ -115,7 +115,7 @@ function template_source_envs() {
     fi
     source_envs+=("$DREMGR/.forced.env")
     _template_source_envs "${source_envs[@]}"
-    template_vars+=(IS_DBINST IS_DBFRONT IS_WEBFRONT)
+    template_vars+=(DlProfile IS_DBINST IS_DBFRONT IS_WEBFRONT)
     template_lists=("${DREMGR_TEMPLATE_LIST_VARS[@]}")
 
     if [ -n "$Profile" ]; then
@@ -129,6 +129,7 @@ function template_source_envs() {
     fi
 
     # fix pour certaines variables
+    DlProfile="$DRE_FILES_FROM"
     [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
     [ -n "$LBVIP" ] && LBVIP="$LBVIP:"
     [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"

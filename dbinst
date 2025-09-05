@@ -140,6 +140,71 @@ function shell_prompt() {
     fi
 }
 
+function write_output() {
+    if [[ "$1" == *.gz ]]; then
+        gzip -c >"$1"
+    else
+        cat >"$1"
+    fi
+}
+
+function backup_db() {
+    local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+    [ -f "$composefile" ] || return 0
+
+    local dbname="$1" output="$2"
+    [ -n "$dbname" ] || dbname=pdata
+    [ -n "$output" ] || output="${Profile}_${dbname}-$(date +%y%m%d).sql.gz"
+
+    if dcrunning "${composefiles[@]}"; then
+        local -a cmd
+        estep "[$Profile] Sauvegarde $dbname vers $output"
+        cmd=(pg_dump -c -C -Fp -O --if-exists -d "$dbname")
+        docker compose "${composeargs[@]}" exec db "${cmd[@]}" |
+            write_output "$output" || die "Une erreur s'est produite pendant la sauvegarde"
+    else
+        eerror "Impossible de sauvegarder $dbname: DRE [$Profile] est arrêté"
+    fi
+}
+
+function read_input() {
+    if [[ "$1" == *.gz ]]; then
+        gzip -dc "$1"
+    else
+        cat "$1"
+    fi
+}
+
+function restore_db() {
+    local composefile localfile; local -a composefiles composeargs
+    _set_composefiles
+    [ -f "$composefile" ] || return 0
+
+    local input="$1" dbname="$2"
+    [ -n "$input" ] || die "Vous devez spécifier le fichier à restaurer"
+    [ -f "$input" ] || die "$input: fichier introuvable"
+    [ -n "$dbname" ] || dbname=pdata
+
+    if dcrunning "${composefiles[@]}"; then
+        local -a cmd
+        eimportant "[$Profile] Restauration $dbname depuis $input"
+        ask_yesno "Voulez-vous continuer?" O || die
+
+        estep "Terminaison de toutes les connections en cours"
+        cmd=(psql -c "select pg_terminate_backend(pid) from pg_stat_activity where datname='$dbname'")
+        docker compose "${composeargs[@]}" exec db "${cmd[@]}"
+
+        estep "Restauration de la base de données"
+        cmd=(psql)
+        read_input "$input" |
+            docker compose "${composeargs[@]}" exec -T db "${cmd[@]}" || die "Une erreur s'est produite pendant la restauration"
+
+    else
+        eerror "Impossible de restaurer $dbname: DRE [$Profile] est arrêté"
+    fi
+}
+
 case "$MYNAME" in
 *_dbinst) Profile="${MYNAME%_dbinst}";;
 *)
@@ -173,15 +238,15 @@ Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $
     -R,--restart action=restart "Forcer le (re)démarrage de DRE"
     -b,-B,--rebuild Rebuild=1 "++Forcer le rebuild de l'image avant le démarrage"
     -i,--import-all action=import_all "Lancer l'import complet maintenant, sans attendre la planification"
-    -I,--import-one action=import_one "\
-++Lancer l'import d'un unique addon sans attendre la planification
+    -I,--import-one action=import_one "++\
+Lancer l'import d'un unique addon sans attendre la planification
 - soit la commande suivante:
     $MYNAME -I DREADDON
 - l'addon est importé comme avec les options suivantes:
     $MYNAME -i -- --runao -o DREADDON \"\$@\"
 cf la documentation pour les détails"
-    -J,--import-one-devel action=import_one_devel "\
-++Importer un addon en mode développement:
+    -J,--import-one-devel action=import_one_devel "++\
+Importer un addon en mode développement:
 - Soit la commande suivante:
     $MYNAME -J path/to/DREADDON
 - le contenu du répertoire de l'addon est synchronisé vers le répertoire correspondant du conteneur
@@ -192,6 +257,14 @@ cf la documentation pour les détails"
     --shell-db action=shell_db "++Lancer une invite bash dans le container db"
     --show-conf action=show_conf "++Afficher la configuration postgresql.conf"
     -x,--shell-cron action=shell_cron "++Lancer une invite bash dans le container cron"
+    --backup action=backup "++\
+Sauvegarder la base de données. Il faut préciser en argument [db [output]]
+db est le nom de la base de données à sauvegarer et vaut par défaut pdata
+output est le fichier en sortie et vaut par défaut <PROFILE>_<DB>-YYmmdd.sql.gz"
+    --restore action=restore "++\
+Restaurer la base de données. Il faut préciser en argument [input [db]]
+input est le fichier en entrée
+db est le nom de la base de données à restaurer et vaut par défaut pdata"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -256,5 +329,7 @@ import_one_devel) import_one_devel "$@";;
 psql) psql_prompt "$@";;
 shell_*) shell_prompt "${action#shell_}" "$@";;
 show_conf) shell_prompt db show-conf.sh;;
+backup) backup_db "$@";;
+restore) restore_db "$@";;
 *) die "$action: action non implémentée";;
 esac

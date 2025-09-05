@@ -38,6 +38,40 @@ paramètres sont lus dans le fichier `prod_profile.env`
   n'est PAS de production, il faut alors absolument définir ce paramètre, parce
   que dans le mode simple, le nom du profil est fixé à `prod`
 
+`DRE_FILES_FROM`
+: Indiquer que le répertoire de téléchargement est celui du profil
+  spécifié. Cela permet de partager le répertoire de téléchargement pour des
+  profils qui attaquent la même instance PEGASE. Il faut probablement aussi
+  spécifier le paramètre `DRE_PREFIX` pour sélectionner les bons fichiers.
+
+  Dans l'exemple suivant, le profil `devel` utilise autant que possible la
+  configuration du profil `prod`, ainsi que les fichier déjà téléchargés, mais a
+  une liste d'addons différente (c'est la branche develop de l'addon
+  dreaddon-local qui est installée)
+  ~~~sh
+  APP_PROFILES="prod devel"
+  ...
+  prod_DRE_URL=https://dre-dump.univ-ville.pc-scol.fr
+  prod_DRE_USER=dre
+  prod_DRE_PASSWORD=z3Pass
+  ...
+  ADDON_URLS="
+  # installer la branche main
+  https://git.univ-ville.fr/dreaddon-local.git
+  "
+  ...
+  devel_DRE_URL="$prod_DRE_URL"
+  devel_DRE_USER="$prod_DRE_USER"
+  devel_DRE_PASSWORD="$prod_DRE_PASSWORD"
+  devel_DRE_PREFIX=prod-univ-ville
+  devel_DRE_FILES_FROM=prod
+  devel_ADDON_URLS="
+  # installer la branche develop sur l'instance devel
+  https://git.univ-ville.fr/dreaddon-local.git#develop
+  "
+  ...
+  ~~~
+
 **Configuration du service postgresql**
 
 `POSTGRES_HOST`
