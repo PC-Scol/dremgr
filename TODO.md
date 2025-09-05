@@ -30,5 +30,6 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
   été complètement importée. cela permet de générer par exemple des
   notifications pour des services externes, qui se basent sur le contenu de la
   base DRE
+* migrer l'image vers debian 12
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
