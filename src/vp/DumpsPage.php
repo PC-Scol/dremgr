@@ -175,7 +175,7 @@ class DumpsPage extends ANavigablePage {
         ];
       },
       "after_table" => [
-        "Taille total: ", num::format_size($totalSize),
+        "Taille totale: ", num::format_size($totalSize),
         "<br/>En tenant compte de CRON_MAX_AGE, il faut prévoir ",
         num::format_size($totalSize * $this->maxAge),
         " pour garder une copie de tous les fichiers de dumps",

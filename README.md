@@ -27,12 +27,12 @@ base de données DRE, afin d'offrir une vue consolidée aux données.
 dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
-La configuration par défaut est optimisée pour une machine avec 4Go de RAM, 2
-coeurs et un disque SSD. Il ne faut cependant pas prendre ces chiffres commes
-des directives absolues. Prévoyez suffisamment de disque pour la base de données
-et les fichiers de dumps (par défaut, les fichiers des 15 derniers jours sont
-conservés) --> en fonction de la taille de vos données, de 50 à 100 Go devraient
-suffire pour une machine de production.
+La configuration par défaut est optimisée pour une machine avec **4Go de RAM**,
+**2 coeurs** et un **disque SSD**. Il ne faut cependant pas prendre ces chiffres
+commes des directives absolues. Prévoyez suffisamment de disque pour la base de
+données et les fichiers de dumps (par défaut, les fichiers des 15 derniers jours
+sont conservés) --> en fonction de la taille de vos données, de **50 à 100 Go**
+devraient suffire pour une machine de production.
 
 Les commandes listées ci-dessous sont pour un démarrage rapide si vous savez ce
 que vous faites. Si c'est la première fois, il est conseillée de cliquer sur les
