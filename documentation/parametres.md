@@ -138,11 +138,12 @@ informations à l'utilisateur.
 `CRON_PLAN`
 : Planification cron pour le script d'import
 
-  Les fichiers sont générés à 4h GMT, soit 5h heure de Paris. on planifie à 5h30
-  par défaut pour laisser le temps à l'export de se terminer.
+  Les fichiers sont générés à 2h dans le fuseau de l'instance PEGASE, qui est
+  habituellement le fuseau locale. on planifie à 4h par défaut pour laisser le
+  temps à l'export de se terminer (ce qui est largement suffisant)
 
-  Bien entendu, si vous n'êtes pas en métropole, il faudra modifier ce paramètre
-  en fonction du fuseau horaire.
+  Bien entendu, si vous n'êtes pas en métropole, il faudra penser à demander au
+  support de configurer le fuseau horaire des instances.
 
 `CRON_DISABLE`
 : Indiquer une valeur quelconque pour désactiver les imports automatiques. La
