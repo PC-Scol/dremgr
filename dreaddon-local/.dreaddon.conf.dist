@@ -1,0 +1,13 @@
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+
+# Liste des schémas à créer et provisionnés par cet addon
+SCHEMAS=()
+
+# Avec quelles versions de DRE cet addon est-il compatible?
+# les valeurs acceptées sont
+# all -- n'importe quelle version de la base DRE
+# vxx -- la version xx si le répertoire correspondant ou inférieur existe
+COMPAT=vxx
+
+# Faut-il ignorer les erreurs lors de l'exécution des scripts de cet addon?
+IGNORE_ERRORS=

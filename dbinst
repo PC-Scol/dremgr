@@ -92,14 +92,17 @@ function import_one_devel() {
     local srcdir="$1"; shift
     [ -n "$srcdir" ] || die "Vous devez spécifier le répertoire source de l'addon à importer"
     [ -d "$srcdir" ] || die "$srcdir: répertoire d'addon introuvable"
+    setx srcdir=abspath "$srcdir"
 
     local name="$(basename "$srcdir")"
     local importlog="$DREMGR/var/${Profile}-dredata/import.log"
     local destdir="$DREMGR/var/${Profile}-dredata/addons/$name"
 
-    estep "Copie des fichiers vers ${destdir#$DREMGR/}"
-    [ "$(id -u)" == 0 ] && sudo= || sudo=sudo
-    $sudo rsync -rlp --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
+    if [ "$srcdir" != "$DREMGR" -a "${srcdir#$DREMGR/}" == "$srcdir" ]; then
+        estep "Copie des fichiers vers ${destdir#$DREMGR/}"
+        [ "$(id -u)" == 0 ] && sudo= || sudo=sudo
+        $sudo rsync -rlp --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
+    fi
 
     import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" "$@"
 

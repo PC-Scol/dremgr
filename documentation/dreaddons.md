@@ -2,8 +2,20 @@
 
 dremgr supporte l'installation d'addons accessible via des dépôts git.
 
+## Addon local
+
+[Le répertoire dreaddon-local](../dreaddon-local/README.md) est particulier: il
+est livré avec dremgr et il est toujours installé, indépendamment de la
+configuration `ADDON_URLS`.
+
+Cet addon est directement modifiable par l'utilisateur. Cela permet d'installer
+des paramétrages ou des traitement locaux sans avoir besoin de créer un dépôt
+tierce
+
+## Addon installables
+
 Une fois qu'on a sélectionné un addon à utiliser, il faut rajouter l'url du
-dépôt dans la configuration:
+dépôt git dans la configuration:
 ~~~sh
 ADDON_URLS="
 ...

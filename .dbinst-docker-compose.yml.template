@@ -59,6 +59,7 @@ services:
         V29FIX_DY
     command: cron
     volumes:
+      - .:/app/dremgr
       - ./var/@@Profile@@-run:/run/postgresql
       - ./var/@@Profile@@-dredata/cron-config:/cron-config
       - ./var/@@Profile@@-dredata:/data/dre

@@ -3,6 +3,7 @@
 source /etc/nulib.sh || exit 1
 source /g/init.env || exit 1
 
+APPDIR=/app/dremgr
 : "${APP_DATADIR:=/data/dre}"
 : "${DLDIR:=$APP_DATADIR/downloads}"
 : "${AODIR:=$APP_DATADIR/addons}"
@@ -285,8 +286,12 @@ eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')
 
 if [ -n "$step_checkao" ]; then
     estep "Vérification des addons"
-    if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
-        [ -d "$AODIR/dreaddon-$SelectAo" ] && SelectAo="dreaddon-$SelectAo"
+    if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" ]; then
+        if [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
+            SelectAo="dreaddon-$SelectAo"
+        elif [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
+            SelectAo="dreaddon-$SelectAo"
+        fi
     fi
 
     read -a aourls <<<"${ADDON_URLS//
@@ -321,6 +326,10 @@ if [ -n "$step_checkao" ]; then
         aoname="${aoname%.git}"
         aodir="$AODIR/$aoname"
 
+        if [ "$aoname" == dreaddon-local ]; then
+            ewarn "le nom dreaddon-local est réservé. le dépôt $aourl a été ignoré"
+            continue
+        fi
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
         aonames+=("$aoname")
 
@@ -359,20 +368,31 @@ if [ -n "$step_checkao" ]; then
         UpdateAo="$origUpdateAo"
     done
 
-    if [ -n "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
-        if [ -d "$AODIR/dreaddon-$SelectAo" ]; then
+    if [ -n "$SelectAo" ]; then
+        if [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
             array_del aonames "$SelectAo"
             SelectAo="dreaddon-$SelectAo"
             aonames+=("$SelectAo")
-        else
+        elif [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
+            array_del aonames "$SelectAo"
+            SelectAo="dreaddon-$SelectAo"
+            aonames+=("$SelectAo")
+        elif [ ! -d "$AODIR/$SelectAo" -a ! -d "$APPDIR/$SelectAo" ]; then
             ewarn "$SelectAo: addon non installé"
         fi
     fi
 
     ADDONS=()
-    for aoname in "${aonames[@]}"; do
+    for aoname in dreaddon-local "${aonames[@]}"; do
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
-        aodir="$AODIR/$aoname"
+        if [ "${aoname#dreaddon-}" != "$aoname" -a -d "$APPDIR/$aoname" ]; then
+            aodir="$APPDIR/$aoname"
+        elif [ -d "$AODIR/$aoname" ]; then
+            aodir="$AODIR/$aoname"
+        else
+            eerror "$aoname: addon introuvable"
+            continue
+        fi
 
         if [ ! -f "$aodir/dreaddon.conf" ]; then
             ewarn "$aodir: n'est pas un répertoire d'addons"
