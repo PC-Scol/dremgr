@@ -50,22 +50,19 @@ function runsql() {
     quietc psql "${RUNSQL_ARGS[@]}" -c "$@"
 }
 function _runfile() {
-    case "$file" in
-    *.sql)
+    if [[ "$file" == *.sql ]]; then
         estep "psql $file"
         if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
             [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
         fi
-        ;;
-    *.sh)
-        if [ -x "$file" ]; then
-            estep "exec $file"
-            if ! quietc "./$file"; then
-                [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
-            fi
+    elif [ -x "$file" ]; then
+        estep "exec $file"
+        if ! quietc "./$file"; then
+            [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
         fi
-        ;;
-    esac
+    else
+        estep "ignore $file"
+    fi
 }
 function runfile() {
     local cwd dir file r
@@ -81,9 +78,15 @@ function rundir() {
     local -a files; local cwd file r
     setx cwd=pwd
     cd "$1"
-    setx -a files=ls_files . "*.sql" "*.sh"
+    setx -a files=ls_files .
     for file in "${files[@]}"; do
-        _runfile; r=$?
+        if [[ "$file" == *.sql ]]; then
+            _runfile; r=$?
+        elif [ -x "$file" ]; then
+            _runfile; r=$?
+        else
+            r=0
+        fi
         [ $r -eq 0 ] || break
     done
     cd "$cwd"
