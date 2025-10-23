@@ -215,6 +215,44 @@ no) keep_import_log=1;;
 esac
 
 setx DATE_DEB=date +"%F %T"; export DATE_DEB
+export TEM_DOWNLOAD="$step_dl"
+export TEM_IMPORT="$step_import"
+export TEM_ADDONS="$step_runao"
+export CRITICAL_ERROR=
+export HAVE_ERRORS=
+function critical() {
+    CRITICAL_ERROR=1
+    die "$@"
+}
+function at_exit() {
+    [ -n "$step_notifao" ] || return 0
+    etitle "Lancement des notifications"
+    runsql_ignore_errors 1
+    if [ -n "$NOTIF_TIMEOUT" ]; then
+        RUNFILE_PREFIX=(timeout)
+        if [ -n "$NOTIF_TIMEOUT_KILL" ]; then
+            RUNFILE_PREFIX+=(-k "$NOTIF_TIMEOUT_KILL")
+        fi
+        RUNFILE_PREFIX+=("$NOTIF_TIMEOUT")
+    fi
+    for addon in "${ADDONS[@]}"; do
+        if [[ "$addon" == *:* ]]; then
+            aodir="${addon%:*}"
+            vxx="${addon##*:}"
+        else
+            aodir="$addon"
+            vxx=
+        fi
+        [ -d "$aodir/notifications" ] || continue
+
+        etitle "$addon"; quietc_echo "** notifications $addon"
+        rundir "$aodir/notifications"
+        eend
+    done
+    eend
+}
+trap at_exit EXIT
+
 quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
 ================================================================================"
 qstep "Début de l'import le $DATE_DEB"
@@ -251,7 +289,7 @@ if [ -n "$step_dl" ]; then
 
     if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
         qstep "dl $sums"
-        dl "$sums" || die
+        dl "$sums" || critical
     fi
     ac_set_tmpfile Tmpsums
     eval "$(sed 's/^/add2all_files /' "$sums")"
@@ -259,17 +297,17 @@ if [ -n "$step_dl" ]; then
 
     if [ ! -f "$version" ]; then
         qstep "dl $version"
-        dl "$version" || die
+        dl "$version" || critical
     fi
     for file in "${DL_FILES[@]}"; do
         if [ ! -f "$file" ]; then
             qstep "dl $file"
-            dl "$file" || die
+            dl "$file" || critical
         fi
     done
 
     qstep "Vérifications des sommes de contrôle"
-    sha256sum --status -c "$Tmpsums" || die
+    sha256sum --status -c "$Tmpsums" || critical
 
     if [ -n "$Clean" ]; then
         qstep "Nettoyage des fichiers obsolètes"
@@ -283,7 +321,7 @@ elif [ -f "$sums" ]; then
     eval "$(sed 's/^/add2all_files /' "$sums")"
     eval "$(sed 's/^/add2dl_files /' "$sums")"
 else
-    die "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
+    critical "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
 fi
 
 estep "Calcul de la version"
@@ -461,7 +499,7 @@ select datname from pg_database where datname like 'dre_tmp%' or datname like 'd
             estep "$tmpdb"
             runsql "\
 drop database if exists $tmpdb with (force);
-" || die
+" || critical
         done
         eend
 
@@ -470,9 +508,9 @@ drop database if exists $tmpdb with (force);
         etitle "Création de la base de données temporaire $tmpdb"
         runsql "\
 create database $tmpdb;
-" || die
+" || critical
         PGDATABASE="$tmpdb"
-        runsql "$(pg_grant_default_privileges)" || die
+        runsql "$(pg_grant_default_privileges)" || critical
         if [ -n "$PDBNAME" ]; then
             qstep "configuration $PDBNAME"
             quietc setup-pdb.sh
@@ -486,7 +524,7 @@ create database $tmpdb;
         done
         runsql "\
 drop schema if exists $schema_list cascade;
-" || die
+" || critical
         eend
     fi
 fi
@@ -498,7 +536,7 @@ if [ -n "$step_import_bin" ]; then
         qstep "$schema: create schema"
         runsql "\
 create schema if not exists $schema;
-" || die
+" || critical
     done
 
     for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
@@ -508,11 +546,11 @@ create schema if not exists $schema;
         qstep "$schema: drop extensions"
         runsql "\
 drop extension if exists unaccent, pg_trgm cascade;
-" || die
+" || critical
 
         qstep "$schema: import $file"
-        quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
-        runsql "$(pg_grant_schema_privileges "$schema")" || die
+        quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
+        runsql "$(pg_grant_schema_privileges "$schema")" || critical
     done
     eend
 fi
@@ -525,7 +563,7 @@ if [ -n "$step_import_json" ]; then
         qstep "$schema"
         runsql "\
 create schema if not exists $schema;
-" || die
+" || critical
     done
     eend
 
@@ -544,10 +582,10 @@ create schema if not exists $schema;
         qstep "$schema: $collection: import $file"
         runsql "
 create table if not exists $schema.$collection (source_json jsonb);
-" || die
+" || critical
         cat_json "$file" | runsql "
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
-" || die
+" || critical
     }
     import_json mongo_piste_inscription version_instance "$version"
     for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
@@ -560,7 +598,7 @@ copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'
         schema="mongo_$schema"
 
         qstep "$schema: maj authnz"
-        runsql "$(pg_grant_schema_privileges "$schema")" || die
+        runsql "$(pg_grant_schema_privileges "$schema")" || critical
     done
     eend
 fi
@@ -628,6 +666,7 @@ if [ -n "$step_runao" ]; then
 
         if [ -n "$errors" ]; then
             eimportant "Des erreurs se sont produites. l'installation de cet addon est incomplète"
+            HAVE_ERRORS=1
         fi
         eend
     done
@@ -676,7 +715,7 @@ truncate table \"_infos_$profile\";
 insert into \"_infos_$profile\" (description) values
 ('Cette base de données est sur l''instance du profil $profile')
 ;
-" || die
+" || critical
 fi
 
 if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
@@ -692,31 +731,4 @@ fi
 setx DATE_FIN=date +"%F %T"; export DATE_FIN
 if [ -n "$step_import" ]; then
     qstep "Fin de l'import le $DATE_FIN"
-fi
-
-if [ -n "$step_notifao" ]; then
-    etitle "Lancement des notifications"
-    runsql_ignore_errors 1
-    if [ -n "$NOTIF_TIMEOUT" ]; then
-        RUNFILE_PREFIX=(timeout)
-        if [ -n "$NOTIF_TIMEOUT_KILL" ]; then
-            RUNFILE_PREFIX+=(-k "$NOTIF_TIMEOUT_KILL")
-        fi
-        RUNFILE_PREFIX+=("$NOTIF_TIMEOUT")
-    fi
-    for addon in "${ADDONS[@]}"; do
-        if [[ "$addon" == *:* ]]; then
-            aodir="${addon%:*}"
-            vxx="${addon##*:}"
-        else
-            aodir="$addon"
-            vxx=
-        fi
-        [ -d "$aodir/notifications" ] || continue
-
-        etitle "$addon"; quietc_echo "** notifications $addon"
-        rundir "$aodir/notifications"
-        eend
-    done
-    eend
 fi
