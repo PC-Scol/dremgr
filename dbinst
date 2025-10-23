@@ -75,7 +75,7 @@ function import_dumps() {
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
         estep "Import des dumps [$Profile]"
-        docker compose "${composeargs[@]}" exec cron dl-dumps "$@" || die
+        docker compose "${composeargs[@]}" exec cron import-dumps "$@" || die
     else
         eerror "Impossible d'importer les dumps: DRE [$Profile] est arrêté"
     fi

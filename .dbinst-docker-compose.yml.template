@@ -46,7 +46,7 @@ services:
       <<: *db-environment
       APP_DATADIR: /data/dre
       TAIL_LOGFILES: /data/dre/cron.log
-      UPDATE_CRON_FILES: dl-dumps
+      UPDATE_CRON_FILES: import-dumps
       UPDATE_CRON_VARS: >
         HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
         APP_PROFILE APP_DATADIR
