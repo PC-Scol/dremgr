@@ -12,6 +12,7 @@ ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=
 RUN /g/build
 RUN /g/pkg i @ssl @git
 
+ENV POSTGRESQL_CLIENT_VERSION=15
 COPY --from=php /g/ /g/
 RUN /g/build @php-cli php-utils
 

@@ -85,7 +85,7 @@ function import_one() {
     local name="$1"; shift
     [ -n "$name" ] || die "Vous devez spécifier le nom de l'addon à importer"
 
-    import_dumps -@ latest --runao -o "$name" "$@"
+    import_dumps -@ latest --runao -o "$name" --notifao "$@"
 }
 
 function import_one_devel() {
@@ -104,7 +104,7 @@ function import_one_devel() {
         $sudo rsync -rlp --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
     fi
 
-    import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" "$@"
+    import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" --notifao "$@"
 
     less -eF "$importlog"
 }

@@ -55,8 +55,7 @@ services:
         FE_USER FE_USERS FE_ACCESS
         ADDON_URLS
         CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
-        FORCE_CREATE_SCHEMAS
-        V29FIX_DY
+        VxxFIX_FC V29FIX_DY
     command: cron
     volumes:
       - .:/app/dremgr
