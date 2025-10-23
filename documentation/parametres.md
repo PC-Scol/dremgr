@@ -180,23 +180,14 @@ informations à l'utilisateur.
     d'indisponibilité va de 10 à 15 minutes voire plus en fonction du nombre
     d'addons et de la quantité de données.
 
-`FORCE_CREATE_SCHEMAS`
-: Liste des dumps qui ne contiennent pas la commande de création de schéma. En
-  effet, les dumps pour les schémas standards contiennent une commande
-  permettant de créer le schéma. Mais il arrive que certains dumps ne
-  contiennent pas cette commande. Il faut donc forcer la création du schéma
-  avant d'importer le dump.
+`NOTIF_TIMEOUT`
+`NOTIF_TIMEOUT_KILL`
+: S'il est défini, le premier paramètre est le temps maximum alloué à
+  l'exécution de chaque notification en fin d'import. Si le temps d'exécution
+  alloué est dépassé, le script reçoit un signal pour s'arrêter proprement.
 
-  Par exemple, si les logs d'importation de dump contiennent cette erreur:
-  ~~~text
-  pg_restore: erreur : could not execute query: ERROR:  schema "schema_keycloak" does not exist
-  ~~~
-  Cela signifie que le dump `DOMAIN-YYYYmmdd-keycloak.bin` ne contient pas la
-  commande de création du schéma `schema_keycloak`
-
-  Pour pallier ce problème, il faut définir `FORCE_CREATE_SCHEMA=keycloak` et
-  redémarrer les services afin que le schéma soit créé avant l'importation du
-  dump.
+  Si le deuxième paramètre est défini, et que le script ne s'arrête pas après
+  le premier signal, attendre encore ce temps-là avant de forcer son arrêt
 
 `HOST_MAPPINGS`
 : Liste de mappings d'hôte à installer dans le container, un par ligne

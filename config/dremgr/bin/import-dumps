@@ -12,7 +12,7 @@ APPDIR=/app/dremgr
 export PGDATABASE="$DBNAME" PGUSER="$POSTGRES_USER"
 unset PGHOST PGPORT
 
-read -a FORCE_CREATE_SCHEMAS <<<"${FORCE_CREATE_SCHEMAS//
+read -a VxxFIX_FC <<<"${VxxFIX_FC//
 / }"
 
 function recoverable_curl_error() {
@@ -50,19 +50,20 @@ function runsql_ignore_errors() {
 function runsql() {
     quietc psql "${RUNSQL_ARGS[@]}" -c "$@"
 }
+RUNFILE_PREFIX=()
 function _runfile() {
     if [[ "$file" == *.sql ]]; then
-        estep "psql $file"
-        if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
+        qstep "psql $file"
+        if ! quietc "${RUNFILE_PREFIX[@]}" psql "${RUNSQL_ARGS[@]}" -f "$file"; then
             [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
         fi
     elif [ -x "$file" ]; then
-        estep "exec $file"
-        if ! quietc "./$file"; then
+        qstep "exec $file"
+        if ! quietc "${RUNFILE_PREFIX[@]}" "./$file"; then
             [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
         fi
     else
-        estep "ignore $file"
+        qstep "ignore $file"
     fi
 }
 function runfile() {
@@ -159,6 +160,7 @@ clean_import_log=
 step_dl=
 Timestamp=
 ForceDlSums=
+Clean=1
 step_checkao=
 Klone=
 UpdateAo=1
@@ -168,7 +170,7 @@ step_import_bin=
 step_import_json=
 step_runao=
 SelectAo=
-Clean=1
+step_notifao=
 args=(
     "télécharger les dumps"
     --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
@@ -189,18 +191,20 @@ args=(
     --import-json step_import_json=1 "++Importer seulement les dumps .json"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
+    --notifao step_notifao=1 "++Exécuter les notifications à la fin de l'import"
 )
 parse_args "$@"; set -- "${args[@]}"
 
 keep_import_log=1
 [ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
-if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" ]; then
+if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_notifao" ]; then
     keep_import_log=
     step_dl=1
     step_checkao=1
     step_import_bin=1
     step_import_json=1
     step_runao=1
+    step_notifao=1
 fi
 [ -n "$step_import_bin" -o -n "$step_import_json" ] && step_import=1
 [ -n "$step_runao" ] && step_checkao=1
@@ -210,9 +214,10 @@ yes) keep_import_log=;;
 no) keep_import_log=1;;
 esac
 
+setx DATE_DEB=date +"%F %T"; export DATE_DEB
 quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
 ================================================================================"
-qstep "Début de l'import le $(date +"%F %T")"
+qstep "Début de l'import le $DATE_DEB"
 
 if [ -z "$DRE_PREFIX" ]; then
     DRE_PREFIX="${DRE_URL}"
@@ -488,7 +493,7 @@ fi
 
 if [ -n "$step_import_bin" ]; then
     etitle "Importation des schémas (pgsql)"
-    for schema in "${FORCE_CREATE_SCHEMAS[@]}"; do
+    for schema in "${VxxFIX_FC[@]}"; do
         schema="schema_${schema#schema_}"
         qstep "$schema: create schema"
         runsql "\
@@ -566,7 +571,7 @@ if [ -n "$step_runao" ]; then
 
     have_ignore_errors=
     for addon in "${ADDONS[@]}"; do
-        etitle "$addon"; quietc_echo "* install $addon"
+        etitle "$addon"; quietc_echo "** install $addon"
         if [[ "$addon" == *:* ]]; then
             aodir="${addon%:*}"
             vxx="${addon##*:}"
@@ -684,6 +689,34 @@ if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
     eend
 fi
 
+setx DATE_FIN=date +"%F %T"; export DATE_FIN
 if [ -n "$step_import" ]; then
-    qstep "Fin de l'import le $(date +"%F %T")"
+    qstep "Fin de l'import le $DATE_FIN"
+fi
+
+if [ -n "$step_notifao" ]; then
+    etitle "Lancement des notifications"
+    runsql_ignore_errors 1
+    if [ -n "$NOTIF_TIMEOUT" ]; then
+        RUNFILE_PREFIX=(timeout)
+        if [ -n "$NOTIF_TIMEOUT_KILL" ]; then
+            RUNFILE_PREFIX+=(-k "$NOTIF_TIMEOUT_KILL")
+        fi
+        RUNFILE_PREFIX+=("$NOTIF_TIMEOUT")
+    fi
+    for addon in "${ADDONS[@]}"; do
+        if [[ "$addon" == *:* ]]; then
+            aodir="${addon%:*}"
+            vxx="${addon##*:}"
+        else
+            aodir="$addon"
+            vxx=
+        fi
+        [ -d "$aodir/notifications" ] || continue
+
+        etitle "$addon"; quietc_echo "** notifications $addon"
+        rundir "$aodir/notifications"
+        eend
+    done
+    eend
 fi
