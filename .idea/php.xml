@@ -26,6 +26,15 @@
       <path value="$PROJECT_DIR$/sbin/vendor/dflydev/dot-access-data" />
       <path value="$PROJECT_DIR$/sbin/vendor/league/commonmark" />
       <path value="$PROJECT_DIR$/sbin/vendor/league/config" />
+      <path value="$PROJECT_DIR$/sbin/vendor/symfony/var-exporter" />
+      <path value="$PROJECT_DIR$/sbin/vendor/symfony/cache-contracts" />
+      <path value="$PROJECT_DIR$/sbin/vendor/symfony/expression-language" />
+      <path value="$PROJECT_DIR$/sbin/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/sbin/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/sbin/vendor/symfony/cache" />
+      <path value="$PROJECT_DIR$/sbin/vendor/phpmailer/phpmailer" />
+      <path value="$PROJECT_DIR$/sbin/vendor/psr/cache" />
+      <path value="$PROJECT_DIR$/sbin/vendor/psr/container" />
     </include_path>
   </component>
   <component name="PhpProjectServersManager">

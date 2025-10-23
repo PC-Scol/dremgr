@@ -7,7 +7,7 @@ SCHEMAS=()
 # les valeurs acceptées sont
 # all -- n'importe quelle version de la base DRE
 # vxx -- la version xx si le répertoire correspondant ou inférieur existe
-COMPAT=vxx
+COMPAT=all
 
 # Faut-il ignorer les erreurs lors de l'exécution des scripts de cet addon?
 IGNORE_ERRORS=
