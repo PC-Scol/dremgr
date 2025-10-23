@@ -74,7 +74,7 @@ function build_check_env() {
             if template_copy_missing "$PROJDIR/$file"; then
                 updated=1
                 setx name=basename -- "$file"
-                name="${name#.}"; name="${name%.}"
+                name="${name#.}"; name="${name%.*}"
                 setx file=dirname -- "$file"
                 file="$file/$name"
                 updatedfiles+=("$file")
@@ -86,7 +86,7 @@ function build_check_env() {
                 if template_copy_missing "$file"; then
                     updated=1
                     setx name=basename -- "$file"
-                    name="${name#.}"; name="${name%.}"
+                    name="${name#.}"; name="${name%.*}"
                     setx file=dirname -- "$file"
                     file="$file/$name"
                     updatedfiles+=("${file#$PROJDIR/}")

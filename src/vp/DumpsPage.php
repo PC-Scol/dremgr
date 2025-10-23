@@ -174,12 +174,13 @@ class DumpsPage extends ANavigablePage {
           "Date" => $yfile["mtime"]->format(),
         ];
       },
-      "after_table" => [
+      "after_table" => v::div([
+        "class" => "alert alert-info",
         "Taille totale: ", num::format_size($totalSize),
         "<br/>En tenant compte de CRON_MAX_AGE, il faut prévoir ",
         num::format_size($totalSize * $this->maxAge),
         " pour garder une copie de tous les fichiers de dumps",
-      ],
+      ]),
       "autoprint" => true,
     ]);
 

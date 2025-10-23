@@ -9,10 +9,10 @@
 		}
 	],
 	"require": {
-		"nulib/base": "^0.6.0p74",
-		"nur/ture": "^0.6.0p74",
+		"nulib/base": "^0.7.0p82",
+		"nur/ture": "^0.7.0p82",
 		"league/commonmark": "^2.7.0",
-		"php": "^7.4"
+		"php": "^8.2"
 	},
 	"autoload": {
 		"psr-4": {

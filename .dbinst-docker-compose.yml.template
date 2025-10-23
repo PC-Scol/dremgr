@@ -36,7 +36,7 @@ services:
     restart: always
 
   cron:
-    image: @@PRIVAREG@@dremgr/db
+    image: @@PRIVAREG@@dremgr/cron
     env_file:
       - .proxy.env
       - .defaults.env

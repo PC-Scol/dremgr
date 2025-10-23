@@ -2,18 +2,23 @@
 ARG REGISTRY=pubdocker.univ-reunion.fr
 FROM $REGISTRY/src/base AS base
 FROM $REGISTRY/src/php AS php
+FROM $REGISTRY/src/postgres AS postgres
 
-FROM debian:12-slim
+FROM postgres:15-bookworm
 
 COPY --from=base /g/ /g/
 ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
 ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
 RUN /g/build
+RUN /g/pkg i @ssl @git
 
 COPY --from=php /g/ /g/
-RUN /g/build -a @php-apache-cas php-utils
+RUN /g/build @php-cli php-utils
 
-#RUN /g/php-exts/enable-xdebug
+COPY --from=postgres /g/ /g/
+RUN /g/build @postgres
 
-EXPOSE 80
+COPY config/dremgr/ /g/dremgr/
+RUN /g/build dremgr
+
 ENTRYPOINT ["/g/entrypoint"]
