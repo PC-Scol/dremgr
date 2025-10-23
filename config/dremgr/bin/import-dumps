@@ -157,17 +157,17 @@ function add2dl_files() {
 }
 
 clean_import_log=
+step_checkao=
+Klone=
+UpdateAo=1
 step_dl=
 Timestamp=
 ForceDlSums=
 Clean=1
-step_checkao=
-Klone=
-UpdateAo=1
-MinimizeDowntime="$MINIMIZE_DOWNTIME"
 step_import=
 step_import_bin=
 step_import_json=
+MinimizeDowntime="$MINIMIZE_DOWNTIME"
 step_runao=
 SelectAo=
 step_notifao=
@@ -175,20 +175,20 @@ args=(
     "télécharger les dumps"
     --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
     --keep-import-log clean_import_log=no "++Interdire le vidage du fichier import.log avant de démarrer"
+    --checkao step_checkao=1 "++Vérifier les addons"
+    --klone Klone=1 "++Refaire le clone des dépôts des addons au lieu de simplement les mettre à jour
+(c'est parfois nécessaire parce que la mise à jour ne se fait pas correctement)"
+    -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
-    --checkao step_checkao=1 "++Vérifier les addons"
-    --klone Klone=1 "++Refaire le clone des dépôts des addons au lieu de simplement les mettre à jour
-(c'est parfois nécessaire parce que la mise à jour ne se fait pas correctement)"
-    -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
-    --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
-    --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
     --import step_import=1 "++Importer tous les dumps"
     --import-bin step_import_bin=1 "++Importer seulement les dumps .bin et le fichier DRE_VERSION"
     --import-json step_import_json=1 "++Importer seulement les dumps .json"
+    --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
+    --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
     --notifao step_notifao=1 "++Exécuter les notifications à la fin de l'import"
@@ -197,10 +197,10 @@ parse_args "$@"; set -- "${args[@]}"
 
 keep_import_log=1
 [ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
-if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_notifao" ]; then
+if [ -z "$step_checkao" -a -z "$step_dl" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_notifao" ]; then
     keep_import_log=
-    step_dl=1
     step_checkao=1
+    step_dl=1
     step_import_bin=1
     step_import_json=1
     step_runao=1
@@ -227,6 +227,7 @@ function critical() {
 function at_exit() {
     [ -n "$step_notifao" ] || return 0
     etitle "Lancement des notifications"
+
     runsql_ignore_errors 1
     if [ -n "$NOTIF_TIMEOUT" ]; then
         RUNFILE_PREFIX=(timeout)
@@ -256,76 +257,6 @@ trap at_exit EXIT
 quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
 ================================================================================"
 qstep "Début de l'import le $DATE_DEB"
-
-if [ -z "$DRE_PREFIX" ]; then
-    DRE_PREFIX="${DRE_URL}"
-    DRE_PREFIX="${DRE_PREFIX#https://dre-dump.}"
-    DRE_PREFIX="${DRE_PREFIX%/*}"
-    DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
-    [ "$APP_PROFILE" == prod ] && DRE_PREFIX="prod-$DRE_PREFIX"
-fi
-
-cd "$DLDIR"
-[ -n "$Timestamp" ] && Clean=
-if [ "$Timestamp" == latest ]; then
-    # prendre le dernier fichier checksums. utile pour --runao
-    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
-    Timestamp="${latest#checksums-}"
-    enote "Autosélection de -@ $Timestamp"
-fi
-if [ -z "$Timestamp" ]; then
-    if [ -n "$V29FIX_DY" ]; then
-        setx Timestamp=awk 'BEGIN { print strftime("%Y%m%d", mktime(strftime("%Y %m %d 00 00 00")) - 86400); }'
-        enote "Sélection de -@ $Timestamp (v29fix_dy)"
-    else
-        setx Timestamp=date +%Y%m%d
-    fi
-fi
-sums="checksums-$Timestamp"
-version="DRE_VERSION_$Timestamp"
-
-if [ -n "$step_dl" ]; then
-    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
-
-    if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
-        qstep "dl $sums"
-        dl "$sums" || critical
-    fi
-    ac_set_tmpfile Tmpsums
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
-
-    if [ ! -f "$version" ]; then
-        qstep "dl $version"
-        dl "$version" || critical
-    fi
-    for file in "${DL_FILES[@]}"; do
-        if [ ! -f "$file" ]; then
-            qstep "dl $file"
-            dl "$file" || critical
-        fi
-    done
-
-    qstep "Vérifications des sommes de contrôle"
-    sha256sum --status -c "$Tmpsums" || critical
-
-    if [ -n "$Clean" ]; then
-        qstep "Nettoyage des fichiers obsolètes"
-        age="${CRON_MAX_AGE:-30}"
-        find -name "checksums-*" -mtime "+$age" -delete
-        find -name "DRE_VERSION_*" -mtime "+$age" -delete
-        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
-    fi
-elif [ -f "$sums" ]; then
-    Tmpsums=
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
-else
-    critical "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
-fi
-
-estep "Calcul de la version"
-eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
 
 if [ -n "$step_checkao" ]; then
     estep "Vérification des addons"
@@ -425,6 +356,102 @@ if [ -n "$step_checkao" ]; then
         fi
     fi
 
+    # Lister les addons pour permettre les notifications si nécessaire
+    ADDONS=()
+    for aoname in dreaddon-local "${aonames[@]}"; do
+        [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
+        if [ "${aoname#dreaddon-}" != "$aoname" -a -d "$APPDIR/$aoname" ]; then
+            aodir="$APPDIR/$aoname"
+        elif [ -d "$AODIR/$aoname" ]; then
+            aodir="$AODIR/$aoname"
+        else
+            eerror "$aoname: addon introuvable"
+            continue
+        fi
+
+        if [ ! -f "$aodir/dreaddon.conf" ]; then
+            ewarn "$aodir: n'est pas un répertoire d'addons"
+            continue
+        fi
+
+        ADDONS+=("$aodir")
+    done
+fi
+
+if [ -z "$DRE_PREFIX" ]; then
+    DRE_PREFIX="${DRE_URL}"
+    DRE_PREFIX="${DRE_PREFIX#https://dre-dump.}"
+    DRE_PREFIX="${DRE_PREFIX%/*}"
+    DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
+    [ "$APP_PROFILE" == prod ] && DRE_PREFIX="prod-$DRE_PREFIX"
+fi
+
+cd "$DLDIR"
+[ -n "$Timestamp" ] && Clean=
+if [ "$Timestamp" == latest ]; then
+    # prendre le dernier fichier checksums. utile pour --runao
+    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
+    Timestamp="${latest#checksums-}"
+    enote "Autosélection de -@ $Timestamp"
+fi
+if [ -z "$Timestamp" ]; then
+    if [ -n "$V29FIX_DY" ]; then
+        setx Timestamp=awk 'BEGIN { print strftime("%Y%m%d", mktime(strftime("%Y %m %d 00 00 00")) - 86400); }'
+        enote "Sélection de -@ $Timestamp (v29fix_dy)"
+    else
+        setx Timestamp=date +%Y%m%d
+    fi
+fi
+sums="checksums-$Timestamp"
+version="DRE_VERSION_$Timestamp"
+
+if [ -n "$step_dl" ]; then
+    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
+
+    if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
+        qstep "dl $sums"
+        dl "$sums" || critical
+    fi
+    ac_set_tmpfile Tmpsums
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
+
+    if [ ! -f "$version" ]; then
+        qstep "dl $version"
+        dl "$version" || critical
+    fi
+    for file in "${DL_FILES[@]}"; do
+        if [ ! -f "$file" ]; then
+            qstep "dl $file"
+            dl "$file" || critical
+        fi
+    done
+
+    qstep "Vérifications des sommes de contrôle"
+    sha256sum --status -c "$Tmpsums" ||
+        critical "Une erreur s'est produite lors de la vérification des sommes de contrôle"
+
+    if [ -n "$Clean" ]; then
+        qstep "Nettoyage des fichiers obsolètes"
+        age="${CRON_MAX_AGE:-30}"
+        find -name "checksums-*" -mtime "+$age" -delete
+        find -name "DRE_VERSION_*" -mtime "+$age" -delete
+        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
+    fi
+elif [ -f "$sums" ]; then
+    Tmpsums=
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
+else
+    critical "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
+fi
+
+estep "Calcul de la version"
+eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
+
+if [ -n "$step_checkao" ]; then
+    # Refaire la liste des addons en tenant compte de la version
+    estep "Calcul de la compatibilité des addons"
     ADDONS=()
     for aoname in dreaddon-local "${aonames[@]}"; do
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
