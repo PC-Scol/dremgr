@@ -23,7 +23,7 @@ services:
       - dremgr.env
       - .forced.env
     volumes:
-      - ./var/pgadmindata:/var/lib/pgadmin
+      - @@DATADIR@@/pgadmindata:/var/lib/pgadmin
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     restart: always
@@ -44,7 +44,7 @@ services:
       - ./config/apache:/apache-config
       - ./config/php:/php-config
       - ./config/ssl:/ssl-config
-      @@FOR:APP_PROFILES@@- ./var/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
+      @@FOR:APP_PROFILES@@- @@DATADIR@@/@@APP_PROFILE@@-dredata:/data/@@APP_PROFILE@@
     networks:
       default:
     #@@IF:LBNET@@  @@LBNET@@:

@@ -74,11 +74,9 @@ function pgbouncer_prompt() {
     if dcrunning "${composefiles[@]}"; then
         estep "Invite pgbouncer"
         eval "$(
-          source "$DREMGR/.defaults.env"
-          source "$DREMGR/dremgr.env"
-          source "$DREMGR/.forced.env"
-          echo "local user password"
-          echo_setv user="$PGBOUNCER_ADMIN_USER"; echo_setv password="$PGBOUNCER_ADMIN_PASS"
+          load_envfiles
+          echo_setv "local user=$PGBOUNCER_ADMIN_USER"
+          echo_setv "local password=$PGBOUNCER_ADMIN_PASS"
         )"
         docker compose "${composeargs[@]}" exec pgbouncer psql -d "dbname=pgbouncer user=$user password=$password" "$@" || die
     else
@@ -86,6 +84,9 @@ function pgbouncer_prompt() {
     fi
 }
 
+Profile=
+ForceStart=
+Recreate=
 action=auto
 Rebuild=
 args=(
@@ -101,18 +102,17 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-[ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
-eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
+setx envfile=get_envfile
+[ -f "$envfile" ] || die "$(ppath "$envfile"): fichier introuvable"
+load_envs APP_PROFILES DATADIR
 [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
 IS_DBFRONT=1
 run_check_env || exit 0
+
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
-Profile=
-ForceStart=
-Recreate=
 ensure_dirs
 
 case "$action" in

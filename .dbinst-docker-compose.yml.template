@@ -13,16 +13,16 @@ services:
     env_file:
       - .proxy.env
       - .defaults.env
-      - @@Profile@@_profile.env
+      - @@DATADIR@@/@@Profile@@-dredata/profile.env
       - .forced.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
     shm_size: 1G
     volumes:
-      - ./var/@@Profile@@-run:/run/postgresql
-      - ./var/@@Profile@@-dredata/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./var/@@Profile@@-pgdata:/var/lib/postgresql/data
+      - @@DATADIR@@/@@Profile@@-run:/run/postgresql
+      - @@DATADIR@@/@@Profile@@-dredata/postgresql.conf:/etc/postgresql/postgresql.conf
+      - @@DATADIR@@/@@Profile@@-pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
@@ -40,7 +40,7 @@ services:
     env_file:
       - .proxy.env
       - .defaults.env
-      - @@Profile@@_profile.env
+      - @@DATADIR@@/@@Profile@@-dredata/profile.env
       - .forced.env
     environment:
       <<: *db-environment
@@ -59,10 +59,10 @@ services:
     command: cron
     volumes:
       - .:/app/dremgr
-      - ./var/@@Profile@@-run:/run/postgresql
-      - ./var/@@Profile@@-dredata/cron-config:/cron-config
-      - ./var/@@Profile@@-dredata:/data/dre
-      #@@IF:DlProfile@@- ./var/@@DlProfile@@-dredata/downloads:/data/dre/downloads
+      - @@DATADIR@@/@@Profile@@-run:/run/postgresql
+      - @@DATADIR@@/@@Profile@@-dredata/cron-config:/cron-config
+      - @@DATADIR@@/@@Profile@@-dredata:/data/dre
+      #@@IF:DlProfile@@- @@DATADIR@@/@@DlProfile@@-dredata/downloads:/data/dre/downloads
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:

@@ -154,6 +154,20 @@ informations à l'utilisateur.
 : Nombre de jours au terme duquel un fichier téléchargé est supprimé. Par
   défaut, ne garder que les 15 derniers jours
 
+`NOTIF_TIMEOUT`
+`NOTIF_TIMEOUT_KILL`
+: S'il est défini, le premier paramètre est le temps maximum alloué à
+  l'exécution de chaque notification en fin d'import. Si le temps d'exécution
+  alloué est dépassé, le script reçoit un signal pour s'arrêter proprement.
+
+  Si le deuxième paramètre est défini, et que le script ne s'arrête pas après
+  le premier signal, attendre encore ce temps-là avant de forcer son arrêt
+
+`HOST_MAPPINGS`
+: Liste de mappings d'hôte à installer dans le container, un par ligne
+
+  Les mappings sont au format docker, i.e `cas.univ.tld:10.50.20.30`
+
 <a name="minimize_downtine"></a>
 `MINIMIZE_DOWNTINE`
 : Si ce paramètre est activé, l'importation des dumps et des addons se fait de
@@ -179,20 +193,6 @@ informations à l'utilisateur.
   * Désactiver cette fonctionnalité (i.e `MINIMIZE_DOWNTINE=`) mais le temps
     d'indisponibilité va de 10 à 15 minutes voire plus en fonction du nombre
     d'addons et de la quantité de données.
-
-`NOTIF_TIMEOUT`
-`NOTIF_TIMEOUT_KILL`
-: S'il est défini, le premier paramètre est le temps maximum alloué à
-  l'exécution de chaque notification en fin d'import. Si le temps d'exécution
-  alloué est dépassé, le script reçoit un signal pour s'arrêter proprement.
-
-  Si le deuxième paramètre est défini, et que le script ne s'arrête pas après
-  le premier signal, attendre encore ce temps-là avant de forcer son arrêt
-
-`HOST_MAPPINGS`
-: Liste de mappings d'hôte à installer dans le container, un par ligne
-
-  Les mappings sont au format docker, i.e `cas.univ.tld:10.50.20.30`
 
 **Paramètres partagés**
 

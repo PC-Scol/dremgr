@@ -41,8 +41,10 @@ function start_dbinst() {
     done
 
     estep "Démarrage de DRE [$Profile]"
-    rsync -rLpt "$DREMGR/config/cron/" "$DREDATA/cron-config/"
-    rsync -Lpt "$pgconf" "$DREDATA/postgresql.conf"
+    local dredata="$DATADIR/${Profile}-dredata"
+    rsync -Lpt "$Envfile" "$dredata/profile.env"
+    rsync -Lptr "$DREMGR/config/cron/" "$dredata/cron-config/"
+    rsync -Lpt "$pgconf" "$dredata/postgresql.conf"
     docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 }
 
@@ -212,17 +214,17 @@ case "$MYNAME" in
 *_dbinst) Profile="${MYNAME%_dbinst}";;
 *)
     Profile=prod
-    if [ -f "$DREMGR/dremgr.env" ]; then
-        eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
-        if [ -n "$APP_PROFILES" ]; then
-            read -a profiles <<<"${APP_PROFILES//
+    load_envs APP_PROFILES
+    if [ -n "$APP_PROFILES" ]; then
+        read -a profiles <<<"${APP_PROFILES//
 / }"
-            Profile="${profiles[0]}"
-        fi
+        Profile="${profiles[0]}"
     fi
     ;;
 esac
 
+ForceStart=
+Recreate=
 action=auto
 Rebuild=
 args=(
@@ -230,8 +232,7 @@ args=(
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     -g:,--profile:PROFILE Profile= "\
-++Spécifier le profil. Un fichier de configuration PROFILE_profile.env doit exister.
-Si cette option n'est pas spécifiée, le profil sélectionné par défaut est $Profile"
+++Spécifier le profil. La valeur par défaut est $Profile"
     -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans dremgr.env"
     -P,--prod Profile=prod "++alias pour --profile prod"
     -T,--test Profile=test "++alias pour --profile test"
@@ -272,12 +273,10 @@ db est le nom de la base de données à restaurer et vaut par défaut pdata"
 parse_args "$@"; set -- "${args[@]}"
 
 if [ "$Profile" == ALL ]; then
-    [ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
-    eval "$(
-        source "$DREMGR/dremgr.env"
-        echo_setv APP_PROFILES="$APP_PROFILES"
-        echo_setv APP_PROFILES_AUTO="$APP_PROFILES_AUTO"
-    )"
+    Profile=
+    setx Envfile=get_envfile
+    [ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
+    load_envs APP_PROFILES APP_PROFILES_AUTO
     [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(
@@ -305,20 +304,22 @@ if [ "$Profile" == ALL ]; then
     exit
 fi
 
+# pour des raisons pratiques, --profile peut désigner le fichier de
+# configuration
 Profile="${Profile##*/}"
 Profile="${Profile%_profile.env}"
-envfile="$DREMGR/${Profile}_profile.env"
-DREDATA="$DREMGR/var/${Profile}-dredata"
+
+setx Envfile=get_envfile
+[ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
+load_envs APP_PROFILES DATADIR
+[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
 IS_DBINST=1
 run_check_env || exit 22
-[ -f "$envfile" ] || die "$Profile: profil invalide (${envfile#$DREMGR/}: fichier de profil introuvable)"
 
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
-ForceStart=
-Recreate=
 ensure_dirs
 
 case "$action" in
