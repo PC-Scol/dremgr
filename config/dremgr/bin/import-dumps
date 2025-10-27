@@ -215,11 +215,13 @@ no) keep_import_log=1;;
 esac
 
 setx DATE_DEB=date +"%F %T"; export DATE_DEB
+export DATE_FIN=
 export TEM_DOWNLOAD="$step_dl"
 export TEM_IMPORT="$step_import"
 export TEM_ADDONS="$step_runao"
 export CRITICAL_ERROR=
 export HAVE_ERRORS=
+export IMPORT_LOG="$APP_DATADIR/import.log"
 function critical() {
     CRITICAL_ERROR=1
     die "$@"
@@ -254,7 +256,7 @@ function at_exit() {
 }
 trap at_exit EXIT
 
-quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
+quietc_logto ${keep_import_log:+-a} "$IMPORT_LOG" "\
 ================================================================================"
 qstep "Début de l'import le $DATE_DEB"
 
@@ -755,7 +757,7 @@ if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
     eend
 fi
 
-setx DATE_FIN=date +"%F %T"; export DATE_FIN
+setx DATE_FIN=date +"%F %T"
 if [ -n "$step_import" ]; then
     qstep "Fin de l'import le $DATE_FIN"
 fi

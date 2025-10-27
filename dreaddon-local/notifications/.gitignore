@@ -1,2 +1,5 @@
 /*
 !/.gitignore
+!/sendmails.php
+!/.sendmails.yml.dist
+!/notify.sh
