@@ -423,11 +423,11 @@
         },
         {
             "name": "nulib/base",
-            "version": "0.7.1p82",
+            "version": "0.7.2p82",
             "source": {
                 "type": "git",
                 "url": "https://git.univ-reunion.fr/sda-php/nulib-base.git",
-                "reference": "3a5bdec643542963a6a9f0e5e581d0be694be7d3"
+                "reference": "6f277602054efea5bcd09472377ea4a43913ee33"
             },
             "require": {
                 "ext-json": "*",
@@ -485,7 +485,7 @@
                 }
             ],
             "description": "fonctions et classes essentielles",
-            "time": "2025-10-23T06:28:58+00:00"
+            "time": "2025-10-28T01:36:11+00:00"
         },
         {
             "name": "nur/ture",
