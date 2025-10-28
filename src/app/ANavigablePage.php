@@ -69,7 +69,6 @@ class ANavigablePage extends NavigablePage {
     }
     $dl = $files[$dl];
     if ($dl["isa_file"]) {
-      error_log($dldir); #XX
       # c'est un fichier
       $file = $dl["name"];
       header("x-sendfile: $dldir/$file");

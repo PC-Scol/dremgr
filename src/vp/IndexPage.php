@@ -37,7 +37,8 @@ class IndexPage extends ANavigablePage {
 
   const INST_VARS = [
     "host" => "POSTGRES_HOST",
-    "port" => "DBPORT",
+    # le port est toujours 5432 puisqu'on est en direct
+    "port" => 5432, #"DBPORT",
     "dbname" => "DBNAME",
     "user" => "POSTGRES_USER",
     "password" => "POSTGRES_PASSWORD",
