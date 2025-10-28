@@ -7,12 +7,12 @@ source "$DREMGR/sbin/vendor/nulib/base/load.sh" || exit 1
 source "$DREMGR/sbin/functions.sh" || exit 1
 
 function all() {
-    if [ -n "$Front" ]; then
+    if [ -n "$MODE_SIMPLE" ]; then
+        "$DREMGR/dbinst" ${Rebuild:+-b} "$@"
+    else
         "$DREMGR/webfront" ${Rebuild:+-b} "$@" &&
         "$DREMGR/dbfront" "$@" &&
         "$DREMGR/dbinst" -A "$@"
-    else
-        "$DREMGR/dbinst" ${Rebuild:+-b} "$@"
     fi
 }
 
@@ -29,11 +29,12 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-Front=
-if [ -f "$DREMGR/dremgr.env" ]; then
-    eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
-    [ -n "$APP_PROFILES" ] && Front=1
-fi
+run_check_env || exit 0
+
+setx Envfile=get_envfile
+[ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
+load_envs APP_PROFILES MODE_SIMPLE
+[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
 case "$action" in
 start) all -s "$@";;

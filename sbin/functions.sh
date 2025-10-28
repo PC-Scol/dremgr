@@ -16,6 +16,25 @@ if [ ! -f "$DREMGR/.proxy.env" ]; then
     done
 fi
 
+function verifix_mode() {
+    # définir plusieurs profils désactive automatiquement le mode simple
+    local -a profiles
+    read -a profiles <<<"${APP_PROFILES//
+/ }"
+    [ ${#profiles[*]} -gt 1 ] && MODE_SIMPLE=
+
+    # dans le mode simple, DBNET est supprimé, et INST_PORT est initialisé si
+    # nécessaire
+    local profile inst_port
+    if [ -n "$MODE_SIMPLE" ]; then
+        DBNET=
+        profile="${profiles[0]}"
+        inst_port="${profile}_INST_PORT"
+        [ -n "${!inst_port}" ] || eval "$inst_port=$DBPORT"
+        [ -n "$INST_PORT" ] || INST_PORT="$DBPORT"
+    fi
+}
+
 function get_envfile() {
     if [ -n "$Profile" -a -f "$DREMGR/${Profile}_profile.env" ]; then
         echo "$DREMGR/${Profile}_profile.env"
@@ -38,6 +57,7 @@ function load_envfiles() {
 function load_envs() {
     eval "$(
         load_envfiles
+        verifix_mode
         for param in "$@"; do
             if [ "$param" == DATADIR ]; then
                 setx DATADIR=abspath "$DATADIR" "$DREMGR"
@@ -137,13 +157,10 @@ function template_dump_vars() {
 }
 
 function template_source_envs() {
-    local -a source_envs
+    local -a source_envs; local envfile
     source_envs=("$DREMGR/build.env" "$DREMGR/.defaults.env")
-    if [ -n "$Profile" -a -f "$DREMGR/${Profile}_profile.env" ]; then
-        source_envs+=("$DREMGR/${Profile}_profile.env")
-    elif [ -f "$DREMGR/dremgr.env" ]; then
-        source_envs+=("$DREMGR/dremgr.env")
-    fi
+    setx envfile=get_envfile
+    [ -f "$envfile" ] && source_envs+=("$envfile")
     source_envs+=("$DREMGR/.forced.env")
     _template_source_envs "${source_envs[@]}"
     template_vars+=(DlProfile IS_DBINST IS_DBFRONT IS_WEBFRONT)
@@ -159,13 +176,14 @@ function template_source_envs() {
         done
     fi
 
-    # fix pour certaines variables
+    ## fix pour certaines variables
     DlProfile="$DRE_FILES_FROM"
     [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
     [ -n "$LBVIP" ] && LBVIP="$LBVIP:"
     [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"
     [ -n "$PRIVAREG" ] && PRIVAREG="${PRIVAREG%/}/"
     [ "${DATADIR#/}" == "$DATADIR" ] && DATADIR="./$DATADIR"
+    verifix_mode
 }
 
 function build_check_env() {
@@ -185,11 +203,12 @@ ENSUITE, vous pourrez relancer la commande"
 
 function run_check_env() {
     eval "$(template_locals)"
-    local -a filter files; local file
+    local -a filter files; local file envfile
 
     # si le fichier d'environnement n'existe pas, il faudra le configurer
     local please_configure
-    [ -f dremgr.env ] || please_configure=1
+    Profile= setx envfile=get_envfile
+    [ -f "$envfile" ] || please_configure=1
 
     # les fichiers .*.template sont systématiquement recréés
     filter=(
@@ -221,8 +240,9 @@ function run_check_env() {
     template_process_userfiles
 
     if [ -n "$updated" -a -n "$please_configure" ]; then
-        enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier dremgr.env
-    ${EDITOR:-nano} dremgr.env
+        setx envfile=basename "$envfile"
+        enote "IMPORTANT: Veuillez faire le paramétrage en éditant le fichier $envfile
+    ${EDITOR:-nano} $envfile
 ENSUITE, vous pourrez relancer la commande"
         return 1
     fi

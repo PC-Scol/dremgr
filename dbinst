@@ -272,12 +272,21 @@ db est le nom de la base de données à restaurer et vaut par défaut pdata"
 )
 parse_args "$@"; set -- "${args[@]}"
 
+# pour des raisons pratiques, --profile peut désigner le fichier de
+# configuration
+Profile="${Profile##*/}"
+Profile="${Profile%_profile.env}"
+
+IS_DBINST=1
+run_check_env || exit 22
+
+setx Envfile=get_envfile
+[ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
+load_envs APP_PROFILES APP_PROFILES_AUTO DATADIR
+[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
+
 if [ "$Profile" == ALL ]; then
     Profile=
-    setx Envfile=get_envfile
-    [ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
-    load_envs APP_PROFILES APP_PROFILES_AUTO
-    [ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
 
     args=(
         ${Rebuild:+--rebuild}
@@ -303,19 +312,6 @@ if [ "$Profile" == ALL ]; then
     done
     exit
 fi
-
-# pour des raisons pratiques, --profile peut désigner le fichier de
-# configuration
-Profile="${Profile##*/}"
-Profile="${Profile%_profile.env}"
-
-setx Envfile=get_envfile
-[ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
-load_envs APP_PROFILES DATADIR
-[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
-
-IS_DBINST=1
-run_check_env || exit 22
 
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
