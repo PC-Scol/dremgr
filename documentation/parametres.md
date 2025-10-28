@@ -6,15 +6,38 @@ nécessaires à dremgr
 `dbinst`, `dbfront` et `webfront` ont besoin de certains paramètres pour
 démarrer les services associés
 
-Ces paramètres sont cherchés dans des fichiers dont le nom est normalisés
+Ces paramètres sont cherchés dans le fichier de configuration `dremgr.env`
 
 ## Paramètres communs
 
-Chaque instance correspond à un profil nommé. Les paramètres de chaque instance
-sont lus dans un fichier de la forme `<profil>_profile.env`
+**Paramètres courants**
 
-Dans le mode simple, le nom du profil est fixé: c'est `prod`, ainsi les
-paramètres sont lus dans le fichier `prod_profile.env`
+`APP_PROFILES`
+: Liste des profils supportés. Chaque profil permet de piloter une instance de
+  base de données
+
+  pour chacune des variables listées dans `APP_PROFILE_VARS`, et pour chaque
+  profil, un calcul est effectuée pour déterminer la valeur effective.
+
+  prenons par exemple une variable nommé `MAVAR`, et le profil `prod`
+  * si la variable `prod_MAVAR` existe, c'est cette valeur qui est sélectionnée
+  * sinon, c'est la valeur de la variable `MAVAR` qui est sélectionnée
+
+`APP_PROFILES_AUTO`
+: Liste des profils à considérer en mode "automatique"
+
+  Si ce paramètre est défini, `dbinst -A` effectue l'opération demandée sur tous
+  les profils spécifiés pour les actions suivantes: import, invite sql, invite
+  shell. Sinon, faire l'opération sur tous les profils listés dans
+  `APP_PROFILES`
+
+`MODE_SIMPLE`
+: Définir ce paramètre pour activer le mode simple. Si plusieurs profils sont
+  définis, le mode simple est automatiquement désactivé.
+
+  Dans le mode simple, la valeur du paramètre DBNET est ignorée, et INST_PORT
+  est initialisé à la valeur de DBPORT. Cela permet de passer facilement d'un
+  mode à l'autre sans trop de modifications.
 
 **Récupération des données chez PC-SCOL**
 
@@ -35,8 +58,8 @@ paramètres sont lus dans le fichier `prod_profile.env`
   `DOMAINEETAB` pour les autres profils
 
   Attention! si vous utilisez le mode simple pour attaquer une instance qui
-  n'est PAS de production, il faut alors absolument définir ce paramètre, parce
-  que dans le mode simple, le nom du profil est fixé à `prod`
+  n'est PAS de production avec le nom de profil `prod`, il faut alors absolument
+  définir ce paramètre.
 
 `DRE_FILES_FROM`
 : Indiquer que le répertoire de téléchargement est celui du profil
@@ -51,23 +74,23 @@ paramètres sont lus dans le fichier `prod_profile.env`
   ~~~sh
   APP_PROFILES="prod devel"
   ...
-  prod_DRE_URL=https://dre-dump.univ-ville.pc-scol.fr
+  prod_DRE_URL=https://dre-dump.domainetab.pc-scol.fr
   prod_DRE_USER=dre
   prod_DRE_PASSWORD=z3Pass
   ...
   ADDON_URLS="
   # installer la branche main
-  https://git.univ-ville.fr/dreaddon-local.git
+  https://git.domainetab.fr/dreaddon-local.git
   "
   ...
   devel_DRE_URL="$prod_DRE_URL"
   devel_DRE_USER="$prod_DRE_USER"
   devel_DRE_PASSWORD="$prod_DRE_PASSWORD"
-  devel_DRE_PREFIX=prod-univ-ville
+  devel_DRE_PREFIX=prod-domainetab
   devel_DRE_FILES_FROM=prod
   devel_ADDON_URLS="
   # installer la branche develop sur l'instance devel
-  https://git.univ-ville.fr/dreaddon-local.git#develop
+  https://git.domainetab.fr/dreaddon-local.git#develop
   "
   ...
   ~~~
@@ -95,8 +118,11 @@ paramètres sont lus dans le fichier `prod_profile.env`
   est accessible sur toutes les interfaces réseaux. La valeur par défaut
   `127.0.0.1` n'autorise la connexion que depuis l'hôte local.
 
-  Si `INST_PORT` est vide, l'écoute directe est désactivée (utilisé uniquement
-  dans le mode avancé)
+  Si `INST_PORT` est vide, l'écoute directe est désactivée. Dans le mode avancé,
+  c'est normal parce que les instances sont accédées via le frontal pgbouncer.
+  Il n'y a donc généralement pas de raison pour activer un accès direct à
+  l'instance. Dans le mode simple, cette variable est automatiquement
+  provisionnée avec la valeur du paramètre `DBPORT`
 
 **Informations à afficher à l'utilisateur**
 
@@ -139,7 +165,7 @@ informations à l'utilisateur.
 : Planification cron pour le script d'import
 
   Les fichiers sont générés à 2h dans le fuseau de l'instance PEGASE, qui est
-  habituellement le fuseau locale. on planifie à 4h par défaut pour laisser le
+  habituellement le fuseau local. on planifie à 4h par défaut pour laisser le
   temps à l'export de se terminer (ce qui est largement suffisant)
 
   Bien entendu, si vous n'êtes pas en métropole, il faudra penser à demander au
@@ -199,14 +225,21 @@ informations à l'utilisateur.
 Le fichier livré contient des définitions permettant de changer en une seule
 fois certains paramètres:
 ~~~sh
-DBNET=
+DBNET=dremgr_db
 DBVIP=127.0.0.1
 DBHOST=localhost
 DBPORT=5432
 DBNAME=dre
+PDBNAME=pdata
 LBNET=
 LBHTTP=7081
 LBHTTPS=
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=XXX_valeur_aleatoire
+FE_USER=dreadmin
+FE_PASSWORD=XXX_valeur_aleatoire
+FE_USERS="reader:XXX_valeur_aleatoire"
+FE_ACCESS="reader:ro"
 ~~~
 
 Les valeurs partagées sont ensuite réutilisées ailleurs dans la configuration.
@@ -214,19 +247,26 @@ En temps normal, il n'est pas nécessaire de modifier ces valeurs:
 ~~~sh
 LBVIP="$DBVIP"
 LBHOST="$DBHOST"
-INST_VIP="$DBVIP"
-INST_PORT="$DBPORT"
-FE_HOST="$DBHOST"
-FE_PORT="$DBPORT"
-FE_DBNAME="$DBNAME"
+<profil>_INST_VIP="$DBVIP"
+<profil>_INST_PORT=
+<profil>_FE_HOST="$DBHOST"
+<profil>_FE_PORT="$DBPORT"
+<profil>_FE_DBNAME="<profil>_$DBNAME"
+__ALL__PGBOUNCER_DBS="$DBNAME $PDBNAME"
+PGBOUNCER_USERS="${FE_USER}:${FE_PASSWORD} ${FE_USERS}"
+PGADMIN_USER="$FE_USER"
+PGADMIN_PASSWORD="$FE_PASSWORD"
+ADMINER_USER="$FE_USER"
+ADMINER_PASSWORD="$FE_PASSWORD"
+ADMINER_DB="$DBNAME"
 ~~~
 
 `DBNET`
 : nom d'un réseau docker dans lequel doit tourner l'instance de la base de
-  données
+  données.
 
-  en mode simple, c'est une valeur vide parce que c'est inutile. cf ci-dessous
-  pour la valeur par défaut pour le mode avancé
+  le frontal web est aussi placé dans ce réseau afin de pouvoir afficher la
+  version et la date de la dernière importation de la base de données
 
 `DBVIP`
 : adresse d'écoute de la base de données
@@ -243,10 +283,11 @@ FE_DBNAME="$DBNAME"
   informations sont affichées à l'utilisateur par l'application web frontal
 
 `LBNET`
-: nom d'un réseau docker dans lequel doit tourner l'application web frontal
+: nom d'un réseau docker dans lequel doit tourner l'application web frontal.
+  il n'y a généralement pas de raison de mettre l'application dans un réseau
+  spécifique, sauf si elle doit être placée derrière un frontal tel que traefik
 
-  en mode simple, c'est une valeur vide parce que ce n'est pas utilisé. cf
-  ci-dessous pour la valeur par défaut pour le mode avancé
+  en mode simple, c'est une valeur vide parce que ce n'est pas utilisé.
 
 `LBVIP`
 : adresse d'écoute de l'application web frontal
@@ -274,109 +315,7 @@ FE_DBNAME="$DBNAME"
   d'actions supplémentaires à faire pour configurer l'accès. consultez à cet
   effet la [documentation d'installation avancée](03installation-avancee.md)
 
-**Paramètres privés non documentés**
-
-`PGDATABASE`
-`PGUSER`
-`APP_PROFILES`
-`APP_PROFILE_VARS`
-`POSTGRES_PROFILES`
-: Dans le mode simple, ne pas modifier ni supprimer la valeur de ces paramètres
-
-## Paramètres du mode avancé
-
-Dans le mode avancé, le fichier `dremgr.env` contient le paramètrage des
-profils. Ce même fichier peut regrouper les configurations de tous les profils,
-et ainsi les fichiers de profils peuvent être des liens symboliques vers
-`dremgr.env`
-
-Dans l'exemple suivant, `dremgr.env` contient la configuration pour les profils
-`prod` et `test`:
-~~~sh
-ln -s dremgr.env prod_profile.env
-ln -s dremgr.env test_profile.env
-~~~
-
-**Paramètres courants**
-
-`APP_PROFILES`
-: Liste des profils supportés. Chaque profil permet de piloter une instance de
-  base de données
-
-  pour chacune des variables listées dans `APP_PROFILE_VARS`, et pour chaque
-  profil, un calcul est effectuée pour déterminer la valeur effective.
-
-  prenons par exemple une variable nommé `MAVAR`, et le profil `prod`
-  * si la variable `prod_MAVAR` existe, c'est cette valeur qui est sélectionnée
-  * sinon, c'est la valeur de la variable `MAVAR` qui est sélectionnée
-
-`APP_PROFILES_AUTO`
-: Liste des profils à considérer en mode "automatique"
-
-  Si ce paramètre est défini, `dbinst -A` effectue l'opération demandée sur tous
-  les profils spécifiés pour les actions suivantes: import, invite sql, invite
-  shell. Sinon, faire l'opération sur tous les profils listés dans
-  `APP_PROFILES`
-
-**Paramètres partagés**
-
-Le fichier livré contient des définitions permettant de changer en une seule
-fois certains paramètres:
-~~~sh
-DBNET=dremgr_db
-DBVIP=127.0.0.1
-DBHOST=localhost
-DBPORT=5432
-DBNAME=dre
-PDBNAME=pdata
-LBNET=
-LBHTTP=7081
-LBHTTPS=
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=XXX_a_modifier
-FE_USER=dreadmin
-FE_PASSWORD=XXX_a_modifier
-~~~
-
-Les valeurs partagées sont ensuite réutilisées ailleurs dans la configuration.
-En temps normal, il n'est pas nécessaire de modifier ces valeurs:
-~~~sh
-LBVIP="$DBVIP"
-LBHOST="$DBHOST"
-<profil>_INST_VIP="$DBVIP"
-<profil>_INST_PORT=
-<profil>_FE_HOST="$DBHOST"
-<profil>_FE_PORT="$DBPORT"
-<profil>_FE_DBNAME="<profil>_$DBNAME"
-PGBOUNCER_DBS="$DBNAME $PDBNAME"
-PGBOUNCER_USERS="${FE_USER}:${FE_PASSWORD}"
-PGADMIN_USER="$FE_USER"
-PGADMIN_PASSWORD="$FE_PASSWORD"
-ADMINER_USER="$FE_USER"
-ADMINER_PASSWORD="$FE_PASSWORD"
-ADMINER_DB="$DBNAME"
-~~~
-
-Les descriptions sont les mêmes que dans la section ci-dessus, avec les
-précisions suivantes:
-
-`DBNET`
-: nom du réseau docker dans lequel doivent tourner les instances des bases de
-  données. la valeur par défaut est dremgr_db
-
-  l'application web est aussi placée dans ce réseau afin de pouvoir afficher la
-  version et la date de la dernière importation de la base de données
-
-`LBNET`
-: nom d'un réseau docker dans lequel doit tourner l'application web frontal
-
-  il n'y a généralement pas de raison de mettre l'application dans un réseau
-  spécifique, sauf si elle doit être placée derrière un frontal tel que traefik
-
-`<profil>_INST_PORT`
-: Cette variable est vide parce que les instances sont accédées via le proxy
-  pgbouncer. Il n'y a donc généralement pas de raison pour activer un accès
-  direct à l'instance.
+**Notes supplémentaires**
 
 `POSTGRES_USER`
 `POSTGRES_PASSWORD`
@@ -393,16 +332,30 @@ précisions suivantes:
   prod_POSTGRES_PASSWORD=XXX_a_modifier
   prod_FE_USER=prod_dreadmin
   prod_FE_PASSWORD=XXX_a_modifier
+
   test_POSTGRES_USER=test_postgres
   test_POSTGRES_PASSWORD=XXX_a_modifier
   test_FE_USER=test_dreadmin
   test_FE_PASSWORD=XXX_a_modifier
   ~~~
-  Bien entendu, il faut aussi redéfinir le paramètre `PGBOUNCER_USERS` en
-  conséquence
+
+  Il faut aussi redéfinir le paramètre `PGBOUNCER_USERS` en conséquence
   ~~~sh
   PGBOUNCER_USERS="$prod_FE_USER:$prod_FE_PASSWORD $test_FE_USER:$test_FE_PASSWORD"
   ~~~
+
+`DATADIR`
+: répertoire de données. ce paramètre permet de spécifier l'emplacement des
+  données si on souhaite qu'elles ne soient pas dans le répertoire
+  d'installation de dremgr.
+
+  Par exemple, en production, on peut décider de cloner le dépôt dans
+  `/opt/dremgr` et définir le répertoire de données
+  ~~~sh
+  DATADIR=/var/dremgr
+  ~~~
+  Le chemin devrait être absolu. S'il est relatif, il est exprimé par rapport au
+  répertoire d'installation de dremgr.
 
 **Paramètres privés non documentés**
 
@@ -410,7 +363,7 @@ précisions suivantes:
 `PGUSER`
 `APP_PROFILE_VARS`
 `POSTGRES_PROFILES`
-: Dans le mode avancé, ne pas modifier ni supprimer la valeur de ces paramètres
+: Ne pas modifier ni supprimer les valeurs de ces paramètres
 
 ## Paramètres pour la construction des images
 

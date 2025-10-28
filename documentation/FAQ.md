@@ -42,14 +42,10 @@ nom de la forme `<PROFIL>_dre`, e.g `prod_dre`, `test_dre`, etc.
 Si on veut accéder à la base de prod avec le nom `dre` au lieu de `prod_dre`,
 il faut faire les modifications suivantes dans `dremgr.env`
 ~~~sh
-# supprimer ces lignes
-PGBOUNCER_DBS="$DBNAME $PDBNAME"
-
-# ajouter ces lignes
-__ALL__PGBOUNCER_DBS="$DBNAME $PDBNAME"
+# ajouter cette lignes
 prod_PGBOUNCER_DBS="$DBNAME:$DBNAME $PDBNAME:$PDBNAME"
 
-# modifier ces lignes
+# modifier cette lignes
 prod_FE_DBNAME="$DBNAME"
 ~~~
 
@@ -156,7 +152,7 @@ suffit de modifier ce fichier et de relancer les instances.
 
 Pour spécifier des paramètres particuliers pour certains profils, copier le
 fichier par défaut avec le nom `<PROFIL>_postgresql.conf` *à la racine du
-projet* dans le même répertoire que le fichier `<PROFIL>_profile.env`
+projet* dans le même répertoire que le fichier `dremgr.env`
 ~~~sh
 cp config/postgres/postgresql.conf prod_postgresql.conf
 ~~~

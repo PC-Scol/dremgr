@@ -24,7 +24,7 @@ base de données DRE, afin d'offrir une vue consolidée aux données.
 
 ## Faire l'installation initiale
 
-dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
+dremgr est développé et testé sur Debian 12. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
 La configuration par défaut est optimisée pour une machine avec **4Go de RAM**,
@@ -80,24 +80,23 @@ liens pour avoir des détails sur la procédure.
   ~~~sh
   ./build
   ~~~
-* Enfin, vous devez choisir le mode de fonctionnement:
-  * Le mode simple n'installe qu'une seule instance de la base de données ainsi
-    que du mécanisme pour la mettre à jour quotidiennement. Ce mode n'offre
-    aucune interface utilisateur.
-    [Installer dremgr dans le mode simple](documentation/03installation-simple.md)
-    ~~~sh
-    ./dbinst
-    ~~~
-    ~~~sh
-    nano prod_profile.env
-    ~~~
-    ~~~sh
-    ./dbinst
-    ~~~
-  * Le mode avancé permet d'installer autant d'instances que nécessaire sur une
-    même machine. Elle offre aussi une interface utilisateur, mais elle demande
-    (un peu) plus de travail.
-    [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
+* Enfin, vous devez choisir le mode de fonctionnement: le mode simple n'installe
+  qu'une seule instance de la base de données ainsi que du mécanisme pour la
+  mettre à jour quotidiennement. Ce mode n'offre aucune interface utilisateur.
+  [Installer dremgr dans le mode simple](documentation/03installation-simple.md)
+  ~~~sh
+  ./dremgr
+  ~~~
+  ~~~sh
+  nano dremgr.env
+  ~~~
+  ~~~sh
+  ./dremgr
+  ~~~
+* Le mode avancé permet d'installer autant d'instances que nécessaire sur une
+  même machine. Elle offre aussi une interface utilisateur, mais elle demande
+  (un peu) plus de travail.
+  [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
 
 > [!TIP]
 > Vous avez fait l'installation, mais vous avez une interrogation? Un doute?

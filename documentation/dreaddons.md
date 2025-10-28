@@ -40,12 +40,11 @@ https://compte:motdepasse@gitprive.univ.fr/addonprive.git
 Cet addon sera mis à jour depuis le dépôt et importé chaque jour à l'heure
 configurée, c'est à dire 4h par défaut.
 
-Si une ligne commence par `#`, elle est ignorée, ce qui permet de rajouter des
-commentaire dans la liste des addons, e.g:
+Si une ligne commence par `#`, elle est ignorée, ce qui permet de désactiver
+temporairement un addon, e.g:
 ~~~sh
 ADDON_URLS="
 ...
-# décommenter la ligne suivante pour activer l'addon
 #PC-Scol/addonpublic.git
 ...
 "

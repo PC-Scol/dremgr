@@ -144,8 +144,7 @@ OPTIONS
     --check-only
         Ne faire que la vérification de l'environnement
     -g, --profile PROFILE
-        Spécifier le profil. Un fichier de configuration PROFILE_profile.env doit exister.
-        Si cette option n'est pas spécifiée, le profil sélectionné par défaut est prod
+        Spécifier le profil. La valeur par défaut est prod
     -A, --all-profiles
         Faire l'opération pour tous les profils définis dans dremgr.env
     -P, --prod
@@ -180,6 +179,14 @@ OPTIONS
         Lancer une invite bash dans le container db
     -x, --shell-cron
         Lancer une invite bash dans le container cron
+    --backup
+        Sauvegarder la base de données. Il faut préciser en argument [db [output]]
+        db est le nom de la base de données à sauvegarer et vaut par défaut pdata
+        output est le fichier en sortie et vaut par défaut <PROFILE>_<DB>-YYmmdd.sql.gz
+    --restore
+        Restaurer la base de données. Il faut préciser en argument [input [db]]
+        input est le fichier en entrée
+        db est le nom de la base de données à restaurer et vaut par défaut pdata
 ~~~
 
 ## dbfront
