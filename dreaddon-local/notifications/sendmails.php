@@ -30,8 +30,12 @@ Application::run(new class extends Application {
   function main() {
     config::add(new YamlConfig(__DIR__.'/sendmails.yml'));
 
-    $disabled = config::k("disabled");
+    $disabled = vbool::with(config::k("disabled"));
     if ($disabled) return;
+
+    $requireCron = vbool::with(config::k("require_cron"));
+    $isCron = self::get_bool("TEM_CRON");
+    if ($requireCron && !$isCron) return;
 
     $dateDeb = self::get_datetime("DATE_DEB");
     $dateFin = self::get_datetime("DATE_FIN");

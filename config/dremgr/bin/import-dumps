@@ -65,6 +65,7 @@ function _runfile() {
     else
         qstep "ignore $file"
     fi
+    return 0
 }
 function runfile() {
     local cwd dir file r
@@ -216,6 +217,7 @@ esac
 
 setx DATE_DEB=date +"%F %T"; export DATE_DEB
 export DATE_FIN=
+export TEM_CRON="$TEM_IMPORT_DUMPS_CRON"
 export TEM_DOWNLOAD="$step_dl"
 export TEM_IMPORT="$step_import"
 export TEM_ADDONS="$step_runao"

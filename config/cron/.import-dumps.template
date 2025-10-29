@@ -1,2 +1,2 @@
 # Les fichiers sont générés à 2h
-@@CRON_PLAN@@ root if [ -z "$CRON_DISABLE" ]; then import-dumps >>"$APP_DATADIR/cron.log" 2>&1; fi
+@@CRON_PLAN@@ root if [ -z "$CRON_DISABLE" ]; then TEM_IMPORT_DUMPS_CRON=1 import-dumps >>"$APP_DATADIR/cron.log" 2>&1; fi

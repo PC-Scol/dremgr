@@ -4,6 +4,10 @@ app:
   # supprimer ou commenter la ligne suivante pour activer l'envoi des mails
   disabled: true
 
+  # faut-il envoyer les mails uniquement si la notification survient suite à la
+  # planification quotidienne?
+  require_cron: true
+
   # ne pas oublier de configurer l'adresse du serveur de mail, ainsi que le
   # compte/mot de passe éventuel
   mailer:
