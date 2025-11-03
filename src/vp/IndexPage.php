@@ -37,8 +37,7 @@ class IndexPage extends ANavigablePage {
 
   const INST_VARS = [
     "host" => "POSTGRES_HOST",
-    # le port est toujours 5432 puisqu'on est en direct
-    "port" => 5432, #"DBPORT",
+    "port" => "DBPORT",
     "dbname" => "DBNAME",
     "user" => "POSTGRES_USER",
     "password" => "POSTGRES_PASSWORD",
@@ -125,6 +124,8 @@ class IndexPage extends ANavigablePage {
     $this->importHour = $importHour;
 
     $inst = tools::get_profile_vars(self::INST_VARS, $profile);
+    # le port est toujours 5432 puisqu'on est en direct
+    $inst["port"] = 5432;
     $version = ["valid" => false];
     try {
       $conn = new PgsqlConn("host=$inst[host] port=$inst[port] dbname=$inst[dbname] user=$inst[user] password=$inst[password]");

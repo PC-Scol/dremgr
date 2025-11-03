@@ -17,28 +17,22 @@ class tools {
     return $timestamp;
   }
 
-  static function get_profile_var(string $var, string $profile): ?string {
-    $pvar = "${profile}_$var";
+  static function get_profile_var(string $var, string $profile, ?array $defaults=null): ?string {
+    $pvar = "{$profile}_{$var}";
     $avar = "__ALL__$var";
     if (($value = getenv($pvar)) === false) {
       if (($value = getenv($avar)) === false) {
         $value = getenv($var);
       }
     }
-    return $value !== false? $value: null;
+    if ($value === false) $value = $defaults[$var] ?? null;
+    return $value;
   }
 
-  static function get_profile_vars(array $vars, string $profile): array {
+  static function get_profile_vars(array $vars, string $profile, ?array $defaults=null): array {
     $pvalues = [];
     foreach ($vars as $key => $var) {
-      $pvar = "${profile}_$var";
-      $avar = "__ALL__$var";
-      if (($value = getenv($pvar)) === false) {
-        if (($value = getenv($avar)) === false) {
-          $value = getenv($var);
-        }
-      }
-      $pvalues[$key] = $value !== false? $value: null;
+      $pvalues[$key] = self::get_profile_var($var, $profile, $defaults);
     }
     return $pvalues;
   }
