@@ -9,8 +9,8 @@
 		}
 	],
 	"require": {
-		"nulib/base": "^0.7.0p82",
-		"nur/ture": "^0.7.0p82",
+		"nulib/base": "^0.8.0p82",
+		"nur/ture": "^0.8.0p82",
 		"league/commonmark": "^2.7.0",
 		"php": "^8.2"
 	},
