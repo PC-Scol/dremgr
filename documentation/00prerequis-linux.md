@@ -1,6 +1,6 @@
 # Pré-requis sous Linux
 
-dremgr est développé et testé sur Debian 11. Il devrait fonctionner sur
+dremgr est développé et testé sur Debian 12. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
 Les programmes suivants sont nécessaires:

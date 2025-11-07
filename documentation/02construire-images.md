@@ -10,6 +10,8 @@ utilisées par l'application
 Commencer en faisant une copie de `build.env` depuis `.build.env.dist`
 ~~~sh
 cp .build.env.dist build.env
+
+# NB: cette copie est automatiquement effectuée si vous lancez build
 ~~~
 Il FAUT consulter `build.env` et l'éditer AVANT de continuer. Notamment, les
 variables suivantes doivent être configurées le cas échéant:

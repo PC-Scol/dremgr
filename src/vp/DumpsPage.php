@@ -44,21 +44,31 @@ class DumpsPage extends ANavigablePage {
     if ($this->download($dldir, $afilenames)) return;
 
     $ydates = [];
-    $yfilenames = [];
+    $yfiles = [];
     foreach ($afilenames as $filename) {
       if (tools::isa_ts($filename, $ms)) {
         $date = tools::ts2date($filename, $ymd);
         if (!array_key_exists($ymd, $ydates)) $ydates[$ymd] = $date;
-        $yfilenames[$ymd][] = $filename;
+        $file = "$dldir/$filename";
+        $yfiles[$ymd][] = [
+          "filename" => $filename,
+          "file" => $file,
+          "size" => filesize($file),
+          "mtime" => new Datetime(filemtime($file)),
+        ];
       }
     }
     foreach ($ydates as $ymd => &$date) {
       $date = [$ymd, $date];
     }; unset($date);
-    $this->yfilenames = $yfilenames;
+    $this->yfiles = $yfiles;
 
-    $dre = tools::get_profile_vars(["url" => "DRE_URL"], $this->profile);
+    $dre = tools::get_profile_vars([
+      "url" => "DRE_URL",
+      "max_age" => "CRON_MAX_AGE",
+    ], $this->profile);
     $this->dreUrl = $dre["url"];
+    $this->maxAge = $dre["max_age"];
 
     $this->fo = $fo = new FormInline([
       "params" => [
@@ -101,9 +111,11 @@ class DumpsPage extends ANavigablePage {
     $this->importcontent = $importcontent;
   }
 
-  protected $dldir, $ymd, $yfilenames;
+  protected $dldir, $ymd, $yfiles;
 
   protected $dreUrl;
+
+  protected $maxAge;
 
   /** @var FormInline */
   protected $fo;
@@ -130,7 +142,6 @@ class DumpsPage extends ANavigablePage {
   function print(): void {
     $this->printProfileTabs();
 
-    $dldir = $this->dldir;
     $dreUrl = $this->dreUrl;
     vo::h1("Fichiers de dumps");
     vo::p([
@@ -143,9 +154,14 @@ class DumpsPage extends ANavigablePage {
     ]);
     $this->fo->print();
 
-    new CTable($this->yfilenames[$this->ymd], [
-      "map_func" => function($filename) use ($dldir) {
-        $file = "$dldir/$filename";
+    $yfiles = $this->yfiles[$this->ymd];
+    $totalSize = 0;
+    foreach ($yfiles as $yfile) {
+      $totalSize += $yfile["size"];
+    }
+    new CTable($yfiles, [
+      "map_func" => function($yfile) {
+        $filename = $yfile["filename"];
         return [
           "Nom" => v::a([
             "href" => page::bu("", [
@@ -154,10 +170,17 @@ class DumpsPage extends ANavigablePage {
             ]),
             $filename,
           ]),
-          "Taille" => num::format_size(filesize($file)),
-          "Date" => (new Datetime(filemtime($file)))->format(),
+          "Taille" => num::format_size($yfile["size"]),
+          "Date" => $yfile["mtime"]->format(),
         ];
       },
+      "after_table" => v::div([
+        "class" => "alert alert-info",
+        "Taille totale: ", num::format_size($totalSize),
+        "<br/>En tenant compte de CRON_MAX_AGE, il faut prévoir ",
+        num::format_size($totalSize * $this->maxAge),
+        " pour garder une copie de tous les fichiers de dumps",
+      ]),
       "autoprint" => true,
     ]);
 

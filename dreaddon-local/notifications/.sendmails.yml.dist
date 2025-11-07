@@ -1,0 +1,89 @@
+# -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
+
+app:
+  # supprimer ou commenter la ligne suivante pour activer l'envoi des mails
+  disabled: true
+
+  # faut-il envoyer les mails uniquement si la notification survient suite à la
+  # planification quotidienne?
+  require_cron: true
+
+  # ne pas oublier de configurer l'adresse du serveur de mail, ainsi que le
+  # compte/mot de passe éventuel
+  mailer:
+    host: smtp.domaine.fr
+    username:
+    password:
+    secure: true
+
+  # expéditeur du mail
+  from: no-reply@domaine.fr
+  # destinataires qui recevront systématiquement les mails, qu'il y aie des
+  # erreurs ou non
+  to:
+    - supervision@domaine.fr
+  # destinataires qui ne recevront les mails QUE s'il y a des erreurs, qu'elles
+  # soient critiques ou non
+  to_error:
+    - bob@domaine.fr
+    - alice@domaine.fr
+  # destinataires qui recevront systématiquement les mails en copie, qu'il y aie
+  # des erreurs ou non. si les champs to: ne sont pas renseignés, le mail n'est
+  # pas envoyé
+  cc:
+
+mails:
+  # Mail envoyé aux destinataires [to] et [cc] en cas d'importation avec succès
+  success:
+    subject: >
+      [dremgr] Importation des dumps DRE effectuée avec succès
+    body: |
+      Bonjour,
+
+      L'importation des dumps DRE et l'exécution des addons ont été effectués
+      avec succès le {date_fin} ({duree}).
+      
+      Les logs sont attachés à ce mail.
+
+      Cordialement,<br/>
+      Le gestionnaire dremgr
+
+  # Mail envoyé aux destinataires [to], [to_error] et [cc] si une erreur s'est
+  # produite pendant l'importation
+  error:
+    subject: >
+      [dremgr] Erreur lors de l'importation des dumps DRE
+    body: |
+      Bonjour,
+
+      L'importation des dumps DRE a été effectuée avec succès le {date_fin} ({duree}).
+      
+      Cependant, une erreur s'est produite pendant l'exécution des addons. Cela
+      veut dire que potentiellement certaines données ne sont pas cohérentes.
+
+      Les logs sont attachés à ce mail: vous y trouverez sans doute la cause du
+      problème ou des éléments pour vos investigations ainsi que pour une
+      éventuelle demande de support.
+
+      Cordialement,<br/>
+      Le gestionnaire dremgr
+
+  # Mail envoyé aux destinataires [to], [to_error] et [cc] si une erreur
+  # critique s'est produite pendant l'importation
+  critical:
+    subject: >
+      [dremgr] Erreur CRITIQUE lors de l'importation des dumps DRE
+    body: |
+      Bonjour,
+
+      Une erreur critique s'est produite pendant l'importation des dumps DRE
+      commencée le {date_debut}. Cela signifie que la base de données DRE du
+      jour n'a pas pu être importée. En fonction du type de l'erreur, il est
+      aussi possible que la base de données ne soit plus accessible.
+
+      Les logs sont attachés à ce mail: vous y trouverez sans doute la cause du
+      problème ou des éléments pour vos investigations ainsi que pour une
+      éventuelle demande de support.
+
+      Cordialement,<br/>
+      Le gestionnaire dremgr

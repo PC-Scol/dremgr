@@ -1,2 +1,0 @@
-# Les fichiers sont générés à 4h GMT
-@@CRON_PLAN@@ root if [ -z "$CRON_DISABLE" ]; then dl-dumps >>"$APP_DATADIR/cron.log" 2>&1; fi

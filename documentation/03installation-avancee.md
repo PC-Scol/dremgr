@@ -5,8 +5,8 @@ Le mode avancé permet d'installer autant d'instances que nécessaire sur une m�
 machine. Elle offre aussi une interface utilisateur, mais elle demande (un peu)
 plus de travail.
 
-Si vous avez déjà installé dremgr dans le mode simple, suivez attentivement les
-instructions pour ne pas perdre la configuration courante
+Si vous avez déjà installé dremgr dans le mode simple, ce n'est pas gênant, il
+suffit de faire une simple modification pour basculer dans le mode avancé
 
 # Installer dans le mode avancé
 
@@ -14,22 +14,35 @@ Le mode avancé permet de gérer plusieurs instances. Chaque instance correspond
 un profil: prod, test, etc... Le fichier `dremgr.env` définit l'ensemble des
 profils qui sont pilotés par l'installation.
 
-Commencer par copier le fichier d'exemple
+Si vous avez commencé par le mode simple, vous avez déjà le fichier de
+configuration. Arrêtez d'abord l'instance pour pouvoir changer le mode
+~~~sh
+./dremgr -k
+~~~
+
+Si vous n'aviez encore rien fait, il faut générer le fichier de configuration:
+~~~sh
+./dremgr
+~~~
+La *première* invocation crée le fichier d'exemple `dremgr.env`. Ce fichier ne
+contient qu'une configuration d'exemple pour la prod. Si vous voulez économiser
+un copier/coller, vous pouvez aussi prendre le fichier d'exemple de la
+documentation qui contient aussi une configuration d'exemple pour l'instance de
+test.
 ~~~sh
 cp documentation/dremgr.env.sample dremgr.env
 ~~~
 
-*Si vous avez déjà installé dremgr dans le mode simple*, reportez les paramètres
-déjà saisis dans `prod_profile.env`, notamment `POSTGRES_PASSWORD`,
-`FE_PASSWORD`, `prod_DRE_URL`, `prod_DRE_PASSWORD` et `DREADDON_URLS`
+Il FAUT consulter le fichier `dremgr.env` et l'éditer AVANT de continuer.
+*Au minimum*, commentez ou supprimez la ligne `MODE_SIMPLE=1` si elle existe et
+modifiez les variables dont la valeur est `XXX_a_modifier`. Les variables
+suivantes seront configurées le cas échéant:
 
-La variable `APP_PROFILES` liste les profils supportés. Pour chacun de ces
-profils, un ensemble de variable doit être défini plus bas dans le fichier. On
-peut rajouter autant de profils que nécessaire, mais il faut définir les
-variables avec le préfixe correspondant en prenant exemple sur la section "test"
-
-*Au minimum*, modifiez les variables dont la valeur est `XXX_a_modifier`. Les
-variables suivantes peuvent être configurées le cas échéant:
+`APP_PROFILES`
+: Cette variable liste les profils supportés. Pour chacun de ces profils, un
+  ensemble de variable doit être défini plus bas dans le fichier. On peut
+  rajouter autant de profils que nécessaire, mais il faut définir les variables
+  avec le préfixe correspondant en s'aidant de la section modèle `profil`
 
 `<profil>_DRE_URL`
 `<profil>_DRE_USER`
@@ -38,11 +51,14 @@ variables suivantes peuvent être configurées le cas échéant:
 
 `DBVIP`
 : Adresse sur laquelle les instances de bases DRE sont disponibles.
-  NB: avec le paramètre par défaut, la base de données n'est accessible que
-  depuis l'hôte local (via Adminer ou en ligne de commande).
 
-  Ce paramétrage est surtout approprié pour un poste de développement. *Laisser
-  vide* pour écouter sur toutes les interfaces.
+  NB: avec le paramètre par défaut, la base de données n'est accessible que
+  depuis l'hôte local. Ce paramétrage est surtout approprié pour un poste de
+  développement. Même dans ce cas cependant, on peut accéder à la base de
+  données via adminer ou pgAdmin.
+
+  En production, vous pouvez *laisser vide* pour écouter sur toutes les
+  interfaces.
 
 `POSTGRES_PASSWORD`
 : mot de passe de l'utilisateur administrateur de la base de données. Dans la
@@ -79,38 +95,18 @@ variables suivantes peuvent être configurées le cas échéant:
 Il y a d'autres paramètres configurables.
 [Consulter la liste complète des paramètres](parametres.md)
 
-Ensuite, il faut définir autant de fichiers `<profil>_profile.env` que de
-profils mentionnés dans le fichier `dremgr.env`. Chaque fichier pourrait être
-indépendant, mais il est plus simple de tout définir dans le fichier `dremgr.env`
-et de faire des liens symboliques.
-
-En l'occurrence, comme les profils prod et test sont définis, on fait les liens
-symboliques correspondants. ATTENTION! Si le mode simple avait été utilisé
-auparavant, le fichier `prod_profile.env` précédent est perdu au profit du
-nouveau lien symbolique. Assurez-vous d'avoir reportés les paramètres dans
-`dremgr.env` avant de lancer ces commandes
-~~~sh
-ln -sf dremgr.env prod_profile.env
-ln -sf dremgr.env test_profile.env
-~~~
-
 Créer le réseau mentionné dans la configuration (variable `DBNET`)
 ~~~sh
 docker network create --attachable dremgr_db
 ~~~
 
-Puis démarrer toutes les instances correspondant à chaque profil défini
+Puis démarrer toutes les instances de base de données correspondant à chaque
+profil défini
 ~~~sh
 ./dbinst -A
 ~~~
-Attention! si l'instance de prod en mode simple avait déjà été démarrée, il
-faut la remplacer par les nouvelles instances, i.e
-~~~sh
-# forcer le redémarrage
-./dbinst -AR
-~~~
-Notez aussi que les comptes ne sont pas recréés si l'instance de prod en mode
-simple avait déjà été démarrée.
+NB: si l'instance de prod en mode simple avait déjà été démarrée, notez que les
+comptes ne sont pas recréés.
 
 ## Configurer les services frontaux
 
@@ -157,12 +153,15 @@ LBHTTP=80
 
 Ensuite, démarrer les services frontaux
 ~~~sh
-./dbfront
-
-./webfront
+./dremgr
 ~~~
-En cas de changement de configuration, utiliser l'option -R pour redémarrer les
-services concernés
+
+Le script dremgr permet de piloter tous les services en une seule commande. les
+scripts dbinst, dbfront et webfront permettent de piloter les services
+individuellement.
+
+Par exemple, après un changement de configuration, on voudra sans doute ne
+redémarrer que le frontal web. Utiliser l'option -R pour forcer le redémarrage
 ~~~sh
 # exemple: forcer le redémarrage après la modification du paramétrage web
 ./webfront -R
@@ -202,16 +201,22 @@ téléchargement et l'importation:
 ./dbinst -Ai
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
-définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h30
+définie dans la variable `CRON_PLAN` c'est à dire par défaut 4h
 
-NB: Les bases de données sont accessibles sur l'adresse IP spécifiée avec le
-paramètre `DBVIP`. par défaut, il s'agit de l'adresse locale, ce qui signifie
-que les bases de données ne sont pas accessibles depuis les autres machines du
-réseau.
+> [!NOTE]
+> Les bases de données sont accessibles sur l'adresse IP spécifiée avec le
+> paramètre `DBVIP`. par défaut, il s'agit de l'adresse locale, ce qui signifie
+> que les bases de données ne sont pas accessibles depuis les autres machines du
+> réseau.
+>
+> Pour que les bases de données soient accessibles sur le réseau, il faut laisser
+> vide le paramètre `DBVIP` (ou mettre l'adresse IP de l'interface d'écoute). Bien
+> entendu, il faut relancer les services en cas de changement de configuration.
 
-Pour que les bases de données soient accessibles sur le réseau, il faut laisser
-vide le paramètre `DBVIP` (ou mettre l'adresse IP de l'interface d'écoute). Bien
-entendu, il faut relancer les services en cas de changement de configuration.
+NB: notez que le nom avec lequel la base de données de prod change par rapport
+au mode simple. comme on y accède via le frontal, on utilise un nom qui par
+défaut inclue le nom du profil. Consultez la FAQ pour savoir comme rétablir
+l'accès avec le nom `dre`
 
 ## Modification du logo
 

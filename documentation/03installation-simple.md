@@ -13,13 +13,13 @@ plusieurs instances sur la même machine, il faut sélectionner le mode avancé.
 
 Une fois les images construites, il faut préparer le démarrage de l'instance DRE
 ~~~sh
-./dbinst
+./dremgr
 ~~~
-La *première* invocation crée le fichier d'exemple `prod_profile.env`
+La *première* invocation crée le fichier d'exemple `dremgr.env`
 
-Il FAUT consulter ce fichier et l'éditer AVANT de continuer. *Au minimum*,
-modifiez les variables dont la valeur est `XXX_a_modifier`. Les variables
-suivantes peuvent être configurées le cas échéant:
+Il FAUT consulter ce fichier et l'éditer AVANT de continuer. Ne touchez pas à la
+ligne `MODE_SIMPLE=1`. *Au minimum*, modifiez les variables dont la valeur est
+`XXX_a_modifier`. Les variables suivantes seront configurées le cas échéant:
 
 `DRE_URL`
 `DRE_USER`
@@ -28,11 +28,13 @@ suivantes peuvent être configurées le cas échéant:
 
 `DBVIP`
 : Adresse sur laquelle l'instance de la base DRE est disponible.
-  NB: avec le paramètre par défaut, la base de données n'est accessible que
-  depuis l'hôte local en ligne de commande.
 
-  Ce paramétrage est surtout approprié pour un poste de développement. *Laisser
-  vide* pour écouter sur toutes les interfaces.
+  NB: avec le paramètre par défaut, la base de données n'est accessible que
+  depuis l'hôte local en ligne de commande. Ce paramétrage est surtout approprié
+  pour un poste de développement.
+
+  En production, vous pouvez *laisser vide* pour écouter sur toutes les
+  interfaces.
 
 `POSTGRES_PASSWORD`
 : mot de passe de l'utilisateur administrateur de la base de données
@@ -61,7 +63,7 @@ Il y a d'autres paramètres configurables.
 
 Une fois le fichier configuré, l'instance peut être démarrée
 ~~~sh
-./dbinst
+./dremgr
 ~~~
 
 La base de données est accessible sur l'adresse IP spécifiée dans le
@@ -88,15 +90,21 @@ téléchargement et l'importation:
 ./dbinst -i
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
-définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h30
+définie dans la variable `CRON_PLAN` c'est à dire par défaut 4h
 
-NB: La base de données est accessible sur l'adresse IP spécifiée avec le
-paramètre `DBVIP`. par défaut, il s'agit de l'adresse locale, ce qui signifie
-que la base de données n'est pas accessible depuis les autres machines du
-réseau.
+> [!NOTE]
+> La base de données est accessible sur l'adresse IP spécifiée avec le paramètre
+> `DBVIP`. par défaut, il s'agit de l'adresse locale, ce qui signifie que la
+> base de données n'est pas accessible depuis les autres machines du réseau.
+>
+> Pour que la base de données soit accessible sur le réseau, il faut laisser vide
+> le paramètre `DBVIP` (ou mettre l'adresse IP de l'interface d'écoute). Bien
+> entendu, il faut relancer les services en cas de changement de configuration.
 
-Pour que la base de données soit accessible sur le réseau, il faut laisser vide
-le paramètre `DBVIP` (ou mettre l'adresse IP de l'interface d'écoute). Bien
-entendu, il faut relancer les services en cas de changement de configuration.
+NB: le lecteur attentif aura remarqué que dans la configuration dremgr.env, il
+est mentionné que la base de données est accessible avec le nom `prod_dre` alors
+que la commande ci-dessus fait la connexion avec le nom `dre`. C'est parce que
+la configuration indique le nom à utiliser lorsque la base de données est
+accédée via pgbouncer, alors qu'avec le mode simple, l'accès est direct.
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

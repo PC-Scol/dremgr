@@ -1,6 +1,6 @@
 # Pré-requis sous WSL
 
-dremgr est développé et testé sur Debian 11. Il est cependant possible de le
+dremgr est développé et testé sur Debian 12. Il est cependant possible de le
 faire fonctionner sous WSL en faisant attention à certains points.
 
 Installer tout d'abord WSL en suivant les instructions sur <https://aka.ms/wslinstall>
@@ -17,6 +17,8 @@ Lancer Debian, puis installer les outils nécessaires
 ~~~sh
 sudo apt update && sudo apt install git curl rsync tar unzip python3 gawk
 ~~~
+NB: si vous avez installé Ubuntu à la place de Debian, c'est bon aussi, pas
+d'inquiétude
 
 ---
 

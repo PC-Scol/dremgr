@@ -28,7 +28,7 @@ Les variables suivantes peuvent être configurées:
   deux valeurs sont autorisées: `all` et `vxx`
 
   La valeur de ce paramètre influe sur les répertoires depuis lesquels sont
-  chargés les scripts SQL
+  chargés les scripts
 
   Le mode de compatibilité `vxx` permet de préparer à l'avance les scripts et
   documentation éventuelles pour une version donnée. En mettant à jour le dépôt
@@ -44,7 +44,7 @@ Les variables suivantes peuvent être configurées:
   dans certains cas, on peut souhaiter que les scripts soient lancés jusqu'au
   bout, même si certaines requêtes sont en erreur.
 
-## Scripts SQL
+## Scripts
 
 L'importation des schémas DRE se fait de cette manière:
 
@@ -52,10 +52,10 @@ L'importation des schémas DRE se fait de cette manière:
 * Suppression des schémas mentionnés dans la variable `SCHEMAS` de
   `dreaddon.conf`
 * Importation des dumps du jour livrés par DRE
-* Traitements des scripts SQL des addons, dans l'ordre mentionné dans la
+* Traitements des scripts des addons, dans l'ordre mentionné dans la
   configuration de dremgr
 
-Pour chaque addon, les scripts SQL sont lancés depuis les répertoires suivants:
+Pour chaque addon, les scripts sont lancés depuis les répertoires suivants:
 
 * les scripts du répertoire `prepare` sont lancés après que tous les schémas
   livrés par DRE ont été importés. Après ces scripts, si ce n'est pas déjà le
@@ -77,11 +77,13 @@ Pour chaque addon, les scripts SQL sont lancés depuis les répertoires suivants
 * l'accès en lecture à toutes les tables des schémas est donné aux utilisateurs
   configurés dans dremgr. puis les scripts du répertoire `updates` sont lancés.
 
-Cette section parle de scripts SQL, mais en réalité, les fichiers `*.sql` et
-`*.sh` (s'ils sont exécutables) sont considérés
+Quand on parle de scripts, il s'agit de tous les fichiers `*.sql` ainsi que des
+scripts exécutables (quelle que soit l'extension). Les autres fichiers sont
+ignorés.
 
 Comme l'environnement est configuré comme il se doit par dremgr, les scripts
-`*.sh` peuvent lancer directement psql pour attaquer la base de données.
+exécutables shell peuvent lancer directement psql pour attaquer la base de
+données.
 
 ---
 
@@ -102,6 +104,17 @@ mettre à jour les scripts pour une release supérieure, *tout* le répertoire v
 est copié dans vYY, puis les fichiers sont adaptés au besoin. Ça simplifie la
 maintenance: pas besoin de fusionner mentalement la liste des fichiers de
 plusieurs répertoires pour savoir ce qui est exécuté.
+
+## Notifications
+
+Les scripts du répertoire `notifications` sont exécutés à la fin de l'import
+quotidien, qu'il aie réussi ou non. Ces scripts peuvent servir à envoyer des
+mails de rapport, à notifier un services que les données ont été mises à jour,
+etc.
+
+Par défaut, chaque script n'est autorisé à tourner que 30s + 30s de délai de
+grâce. Cf la description des paramètres `NOTIF_TIMEOUT` et `NOTIF_TIMEOUT_KILL`
+pour les détails.
 
 ## Documentation
 
@@ -191,8 +204,8 @@ cd ~/path/to/dremgr
 ./dbinst -I myaddon
 ~~~
 Dans cet exemple, seul l'addon `dreaddon-myaddon` est réimporté, ce qui permet
-de vérifier par exemple que que les données sont correctement provisionnées, ou
-que la documentation associée est bien celle attendue.
+de vérifier par exemple que les données sont correctement provisionnées, ou que
+la documentation associée est bien celle attendue.
 
 Pour faciliter le développement, l'option `-J` permet de synchroniser le contenu
 du répertoire local d'addon puis de lancer son import, e.g:

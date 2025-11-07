@@ -66,6 +66,9 @@ function restart_webfront() {
     start_webfront "$@"
 }
 
+Profile=
+ForceStart=
+Recreate=
 action=auto
 Rebuild=
 args=(
@@ -80,18 +83,18 @@ args=(
 )
 parse_args "$@"; set -- "${args[@]}"
 
-[ -f "$DREMGR/dremgr.env" ] || die "dremgr.env: fichier introuvable"
-eval "$(source "$DREMGR/dremgr.env"; echo_setv APP_PROFILES="$APP_PROFILES")"
-[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
-
 IS_WEBFRONT=1
 run_check_env || exit 0
+
+setx Envfile=get_envfile
+[ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
+load_envs APP_PROFILES MODE_SIMPLE DATADIR
+[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
+[ -n "$MODE_SIMPLE" ] && ewarn "Le mode simple est activé. Le frontal web ne pourra pas fonctionner correctement"
+
 [ "$action" == auto ] && action=start
 [ "$action" == none ] && exit 0
 
-Profile=
-ForceStart=
-Recreate=
 ensure_dirs
 
 case "$action" in

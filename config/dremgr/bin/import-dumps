@@ -3,6 +3,7 @@
 source /etc/nulib.sh || exit 1
 source /g/init.env || exit 1
 
+APPDIR=/app/dremgr
 : "${APP_DATADIR:=/data/dre}"
 : "${DLDIR:=$APP_DATADIR/downloads}"
 : "${AODIR:=$APP_DATADIR/addons}"
@@ -11,7 +12,7 @@ source /g/init.env || exit 1
 export PGDATABASE="$DBNAME" PGUSER="$POSTGRES_USER"
 unset PGHOST PGPORT
 
-read -a FORCE_CREATE_SCHEMAS <<<"${FORCE_CREATE_SCHEMAS//
+read -a VxxFIX_FC <<<"${VxxFIX_FC//
 / }"
 
 function recoverable_curl_error() {
@@ -49,23 +50,22 @@ function runsql_ignore_errors() {
 function runsql() {
     quietc psql "${RUNSQL_ARGS[@]}" -c "$@"
 }
+RUNFILE_PREFIX=()
 function _runfile() {
-    case "$file" in
-    *.sql)
-        estep "psql $file"
-        if ! quietc psql "${RUNSQL_ARGS[@]}" -f "$file"; then
+    if [[ "$file" == *.sql ]]; then
+        qstep "psql $file"
+        if ! quietc "${RUNFILE_PREFIX[@]}" psql "${RUNSQL_ARGS[@]}" -f "$file"; then
             [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
         fi
-        ;;
-    *.sh)
-        if [ -x "$file" ]; then
-            estep "exec $file"
-            if ! quietc "./$file"; then
-                [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
-            fi
+    elif [ -x "$file" ]; then
+        qstep "exec $file"
+        if ! quietc "${RUNFILE_PREFIX[@]}" "./$file"; then
+            [ -z "$RUNSQL_IGNORE_ERRORS" ] && return 1
         fi
-        ;;
-    esac
+    else
+        qstep "ignore $file"
+    fi
+    return 0
 }
 function runfile() {
     local cwd dir file r
@@ -81,9 +81,15 @@ function rundir() {
     local -a files; local cwd file r
     setx cwd=pwd
     cd "$1"
-    setx -a files=ls_files . "*.sql" "*.sh"
+    setx -a files=ls_files .
     for file in "${files[@]}"; do
-        _runfile; r=$?
+        if [[ "$file" == *.sql ]]; then
+            _runfile; r=$?
+        elif [ -x "$file" ]; then
+            _runfile; r=$?
+        else
+            r=0
+        fi
         [ $r -eq 0 ] || break
     done
     cd "$cwd"
@@ -152,51 +158,54 @@ function add2dl_files() {
 }
 
 clean_import_log=
-step_dl=
-Timestamp=
-ForceDlSums=
 step_checkao=
 Klone=
 UpdateAo=1
-MinimizeDowntime="$MINIMIZE_DOWNTIME"
+step_dl=
+Timestamp=
+ForceDlSums=
+Clean=1
 step_import=
 step_import_bin=
 step_import_json=
+MinimizeDowntime="$MINIMIZE_DOWNTIME"
 step_runao=
 SelectAo=
-Clean=1
+step_notifao=
 args=(
     "télécharger les dumps"
     --clean-import-log clean_import_log=yes "++Forcer le vidage du fichier import.log avant de démarrer"
     --keep-import-log clean_import_log=no "++Interdire le vidage du fichier import.log avant de démarrer"
+    --checkao step_checkao=1 "++Vérifier les addons"
+    --klone Klone=1 "++Refaire le clone des dépôts des addons au lieu de simplement les mettre à jour
+(c'est parfois nécessaire parce que la mise à jour ne se fait pas correctement)"
+    -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
     -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
-    --checkao step_checkao=1 "++Vérifier les addons"
-    --klone Klone=1 "++Refaire le clone des dépôts des addons au lieu de simplement les mettre à jour
-(c'est parfois nécessaire parce que la mise à jour ne se fait pas correctement)"
-    -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
-    --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
-    --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
     --import step_import=1 "++Importer tous les dumps"
     --import-bin step_import_bin=1 "++Importer seulement les dumps .bin et le fichier DRE_VERSION"
     --import-json step_import_json=1 "++Importer seulement les dumps .json"
+    --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
+    --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
+    --notifao step_notifao=1 "++Exécuter les notifications à la fin de l'import"
 )
 parse_args "$@"; set -- "${args[@]}"
 
 keep_import_log=1
 [ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
-if [ -z "$step_dl" -a -z "$step_checkao" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" ]; then
+if [ -z "$step_checkao" -a -z "$step_dl" -a -z "$step_import_bin" -a -z "$step_import_json" -a -z "$step_runao" -a -z "$step_notifao" ]; then
     keep_import_log=
-    step_dl=1
     step_checkao=1
+    step_dl=1
     step_import_bin=1
     step_import_json=1
     step_runao=1
+    step_notifao=1
 fi
 [ -n "$step_import_bin" -o -n "$step_import_json" ] && step_import=1
 [ -n "$step_runao" ] && step_checkao=1
@@ -206,84 +215,61 @@ yes) keep_import_log=;;
 no) keep_import_log=1;;
 esac
 
-quietc_logto ${keep_import_log:+-a} "$APP_DATADIR/import.log" "\
-================================================================================"
-qstep "Début de l'import le $(date +"%F %T")"
+setx DATE_DEB=date +"%F %T"; export DATE_DEB
+export DATE_FIN=
+export TEM_CRON="$TEM_IMPORT_DUMPS_CRON"
+export TEM_DOWNLOAD="$step_dl"
+export TEM_IMPORT="$step_import"
+export TEM_ADDONS="$step_runao"
+export CRITICAL_ERROR=
+export HAVE_ERRORS=
+export IMPORT_LOG="$APP_DATADIR/import.log"
+function critical() {
+    CRITICAL_ERROR=1
+    die "$@"
+}
+function at_exit() {
+    [ -n "$step_notifao" ] || return 0
+    etitle "Lancement des notifications"
 
-if [ -z "$DRE_PREFIX" ]; then
-    DRE_PREFIX="${DRE_URL}"
-    DRE_PREFIX="${DRE_PREFIX#https://dre-dump.}"
-    DRE_PREFIX="${DRE_PREFIX%/*}"
-    DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
-    [ "$APP_PROFILE" == prod ] && DRE_PREFIX="prod-$DRE_PREFIX"
-fi
-
-cd "$DLDIR"
-[ -n "$Timestamp" ] && Clean=
-if [ "$Timestamp" == latest ]; then
-    # prendre le dernier fichier checksums. utile pour --runao
-    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
-    Timestamp="${latest#checksums-}"
-    enote "Autosélection de -@ $Timestamp"
-fi
-if [ -z "$Timestamp" ]; then
-    if [ -n "$V29FIX_DY" ]; then
-        setx Timestamp=awk 'BEGIN { print strftime("%Y%m%d", mktime(strftime("%Y %m %d 00 00 00")) - 86400); }'
-        enote "Sélection de -@ $Timestamp (v29fix_dy)"
-    else
-        setx Timestamp=date +%Y%m%d
-    fi
-fi
-sums="checksums-$Timestamp"
-version="DRE_VERSION_$Timestamp"
-
-if [ -n "$step_dl" ]; then
-    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
-
-    if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
-        qstep "dl $sums"
-        dl "$sums" || die
-    fi
-    ac_set_tmpfile Tmpsums
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
-
-    if [ ! -f "$version" ]; then
-        qstep "dl $version"
-        dl "$version" || die
-    fi
-    for file in "${DL_FILES[@]}"; do
-        if [ ! -f "$file" ]; then
-            qstep "dl $file"
-            dl "$file" || die
+    runsql_ignore_errors 1
+    if [ -n "$NOTIF_TIMEOUT" ]; then
+        RUNFILE_PREFIX=(timeout)
+        if [ -n "$NOTIF_TIMEOUT_KILL" ]; then
+            RUNFILE_PREFIX+=(-k "$NOTIF_TIMEOUT_KILL")
         fi
-    done
-
-    qstep "Vérifications des sommes de contrôle"
-    sha256sum --status -c "$Tmpsums" || die
-
-    if [ -n "$Clean" ]; then
-        qstep "Nettoyage des fichiers obsolètes"
-        age="${CRON_MAX_AGE:-30}"
-        find -name "checksums-*" -mtime "+$age" -delete
-        find -name "DRE_VERSION_*" -mtime "+$age" -delete
-        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
+        RUNFILE_PREFIX+=("$NOTIF_TIMEOUT")
     fi
-elif [ -f "$sums" ]; then
-    Tmpsums=
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
-else
-    die "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
-fi
+    for addon in "${ADDONS[@]}"; do
+        if [[ "$addon" == *:* ]]; then
+            aodir="${addon%:*}"
+            vxx="${addon##*:}"
+        else
+            aodir="$addon"
+            vxx=
+        fi
+        [ -d "$aodir/notifications" ] || continue
 
-estep "Calcul de la version"
-eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
+        etitle "$addon"; quietc_echo "** notifications $addon"
+        rundir "$aodir/notifications"
+        eend
+    done
+    eend
+}
+trap at_exit EXIT
+
+quietc_logto ${keep_import_log:+-a} "$IMPORT_LOG" "\
+================================================================================"
+qstep "Début de l'import le $DATE_DEB"
 
 if [ -n "$step_checkao" ]; then
     estep "Vérification des addons"
-    if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
-        [ -d "$AODIR/dreaddon-$SelectAo" ] && SelectAo="dreaddon-$SelectAo"
+    if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" ]; then
+        if [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
+            SelectAo="dreaddon-$SelectAo"
+        elif [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
+            SelectAo="dreaddon-$SelectAo"
+        fi
     fi
 
     read -a aourls <<<"${ADDON_URLS//
@@ -318,6 +304,10 @@ if [ -n "$step_checkao" ]; then
         aoname="${aoname%.git}"
         aodir="$AODIR/$aoname"
 
+        if [ "$aoname" == dreaddon-local ]; then
+            ewarn "le nom dreaddon-local est réservé. le dépôt $aourl a été ignoré"
+            continue
+        fi
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
         aonames+=("$aoname")
 
@@ -356,20 +346,127 @@ if [ -n "$step_checkao" ]; then
         UpdateAo="$origUpdateAo"
     done
 
-    if [ -n "$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
-        if [ -d "$AODIR/dreaddon-$SelectAo" ]; then
+    if [ -n "$SelectAo" ]; then
+        if [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
             array_del aonames "$SelectAo"
             SelectAo="dreaddon-$SelectAo"
             aonames+=("$SelectAo")
-        else
+        elif [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
+            array_del aonames "$SelectAo"
+            SelectAo="dreaddon-$SelectAo"
+            aonames+=("$SelectAo")
+        elif [ ! -d "$AODIR/$SelectAo" -a ! -d "$APPDIR/$SelectAo" ]; then
             ewarn "$SelectAo: addon non installé"
         fi
     fi
 
+    # Lister les addons pour permettre les notifications si nécessaire
     ADDONS=()
-    for aoname in "${aonames[@]}"; do
+    for aoname in dreaddon-local "${aonames[@]}"; do
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
-        aodir="$AODIR/$aoname"
+        if [ "${aoname#dreaddon-}" != "$aoname" -a -d "$APPDIR/$aoname" ]; then
+            aodir="$APPDIR/$aoname"
+        elif [ -d "$AODIR/$aoname" ]; then
+            aodir="$AODIR/$aoname"
+        else
+            eerror "$aoname: addon introuvable"
+            continue
+        fi
+
+        if [ ! -f "$aodir/dreaddon.conf" ]; then
+            ewarn "$aodir: n'est pas un répertoire d'addons"
+            continue
+        fi
+
+        ADDONS+=("$aodir")
+    done
+fi
+
+if [ -z "$DRE_PREFIX" ]; then
+    DRE_PREFIX="${DRE_URL}"
+    DRE_PREFIX="${DRE_PREFIX#https://dre-dump.}"
+    DRE_PREFIX="${DRE_PREFIX%/*}"
+    DRE_PREFIX="${DRE_PREFIX%.pc-scol.fr}"
+    [ "$APP_PROFILE" == prod ] && DRE_PREFIX="prod-$DRE_PREFIX"
+fi
+
+cd "$DLDIR"
+[ -n "$Timestamp" ] && Clean=
+if [ "$Timestamp" == latest ]; then
+    # prendre le dernier fichier checksums. utile pour --runao
+    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
+    Timestamp="${latest#checksums-}"
+    enote "Autosélection de -@ $Timestamp"
+fi
+if [ -z "$Timestamp" ]; then
+    if [ -n "$V29FIX_DY" ]; then
+        setx Timestamp=awk 'BEGIN { print strftime("%Y%m%d", mktime(strftime("%Y %m %d 00 00 00")) - 86400); }'
+        enote "Sélection de -@ $Timestamp (v29fix_dy)"
+    else
+        setx Timestamp=date +%Y%m%d
+    fi
+fi
+sums="checksums-$Timestamp"
+version="DRE_VERSION_$Timestamp"
+
+if [ -n "$step_dl" ]; then
+    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
+
+    if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
+        qstep "dl $sums"
+        dl "$sums" || critical
+    fi
+    ac_set_tmpfile Tmpsums
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
+
+    if [ ! -f "$version" ]; then
+        qstep "dl $version"
+        dl "$version" || critical
+    fi
+    for file in "${DL_FILES[@]}"; do
+        if [ ! -f "$file" ]; then
+            qstep "dl $file"
+            dl "$file" || critical
+        fi
+    done
+
+    qstep "Vérifications des sommes de contrôle"
+    sha256sum --status -c "$Tmpsums" ||
+        critical "Une erreur s'est produite lors de la vérification des sommes de contrôle"
+
+    if [ -n "$Clean" ]; then
+        qstep "Nettoyage des fichiers obsolètes"
+        age="${CRON_MAX_AGE:-30}"
+        find -name "checksums-*" -mtime "+$age" -delete
+        find -name "DRE_VERSION_*" -mtime "+$age" -delete
+        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
+    fi
+elif [ -f "$sums" ]; then
+    Tmpsums=
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
+else
+    critical "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
+fi
+
+estep "Calcul de la version"
+eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
+
+if [ -n "$step_checkao" ]; then
+    # Refaire la liste des addons en tenant compte de la version
+    estep "Calcul de la compatibilité des addons"
+    ADDONS=()
+    for aoname in dreaddon-local "${aonames[@]}"; do
+        [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
+        if [ "${aoname#dreaddon-}" != "$aoname" -a -d "$APPDIR/$aoname" ]; then
+            aodir="$APPDIR/$aoname"
+        elif [ -d "$AODIR/$aoname" ]; then
+            aodir="$AODIR/$aoname"
+        else
+            eerror "$aoname: addon introuvable"
+            continue
+        fi
 
         if [ ! -f "$aodir/dreaddon.conf" ]; then
             ewarn "$aodir: n'est pas un répertoire d'addons"
@@ -433,7 +530,7 @@ select datname from pg_database where datname like 'dre_tmp%' or datname like 'd
             estep "$tmpdb"
             runsql "\
 drop database if exists $tmpdb with (force);
-" || die
+" || critical
         done
         eend
 
@@ -442,9 +539,9 @@ drop database if exists $tmpdb with (force);
         etitle "Création de la base de données temporaire $tmpdb"
         runsql "\
 create database $tmpdb;
-" || die
+" || critical
         PGDATABASE="$tmpdb"
-        runsql "$(pg_grant_default_privileges)" || die
+        runsql "$(pg_grant_default_privileges)" || critical
         if [ -n "$PDBNAME" ]; then
             qstep "configuration $PDBNAME"
             quietc setup-pdb.sh
@@ -458,19 +555,19 @@ create database $tmpdb;
         done
         runsql "\
 drop schema if exists $schema_list cascade;
-" || die
+" || critical
         eend
     fi
 fi
 
 if [ -n "$step_import_bin" ]; then
     etitle "Importation des schémas (pgsql)"
-    for schema in "${FORCE_CREATE_SCHEMAS[@]}"; do
+    for schema in "${VxxFIX_FC[@]}"; do
         schema="schema_${schema#schema_}"
         qstep "$schema: create schema"
         runsql "\
 create schema if not exists $schema;
-" || die
+" || critical
     done
 
     for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
@@ -480,11 +577,11 @@ create schema if not exists $schema;
         qstep "$schema: drop extensions"
         runsql "\
 drop extension if exists unaccent, pg_trgm cascade;
-" || die
+" || critical
 
         qstep "$schema: import $file"
-        quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || die
-        runsql "$(pg_grant_schema_privileges "$schema")" || die
+        quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
+        runsql "$(pg_grant_schema_privileges "$schema")" || critical
     done
     eend
 fi
@@ -497,7 +594,7 @@ if [ -n "$step_import_json" ]; then
         qstep "$schema"
         runsql "\
 create schema if not exists $schema;
-" || die
+" || critical
     done
     eend
 
@@ -516,10 +613,10 @@ create schema if not exists $schema;
         qstep "$schema: $collection: import $file"
         runsql "
 create table if not exists $schema.$collection (source_json jsonb);
-" || die
+" || critical
         cat_json "$file" | runsql "
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
-" || die
+" || critical
     }
     import_json mongo_piste_inscription version_instance "$version"
     for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
@@ -532,7 +629,7 @@ copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'
         schema="mongo_$schema"
 
         qstep "$schema: maj authnz"
-        runsql "$(pg_grant_schema_privileges "$schema")" || die
+        runsql "$(pg_grant_schema_privileges "$schema")" || critical
     done
     eend
 fi
@@ -543,7 +640,7 @@ if [ -n "$step_runao" ]; then
 
     have_ignore_errors=
     for addon in "${ADDONS[@]}"; do
-        etitle "$addon"; quietc_echo "* install $addon"
+        etitle "$addon"; quietc_echo "** install $addon"
         if [[ "$addon" == *:* ]]; then
             aodir="${addon%:*}"
             vxx="${addon##*:}"
@@ -600,6 +697,7 @@ if [ -n "$step_runao" ]; then
 
         if [ -n "$errors" ]; then
             eimportant "Des erreurs se sont produites. l'installation de cet addon est incomplète"
+            HAVE_ERRORS=1
         fi
         eend
     done
@@ -648,7 +746,7 @@ truncate table \"_infos_$profile\";
 insert into \"_infos_$profile\" (description) values
 ('Cette base de données est sur l''instance du profil $profile')
 ;
-" || die
+" || critical
 fi
 
 if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
@@ -661,6 +759,7 @@ if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
     eend
 fi
 
+setx DATE_FIN=date +"%F %T"
 if [ -n "$step_import" ]; then
-    qstep "Fin de l'import le $(date +"%F %T")"
+    qstep "Fin de l'import le $DATE_FIN"
 fi

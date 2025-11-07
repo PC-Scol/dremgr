@@ -26,10 +26,5 @@ Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur
   `<PROFIL>_profile.env` que si le fichier existe. de cette façon,
   l'installation et la documentation sont simplifiés puisqu'il n'y a toujours
   qu'un seul fichier de configuration, quelle que soit la méthode d'installation
-* support dans dreaddons d'un script à lancer *après* que la base de données a
-  été complètement importée. cela permet de générer par exemple des
-  notifications pour des services externes, qui se basent sur le contenu de la
-  base DRE
-* migrer l'image vers debian 12
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

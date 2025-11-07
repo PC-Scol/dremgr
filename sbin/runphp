@@ -33,7 +33,7 @@ BUILDENV0=.build.env.dist
 BUILDENV=build.env
 
 # Listes des images que le script build construit automatiquement
-BUILD_IMAGES=(db web adminer pgadmin)
+BUILD_IMAGES=(db cron web adminer pgadmin)
 BUILD_FLAVOUR=
 
 ## En ce qui concerne DIST et IMAGENAME, les valeurs dans BUILDENV prennent le
@@ -42,7 +42,7 @@ BUILD_FLAVOUR=
 
 # version de debian à utiliser pour l'image
 # d12=php8.2, d11=php7.4, d10=php7.3
-DIST=d11
+DIST=d12
 
 # Nom de base de l'image (sans le registry), e.g prefix/
 IMAGENAME=dremgr/
@@ -70,7 +70,7 @@ if [ -f "$MYDIR/runphp.userconf.local" ]; then
     source "$MYDIR/runphp.userconf.local"
 fi
 
-DEFAULT_DIST=d12
+DEFAULT_DIST=d13
 if [ -n "$RUNPHP_STANDALONE" ]; then
     PROJDIR="$RUNPHP_PROJDIR"
 
@@ -446,9 +446,11 @@ OPTIONS
 
 function host_docker_run() {
     # lancer une commande avec docker
-    if [ "$1" == composer ]; then
-        : # pas d'analyse d'argument pour composer
-    else
+    case "$1" in
+    ci|cu|composer)
+        : # pas d'analyse d'argument pour les commandes composer
+        ;;
+    *)
         SOPTS=+w:
         LOPTS=help,chdir:,no-use-rslave
         args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
@@ -492,12 +494,13 @@ OPTIONS
             esac
             shift
         done
-    fi
+    esac
 
     args=(
         run -it --rm
         --name "runphp-$(basename -- "$1")-$$"
         -e RUNPHP_MODE=docker
+        ${RUNPHP_MYSELF:+-e "RUNPHP_MYSELF=$RUNPHP_MYSELF"}
     )
     for arg in "${!PROXY_VARS[@]}"; do
         args+=(-e "$arg=${PROXY_VARS[$arg]}")
@@ -513,33 +516,36 @@ OPTIONS
     done
 
     # monter le répertoire qui contient $PROJDIR
-    mount_composer=
-    mount_runphp=1
+    Cwd="$(pwd)"
+    mount_homes=1
+    mount_standalone=1
+    mount_mount=1
+    mount_cwd=1
     if [ -z "$PROJDIR" -o "${PROJDIR#$HOME/}" != "$PROJDIR" -o "$PROJDIR" == "$HOME" ]; then
         # bind mount $HOME
         args+=(-v "$HOME:$HOME${UseRslave:+:rslave}")
-        [ -n "$RUNPHP_STANDALONE" ] &&
-            [ "${RUNPHP_STANDALONE#$HOME/}" != "$RUNPHP_STANDALONE" ] &&
-            mount_runphp=
-    elif [ -n "$PROJDIR" ]; then
-        # bind mount uniquement le répertoire du projet
+        [ "${HOME#/home/}" != "$HOME" ] && mount_homes=
+        [ -n "$RUNPHP_STANDALONE" -a "${RUNPHP_STANDALONE#$HOME/}" != "$RUNPHP_STANDALONE" ] && mount_standalone=
+        [ -n "$RUNPHP_MOUNT" -a "${RUNPHP_MOUNT#$HOME/}" != "$RUNPHP_MOUNT" ] && mount_mount=
+        [ "${Cwd#$HOME/}" != "$Cwd" ] && mount_cwd=
+    elif [ -n "$PROJDIR" -a "${PROJDIR#/home/}" == "$PROJDIR" ]; then
+        # bind mount le répertoire du projet s'il n'est pas dans /home (qui est
+        # monté par défaut si $HOME n'est pas monté)
         args+=(-v "$PROJDIR:$PROJDIR${UseRslave:+:rslave}")
-        mount_composer=1
-        [ "$RUNPHP_STANDALONE" == "$PROJDIR" ] && mount_runphp=
+        [ "$RUNPHP_STANDALONE" == "$PROJDIR" -o "${RUNPHP_STANDALONE#$PROJDIR/}" != "$PROJDIR"] && mount_standalone=
+        [ "$RUNPHP_MOUNT" == "$PROJDIR" -o "${RUNPHP_MOUNT#$PROJDIR/}" != "$PROJDIR" ] && mount_mount=
+        [ "$Cwd" == "$PROJDIR" -o "${Cwd#$PROJDIR/}" != "$PROJDIR" ] && mount_cwd=
     fi
-    if [ -n "$mount_composer" -a -d "$HOME/.composer" ]; then
-        # monter la configuration de composer
-        args+=(-v "$HOME/.composer:$HOME/.composer")
-    fi
-    if [ -n "$RUNPHP_STANDALONE" -a -n "$mount_runphp" ]; then
-        args+=(-v "$RUNPHP_STANDALONE:$RUNPHP_STANDALONE")
-    fi
-    args+=(-w "$(pwd)")
+    [ -n "$mount_homes" ] && args+=(-v "/home:/home${UseRslave:+:rslave}")
+    [ -n "$RUNPHP_STANDALONE" -a -n "$mount_standalone" ] && args+=(-v "$RUNPHP_STANDALONE:$RUNPHP_STANDALONE${UseRslave:+:rslave}")
+    [ -n "$RUNPHP_MOUNT" -a -n "$mount_mount" ] && args+=(-v "$RUNPHP_MOUNT:$RUNPHP_MOUNT${UseRslave:+:rslave}")
+    [ -n "$mount_cwd" ] && args+=(-v "$Cwd:$Cwd${UseRslave:+:rslave}")
+    args+=(-w "$Cwd")
 
     # lancer avec l'utilisateur courant
     if [ $(id -u) -ne 0 ]; then
         # si c'est un utilisateur lambda, il faut monter les informations
-        # nécessaires. composer est déjà monté via $HOME
+        # nécessaires. composer est déjà monté via $HOME ou /home
         args+=(
             -e DEVUSER_USERENT="$(getent passwd "$(id -un)")"
             -e DEVUSER_GROUPENT="$(getent group "$(id -gn)")"
@@ -568,9 +574,22 @@ function container_exec() {
         fi
     fi
 
-    if [ "$1" == composer ]; then
-        : # pas d'analyse d'argument pour composer
-    else
+    # pour les commandes suivantes, pas d'analyse d'argument
+    case "$1" in
+    ci)
+        eecho "== installing composer dependencies"
+        shift
+        composer i "$@"
+        ;;
+    cu)
+        eecho "== upgrading composer dependencies"
+        shift
+        composer u "$@"
+        ;;
+    composer)
+        "$@"
+        ;;
+    *)
         SOPTS=+w:
         LOPTS=chdir:
         args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
@@ -585,26 +604,14 @@ function container_exec() {
             esac
             shift
         done
-    fi
 
-    if [ $# -eq 0 ]; then
-        die "no command specified"
-    elif [ "$1" == ci ]; then
-        eecho "== installing composer dependencies"
-        shift
-        composer i "$@"
-    elif [ "$1" == cu ]; then
-        eecho "== upgrading composer dependencies"
-        shift
-        composer u "$@"
-    elif [ "$1" == composer ]; then
-        "$@"
-    else
+        [ $# -gt 0 ] || die "no command specified"
         if [ -n "$chdir" ]; then
             cd "$chdir" || exit 1
         fi
         exec "$@"
-    fi
+        ;;
+    esac
 }
 
 ################################################################################

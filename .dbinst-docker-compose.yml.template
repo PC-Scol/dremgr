@@ -13,16 +13,16 @@ services:
     env_file:
       - .proxy.env
       - .defaults.env
-      - @@Profile@@_profile.env
+      - @@DATADIR@@/@@Profile@@-dredata/profile.env
       - .forced.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
       POSTGRES_PROFILE: @@Profile@@
     shm_size: 1G
     volumes:
-      - ./var/@@Profile@@-run:/run/postgresql
-      - ./var/@@Profile@@-dredata/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./var/@@Profile@@-pgdata:/var/lib/postgresql/data
+      - @@DATADIR@@/@@Profile@@-run:/run/postgresql
+      - @@DATADIR@@/@@Profile@@-dredata/postgresql.conf:/etc/postgresql/postgresql.conf
+      - @@DATADIR@@/@@Profile@@-pgdata:/var/lib/postgresql/data
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
@@ -36,17 +36,17 @@ services:
     restart: always
 
   cron:
-    image: @@PRIVAREG@@dremgr/db
+    image: @@PRIVAREG@@dremgr/cron
     env_file:
       - .proxy.env
       - .defaults.env
-      - @@Profile@@_profile.env
+      - @@DATADIR@@/@@Profile@@-dredata/profile.env
       - .forced.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre
       TAIL_LOGFILES: /data/dre/cron.log
-      UPDATE_CRON_FILES: dl-dumps
+      UPDATE_CRON_FILES: import-dumps
       UPDATE_CRON_VARS: >
         HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
         APP_PROFILE APP_DATADIR
@@ -55,14 +55,14 @@ services:
         FE_USER FE_USERS FE_ACCESS
         ADDON_URLS
         CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
-        FORCE_CREATE_SCHEMAS
-        V29FIX_DY
+        VxxFIX_FC V29FIX_DY
     command: cron
     volumes:
-      - ./var/@@Profile@@-run:/run/postgresql
-      - ./var/@@Profile@@-dredata/cron-config:/cron-config
-      - ./var/@@Profile@@-dredata:/data/dre
-      #@@IF:DlProfile@@- ./var/@@DlProfile@@-dredata/downloads:/data/dre/downloads
+      - .:/app/dremgr
+      - @@DATADIR@@/@@Profile@@-run:/run/postgresql
+      - @@DATADIR@@/@@Profile@@-dredata/cron-config:/cron-config
+      - @@DATADIR@@/@@Profile@@-dredata:/data/dre
+      #@@IF:DlProfile@@- @@DATADIR@@/@@DlProfile@@-dredata/downloads:/data/dre/downloads
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
     deploy:
