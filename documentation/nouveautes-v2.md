@@ -13,6 +13,10 @@ git pull
 
 # forcer la reconstruction de toutes les images
 ./build -rU
+# NB: une erreur peut apparaitre lors de la mise à jour
+#   Update failed (Failed to execute (git rev-parse ...
+#   Would you like to try reinstalling the package instead [yes]?
+# Il suffit de confirmer en appuyant sur la touche Entrée
 
 # démarrer les services
 ./dremgr
@@ -76,7 +80,7 @@ scripts qui sont exécutés à la fin de l'import, qu'il aie échoué ou non. Ce
 peut être utilisé par exemple pour envoyer un mail ou notifier des applications
 dépendantes de la mise à jour de DRE.
 
-Consulter [développement des addons](dreaddon-developpement.md) pour les détails
+Consulter [développement des addons](dreaddons-developpement.md) pour les détails
 
 ### Inclusion de dreaddon-local
 

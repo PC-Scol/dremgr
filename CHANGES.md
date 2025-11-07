@@ -1,3 +1,7 @@
+## Release 2.0.1 du 07/11/2025-13:34
+
+* `a52dd94` maj doc
+
 ## Release 2.0.0 du 07/11/2025-13:14
 
 Veuillez consulter [nouveautées de la v2](documentation/nouveautes-v2.md) pour
