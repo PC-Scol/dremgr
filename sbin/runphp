@@ -500,6 +500,7 @@ OPTIONS
         run -it --rm
         --name "runphp-$(basename -- "$1")-$$"
         -e RUNPHP_MODE=docker
+        ${RUNPHP_MYSELF:+-e "RUNPHP_MYSELF=$RUNPHP_MYSELF"}
     )
     for arg in "${!PROXY_VARS[@]}"; do
         args+=(-e "$arg=${PROXY_VARS[$arg]}")
