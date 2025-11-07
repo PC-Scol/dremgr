@@ -30,9 +30,12 @@ Application::run(new class extends Application {
   function main() {
     config::add(new YamlConfig(__DIR__.'/sendmails.yml'));
 
+    # ne pas envoyer de mail si c'est désactivé
     $disabled = vbool::with(config::k("disabled"));
     if ($disabled) return;
 
+    # ne pas envoyer de mail si on n'est pas dans le cadre de la planification
+    # et que require_cron==true
     $requireCron = vbool::with(config::k("require_cron"));
     $isCron = self::get_bool("TEM_CRON");
     if ($requireCron && !$isCron) return;
@@ -66,10 +69,14 @@ Application::run(new class extends Application {
     }
     $cc = cl::withn(config::k("cc"));
 
+    # ne pas envoyer de mail si aucun destinataire n'est spécifié
+    if (!$to) return;
+
     $mail = (new MailTemplate($template))->eval([
       "date_debut" => $dateDeb,
       "date_fin" => $dateFin,
       "duree" => $duree,
+      "is_cron" => $isCron,
       "is_download" => $isDownload,
       "is_import" => $isImport,
       "is_addons" => $isAddons,

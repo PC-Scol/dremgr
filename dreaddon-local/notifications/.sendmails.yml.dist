@@ -30,7 +30,8 @@ app:
     - bob@domaine.fr
     - alice@domaine.fr
   # destinataires qui recevront systématiquement les mails en copie, qu'il y aie
-  # des erreurs ou non
+  # des erreurs ou non. si les champs to: ne sont pas renseignés, le mail n'est
+  # pas envoyé
   cc:
 
 mails:
