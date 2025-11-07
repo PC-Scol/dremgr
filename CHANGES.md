@@ -1,3 +1,25 @@
+## Release 2.0.0 du 07/11/2025-13:14
+
+Veuillez consulter [nouveautées de la v2](documentation/nouveautes-v2.md) pour
+le détail des changements et les instructions de mise à jour
+
+* `b893970` maj runphp
+* `5ad613d` ne pas envoyer de mail si aucun destinataire n'est spécifié
+* `abbea5f` support de la notification uniquement pendant la planification
+* `e2b2f4c` support du mode simple
+* `97afb8c` exemples de scripts de notification: sendmails.php, notify.sh
+* `5567438` réorganiser les fichiers de paramètres + support DATADIR
+* `37dc156` Intégration de la branche wip/notifications
+  * `0bc6d06` lancer les notifications même en cas d'erreur critique
+  * `587a8bc` support des notifications
+* `e3f8a81` mise à jour pgAdmin v9
+* `bab683c` renommer dl-dumps en import-dumps
+* `343f6bf` migration vers debian 12
+* `759d760` ajouter le support dreaddon-local
+* `3f7ad0c` les imports sont maintenant effectués par défaut à 4h
+* `c079466` dans les addons, tous les scripts exécutables sont considérés, pas seulement les fichiers .sh
+* `8e3d397` afficher l'espace requis pour les fichiers de dumps
+
 ## Release 1.8.0 du 05/09/2025-09:36
 
 * `cd5d024` corriger l'import des fichiers .json.gz
