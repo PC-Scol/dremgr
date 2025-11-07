@@ -14,9 +14,7 @@ app:
     host: smtp.domaine.fr
     username:
     password:
-    # décommenter la ligne suivante si la connexion au serveur se fait avec
-    # STARTTLS ou SMTPS
-    #secure: true
+    secure: true
 
   # expéditeur du mail
   from: no-reply@domaine.fr

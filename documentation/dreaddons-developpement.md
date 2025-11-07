@@ -105,6 +105,17 @@ est copié dans vYY, puis les fichiers sont adaptés au besoin. Ça simplifie la
 maintenance: pas besoin de fusionner mentalement la liste des fichiers de
 plusieurs répertoires pour savoir ce qui est exécuté.
 
+## Notifications
+
+Les scripts du répertoire `notifications` sont exécutés à la fin de l'import
+quotidien, qu'il aie réussi ou non. Ces scripts peuvent servir à envoyer des
+mails de rapport, à notifier un services que les données ont été mises à jour,
+etc.
+
+Par défaut, chaque script n'est autorisé à tourner que 30s + 30s de délai de
+grâce. Cf la description des paramètres `NOTIF_TIMEOUT` et `NOTIF_TIMEOUT_KILL`
+pour les détails.
+
 ## Documentation
 
 Si le répertoire `documentation` existe, son contenu direct est mis à
