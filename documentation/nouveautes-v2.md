@@ -76,7 +76,7 @@ scripts qui sont exécutés à la fin de l'import, qu'il aie échoué ou non. Ce
 peut être utilisé par exemple pour envoyer un mail ou notifier des applications
 dépendantes de la mise à jour de DRE.
 
-Consulter [développement des addons](dreaddon-developpement.md) pour les détails
+Consulter [développement des addons](dreaddons-developpement.md) pour les détails
 
 ### Inclusion de dreaddon-local
 
