@@ -13,6 +13,10 @@ git pull
 
 # forcer la reconstruction de toutes les images
 ./build -rU
+# NB: une erreur peut apparaitre lors de la mise à jour
+#   Update failed (Failed to execute (git rev-parse ...
+#   Would you like to try reinstalling the package instead [yes]?
+# Il suffit de confirmer en appuyant sur la touche Entrée
 
 # démarrer les services
 ./dremgr
