@@ -36,11 +36,7 @@ function verifix_mode() {
 }
 
 function get_envfile() {
-    if [ -n "$Profile" -a -f "$DREMGR/${Profile}_profile.env" ]; then
-        echo "$DREMGR/${Profile}_profile.env"
-    else
-        echo "$DREMGR/dremgr.env"
-    fi
+    echo "$DREMGR/dremgr.env"
 }
 function get_envfiles() {
     echo "$DREMGR/.defaults.env"
@@ -69,7 +65,6 @@ function load_envs() {
 
 function ensure_dirs() {
     # créer les répertoires de profil
-    mkdir -p "$DREMGR/var"
     local -a profiles; local profile datadir dredata
     if [ -n "$Profile" ]; then
         profiles=("$Profile")
