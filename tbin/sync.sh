@@ -2,7 +2,7 @@
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 source /etc/nulib.sh || exit 1
 
-SOURCE=root@pegase-dre2023.univ.run:dremgr
+SOURCE=root@pegase-dre2023.univ.run:/data/dremgr
 
 profile=
 date=
@@ -32,7 +32,7 @@ if [ -n "$sync" ]; then
     args=(
         -vrltp
         --include "*$date*" --exclude "*" --delete-excluded
-        "$SOURCE/var/${profile}-dredata/downloads/"
+        "$SOURCE/${profile}-dredata/downloads/"
         "var/${profile}-dredata/downloads/"
     )
     rsync "${args[@]}"
