@@ -1,3 +1,7 @@
+## Release 2.0.2 du 08/11/2025-16:50
+
+* `b00ddbf` supprimer effectivement le support des fichiers *_profile.env
+
 ## Release 2.0.1 du 07/11/2025-13:34
 
 * `a52dd94` maj doc
