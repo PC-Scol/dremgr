@@ -532,7 +532,7 @@ OPTIONS
         # bind mount le répertoire du projet s'il n'est pas dans /home (qui est
         # monté par défaut si $HOME n'est pas monté)
         args+=(-v "$PROJDIR:$PROJDIR${UseRslave:+:rslave}")
-        [ "$RUNPHP_STANDALONE" == "$PROJDIR" -o "${RUNPHP_STANDALONE#$PROJDIR/}" != "$PROJDIR"] && mount_standalone=
+        [ "$RUNPHP_STANDALONE" == "$PROJDIR" -o "${RUNPHP_STANDALONE#$PROJDIR/}" != "$PROJDIR" ] && mount_standalone=
         [ "$RUNPHP_MOUNT" == "$PROJDIR" -o "${RUNPHP_MOUNT#$PROJDIR/}" != "$PROJDIR" ] && mount_mount=
         [ "$Cwd" == "$PROJDIR" -o "${Cwd#$PROJDIR/}" != "$PROJDIR" ] && mount_cwd=
     fi
