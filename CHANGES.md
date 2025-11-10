@@ -1,3 +1,5 @@
+## Release 2.0.4 du 10/11/2025-06:00
+
 ## Release 2.0.3 du 10/11/2025-05:48
 
 * `41e10d7` ajouter le profil dans le sujet du mail
