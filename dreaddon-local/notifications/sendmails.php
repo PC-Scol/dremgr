@@ -28,8 +28,6 @@ Application::run(new class extends Application {
   }
 
   function main() {
-    config::add(new YamlConfig(__DIR__.'/sendmails.yml'));
-
     # ne pas envoyer de mail si c'est désactivé
     $disabled = vbool::with(config::k("disabled"));
     if ($disabled) return;
