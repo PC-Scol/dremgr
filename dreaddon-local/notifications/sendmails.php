@@ -40,6 +40,7 @@ Application::run(new class extends Application {
     $isCron = self::get_bool("TEM_CRON");
     if ($requireCron && !$isCron) return;
 
+    $profile = self::get_string("APP_PROFILE");
     $dateDeb = self::get_datetime("DATE_DEB");
     $dateFin = self::get_datetime("DATE_FIN");
     if ($dateDeb !== null && $dateFin !== null) {
@@ -73,6 +74,7 @@ Application::run(new class extends Application {
     if (!$to) return;
 
     $mail = (new MailTemplate($template))->eval([
+      "profile" => $profile,
       "date_debut" => $dateDeb,
       "date_fin" => $dateFin,
       "duree" => $duree,

@@ -36,7 +36,7 @@ mails:
   # Mail envoyé aux destinataires [to] et [cc] en cas d'importation avec succès
   success:
     subject: >
-      [dremgr] Importation des dumps DRE effectuée avec succès
+      [dremgr {profile}] Importation des dumps DRE effectuée avec succès
     body: |
       Bonjour,
 
@@ -52,7 +52,7 @@ mails:
   # produite pendant l'importation
   error:
     subject: >
-      [dremgr] Erreur lors de l'importation des dumps DRE
+      [dremgr {profile}] Erreur lors de l'importation des dumps DRE
     body: |
       Bonjour,
 
@@ -72,7 +72,7 @@ mails:
   # critique s'est produite pendant l'importation
   critical:
     subject: >
-      [dremgr] Erreur CRITIQUE lors de l'importation des dumps DRE
+      [dremgr {profile}] Erreur CRITIQUE lors de l'importation des dumps DRE
     body: |
       Bonjour,
 
