@@ -1,3 +1,7 @@
+## Release 2.0.3 du 10/11/2025-05:48
+
+* `41e10d7` ajouter le profil dans le sujet du mail
+
 ## Release 2.0.2 du 08/11/2025-16:50
 
 * `b00ddbf` supprimer effectivement le support des fichiers *_profile.env
