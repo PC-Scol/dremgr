@@ -1,24 +1,6 @@
-## Release 2.0.6 du 20/11/2025-07:37
+## Release 2.0.7 du 20/11/2025-07:40
 
-* `20e2361` maj doc
-* `ec2fd10` ne pas activer notify.sh par défaut
-* `43f2600` ignorer le répertoire de doc
-
-## Release 2.0.5 du 10/11/2025-06:07
-
-## Release 2.0.4 du 10/11/2025-06:00
-
-## Release 2.0.3 du 10/11/2025-05:48
-
-* `41e10d7` ajouter le profil dans le sujet du mail
-
-## Release 2.0.2 du 08/11/2025-16:50
-
-* `b00ddbf` supprimer effectivement le support des fichiers *_profile.env
-
-## Release 2.0.1 du 07/11/2025-13:34
-
-* `a52dd94` maj doc
+* `02e04bf` maj doc
 
 ## Release 2.0.0 du 07/11/2025-13:14
 
