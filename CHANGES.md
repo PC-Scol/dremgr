@@ -1,3 +1,7 @@
+## Release 2.0.7 du 20/11/2025-07:40
+
+* `02e04bf` maj doc
+
 ## Release 2.0.0 du 07/11/2025-13:14
 
 Veuillez consulter [nouveautées de la v2](documentation/nouveautes-v2.md) pour
