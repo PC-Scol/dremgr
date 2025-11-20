@@ -1,0 +1,34 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+# IMPORTANT: il faut rendre ce script exécutable pour qu'ils soit pris en
+# compte, i.e
+#     chmod +x notify.sh
+
+# Exemple de script pour notifier un webservice suite à une importation des
+# dumps et l'exécution des addons *sans erreurs*
+# Si une erreur se produit pendant l'importation, ne script ne fait rien.
+
+# si une erreur critique s'est produite
+if [ -n "$CRITICAL_ERROR" ]; then
+    # ici, on choisit d'arrêter le script puisque la base de données n'a pas été
+    # mise à jour
+    exit
+fi
+
+# si une erreur non critique s'est produite
+if [ -n "$HAVE_ERRORS" ]; then
+    # ici, on choisit d'arrêter le script puisque la base de données n'a pas été
+    # mise à jour de façon cohérente
+    exit
+fi
+
+# vérifier si cette notification survient suite à la planification quotidienne
+if [ -z "$TEM_CRON" ]; then
+    # ici, on choisit d'arrêter le script. mais on pourrait tout aussi bien
+    # notifier à chaque mise à jour, qu'elle soit planifiée ou non
+    exit
+fi
+
+# c'est bon toutes les conditions sont remplies, lancer la notification
+
+#curl -d service=dremgr 'https://notifs.domaine.fr/service-hooks/'
