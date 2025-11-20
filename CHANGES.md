@@ -1,3 +1,9 @@
+## Release 2.0.6 du 20/11/2025-07:37
+
+* `20e2361` maj doc
+* `ec2fd10` ne pas activer notify.sh par défaut
+* `43f2600` ignorer le répertoire de doc
+
 ## Release 2.0.5 du 10/11/2025-06:07
 
 ## Release 2.0.4 du 10/11/2025-06:00
