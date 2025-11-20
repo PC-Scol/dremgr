@@ -12,6 +12,7 @@ app:
   # compte/mot de passe éventuel
   mailer:
     host: smtp.domaine.fr
+    port: 25
     username:
     password:
     secure: true
