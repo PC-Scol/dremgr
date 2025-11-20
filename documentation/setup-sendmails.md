@@ -22,4 +22,27 @@ mais il faudra au moins temporairement paramétrer `require_cron: false` pour qu
 la notification soit envoyée alors que ce n'est pas l'import de la planification
 quotidienne.
 
+## Configuration du serveur de mail
+
+Les paramètres suivants sont supportés pour la clé `app.mailer`
+
+`host`
+: nom d'hôte du serveur SMTP. cette valeur est obligatoire
+
+`port`
+: port du serveur SMTP. la valeur par défaut est 25, mais en fonction des
+  serveurs ça peut être 587 ou 465
+
+`username`
+`password`
+: compte et mot de passe à utiliser le cas échéant. laisser vide si la connexion
+  se fait sans mot de passe
+
+`secure`
+: type de connexion sécurisée:
+  * `false` pour une connexion en clair
+  * `true` pour auto-détecter le type de connexion sécurisée
+  * `tls` pour connexion TLS (avec généralement le port 587)
+  * `ssl` pour connexion SSL (avec généralement le port 465)
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

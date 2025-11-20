@@ -3,17 +3,7 @@
 Vous pouvez spécifier des utilisateurs supplémentaires à créer. Cela permet de
 faciliter le suivi et le controle d'accès à la base de données DRE.
 
-Dans le mode d'installation avancé, il faut commencer par modifier la définition
-de `PGBOUNCER_USERS`
-~~~sh
-# remplacer la définition de PGBOUNCER_USERS par cette valeur
-PGBOUNCER_USERS="$FE_USER:$FE_PASSWORD $FE_USERS"
-~~~
-Cela permet de se connecter avec les nouveaux utilisateurs via le frontal
-pgbouncer
-
-Puis, *avant* la ligne `PGBOUNCER_USERS` il faut définir les paramètres
-`FE_USERS` et `FE_ACCESS`
+Renseigner les paramètres `FE_USERS` et `FE_ACCESS`
 ~~~sh
 # utilisateurs supplémentaires à créer, un par ligne. la syntaxe à utiliser est
 #     user:password
@@ -34,13 +24,14 @@ bob:ro
 "
 ~~~
 
-Si l'un des paramètres `FE_USERS` et/ou `FE_ACCESS` est modifié, il faut
-redémarrer les instances
+Si l'un des paramètres `FE_USERS` et/ou `FE_ACCESS` est modifié, redémarrer les
+instances
 ~~~sh
 ./dremgr -r
 ~~~
 
-Puis il faut lancer la commande pour créer les nouveaux comptes
+*Après* avoir redémarré les instances, lancer la commande pour créer les
+nouveaux comptes
 ~~~sh
 ./dbinst -Ax create-pgusers.sh
 ~~~
