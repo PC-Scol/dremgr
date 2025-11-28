@@ -59,7 +59,11 @@ class IndexPage extends ANavigablePage {
     $this->docdir = $docdir = path::join("/data", $profile, "documentation");
     $metadata = file::try_ext("$docdir/metadata.yml", ".yaml");
     if ($metadata !== null) $metadata = yaml::load($metadata);
-    $files = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    if (is_dir($docdir)) {
+      $files = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    } else {
+      $files = [];
+    }
     $docs = [];
     foreach ($files as $file) {
       if ($file === "metadata.yml" || $file === "metadata.yaml") continue;
