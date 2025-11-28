@@ -1,6 +1,6 @@
 # Pré-requis sous WSL
 
-dremgr est développé et testé sur Debian 12. Il est cependant possible de le
+DREmgr est développé et testé sur Debian 12. Il est cependant possible de le
 faire fonctionner sous WSL en faisant attention à certains points.
 
 Installer tout d'abord WSL en suivant les instructions sur <https://aka.ms/wslinstall>
@@ -11,7 +11,7 @@ wsl --install -d debian
 Puis installer Docker Desktop <https://www.docker.com/products/docker-desktop/>
 
 Lancer Docker Desktop pour s'assurer de la présence des services nécessaires. Il
-faut garder Docker Desktop ouvert à chaque utilisation de dremgr
+faut garder Docker Desktop ouvert à chaque utilisation de DREmgr
 
 Lancer Debian, puis installer les outils nécessaires
 ~~~sh

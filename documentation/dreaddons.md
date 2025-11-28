@@ -1,11 +1,11 @@
 # DREaddons
 
-dremgr supporte l'installation d'addons accessible via des dépôts git.
+DREmgr supporte l'installation d'addons accessible via des dépôts git.
 
 ## Addon local
 
 [Le répertoire dreaddon-local](../dreaddon-local/README.md) est particulier: il
-est livré avec dremgr et il est toujours installé, indépendamment de la
+est livré avec DREmgr et il est toujours installé, indépendamment de la
 configuration `ADDON_URLS`.
 
 Cet addon est directement modifiable par l'utilisateur. Cela permet d'installer

@@ -3,9 +3,9 @@
 > Prenez le temps de lire [ces instructions](UPDATE.md) AVANT de commencer à
 > faire quoi que ce soit.
 
-# dremgr
+# DREmgr
 
-dremgr est un environnement pour la gestion d'une ou plusieurs instances de base
+DREmgr est un environnement pour la gestion d'une ou plusieurs instances de base
 de données DRE
 
 DRE est un acronyme de Données Répliquées en Etablissement, et permet d'avoir
@@ -21,10 +21,13 @@ base de données DRE, afin d'offrir une vue consolidée aux données.
 > **Obtenir de l'aide**
 > Envoyez un message sur le [forum PC-SCOL](https://forum.pc-scol.fr)
 > en mentionnant `@jclain`
+>
+> Vous avez fait l'installation, mais vous avez une interrogation? Un doute?
+> Consultez la [foire aux questions](documentation/FAQ.md)
 
 ## Faire l'installation initiale
 
-dremgr est développé et testé sur Debian 12. Il devrait fonctionner sur
+DREmgr est développé et testé sur Debian 12. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
 La configuration par défaut est optimisée pour une machine avec **4Go de RAM**,
@@ -83,7 +86,7 @@ liens pour avoir des détails sur la procédure.
 * Enfin, vous devez choisir le mode de fonctionnement: le mode simple n'installe
   qu'une seule instance de la base de données ainsi que du mécanisme pour la
   mettre à jour quotidiennement. Ce mode n'offre aucune interface utilisateur.
-  [Installer dremgr dans le mode simple](documentation/03installation-simple.md)
+  [Installer DREmgr dans le mode simple](documentation/03installation-simple.md)
   ~~~sh
   ./dremgr
   ~~~
@@ -96,7 +99,7 @@ liens pour avoir des détails sur la procédure.
 * Le mode avancé permet d'installer autant d'instances que nécessaire sur une
   même machine. Elle offre aussi une interface utilisateur, mais elle demande
   (un peu) plus de travail.
-  [Installer dremgr dans le mode avancé](documentation/03installation-avancee.md)
+  [Installer DREmgr dans le mode avancé](documentation/03installation-avancee.md)
 
 > [!TIP]
 > Vous avez fait l'installation, mais vous avez une interrogation? Un doute?

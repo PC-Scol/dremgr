@@ -4,7 +4,7 @@ ou [pour windows/WSL](00prerequis-wsl.md)
 
 # Cloner le dépôt
 
-dremgr s'installe et se met à jour à partir du dépôt git.
+DREmgr s'installe et se met à jour à partir du dépôt git.
 
 Ouvrez un terminal et clonez le dépôt
 ~~~sh

@@ -1,6 +1,6 @@
 # Développement DREaddons
 
-dremgr supporte l'installation d'addons accessible via des dépôts git. Cette
+DREmgr supporte l'installation d'addons accessible via des dépôts git. Cette
 page indique comment développer ses propres addons.
 
 Il existe un [template sur github](https://github.com/PC-Scol/dreaddon-template)
@@ -16,7 +16,7 @@ Les variables suivantes peuvent être configurées:
 `SCHEMAS`
 : cette variable liste le ou les schémas à créer et provisionnés par cet addon.
 
-  la création des schémas se fait par le script d'import de dremgr sur la base
+  la création des schémas se fait par le script d'import de DREmgr sur la base
   de cette variable, mais il est possible aussi de faire créer le schéma par
   l'addon, surtout si la création se fait avec des paramètres particuliers.
 
@@ -53,7 +53,7 @@ L'importation des schémas DRE se fait de cette manière:
   `dreaddon.conf`
 * Importation des dumps du jour livrés par DRE
 * Traitements des scripts des addons, dans l'ordre mentionné dans la
-  configuration de dremgr
+  configuration de DREmgr
 
 Pour chaque addon, les scripts sont lancés depuis les répertoires suivants:
 
@@ -75,13 +75,13 @@ Pour chaque addon, les scripts sont lancés depuis les répertoires suivants:
   utilisé par toutes les versions de DRE égales ou supérieures à `MM`, jusqu'à
   ce qu'une version spécifique soit livrée.
 * l'accès en lecture à toutes les tables des schémas est donné aux utilisateurs
-  configurés dans dremgr. puis les scripts du répertoire `updates` sont lancés.
+  configurés dans DREmgr. puis les scripts du répertoire `updates` sont lancés.
 
 Quand on parle de scripts, il s'agit de tous les fichiers `*.sql` ainsi que des
 scripts exécutables (quelle que soit l'extension). Les autres fichiers sont
 ignorés.
 
-Comme l'environnement est configuré comme il se doit par dremgr, les scripts
+Comme l'environnement est configuré comme il se doit par DREmgr, les scripts
 exécutables shell peuvent lancer directement psql pour attaquer la base de
 données.
 
@@ -119,11 +119,11 @@ pour les détails.
 ## Documentation
 
 Si le répertoire `documentation` existe, son contenu direct est mis à
-disposition du frontal de dremgr
+disposition du frontal de DREmgr
 
 En mode de compatibilité `vxx`, si le répertoire `documentation/vMM` existe (où
 MM est la version majeure de DRE), son contenu direct est aussi mis à
-disposition du frontal de dremgr
+disposition du frontal de DREmgr
 
 Cela permet de fournir aux utilisateurs la version la plus à jour correspondant
 à la base DRE installée
@@ -157,16 +157,16 @@ vers `monfichier.doc`
 ## Tester un addon en cours de développement
 
 Lorsqu'on développe un addon, il faut pouvoir tester les scripts avant de les
-envoyer en production. Une façon de faire est d'avoir une installation de dremgr
+envoyer en production. Une façon de faire est d'avoir une installation de DREmgr
 sur son poste (via WSL ou autre méthode) et lancer l'importation à chaque fois.
 
-* Installer dremgr sur son poste avec la même configuration qu'en prod
+* Installer DREmgr sur son poste avec la même configuration qu'en prod
 * Il n'est pas forcément possible de télécharger les fichiers depuis le poste du
   développeur à cause de la restriction sur l'adresse IP. il faut donc récupérer
   les fichiers depuis le serveur de prod
   ~~~sh
   # ici, on récupére les fichiers depuis le serveur monserveur.univ.tld dans le
-  # profil prod, en partant du principe que dremgr est installé dans le
+  # profil prod, en partant du principe que DREmgr est installé dans le
   # répertoire d'origine de root, et on les copie dans le répertoire courant
   # dans le profil prod
   src_dremgr=root@monserveur.univ.tld:dremgr

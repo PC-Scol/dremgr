@@ -7,7 +7,7 @@ interface utilisateur.
 
 Si vous souhaitez offrir une interface aux utilisateurs, ou gérer facilement
 plusieurs instances sur la même machine, il faut sélectionner le mode avancé.
-[Installer dremgr dans le mode avancé](03installation-avancee.md)
+[Installer DREmgr dans le mode avancé](03installation-avancee.md)
 
 # Installer dans le mode simple
 
@@ -45,7 +45,7 @@ ligne `MODE_SIMPLE=1`. *Au minimum*, modifiez les variables dont la valeur est
   base de données persistante.
 
 `ADDON_URLS`
-: Liste d'URLs de dépôts git contenant des "addons" de dremgr. Par défaut, les
+: Liste d'URLs de dépôts git contenant des "addons" de DREmgr. Par défaut, les
   deux URLs de github suivants sont listés:
   * `PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
@@ -101,7 +101,7 @@ définie dans la variable `CRON_PLAN` c'est à dire par défaut 4h
 > le paramètre `DBVIP` (ou mettre l'adresse IP de l'interface d'écoute). Bien
 > entendu, il faut relancer les services en cas de changement de configuration.
 
-NB: le lecteur attentif aura remarqué que dans la configuration dremgr.env, il
+NB: le lecteur attentif aura remarqué que dans la configuration `dremgr.env`, il
 est mentionné que la base de données est accessible avec le nom `prod_dre` alors
 que la commande ci-dessus fait la connexion avec le nom `dre`. C'est parce que
 la configuration indique le nom à utiliser lorsque la base de données est

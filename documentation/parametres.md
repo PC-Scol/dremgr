@@ -1,7 +1,7 @@
-# Paramètres dremgr
+# Paramètres DREmgr
 
 `build` a besoin de certains paramètres pour pouvoir construire les images
-nécessaires à dremgr
+nécessaires à DREmgr
 
 `dbinst`, `dbfront` et `webfront` ont besoin de certains paramètres pour
 démarrer les services associés
@@ -347,7 +347,7 @@ ADMINER_DB="$DBNAME"
 `DATADIR`
 : répertoire de données. ce paramètre permet de spécifier l'emplacement des
   données si on souhaite qu'elles ne soient pas dans le répertoire
-  d'installation de dremgr.
+  d'installation de DREmgr.
 
   Par exemple, en production, on peut décider de cloner le dépôt dans
   `/opt/dremgr` et définir le répertoire de données
@@ -355,7 +355,7 @@ ADMINER_DB="$DBNAME"
   DATADIR=/var/dremgr
   ~~~
   Le chemin devrait être absolu. S'il est relatif, il est exprimé par rapport au
-  répertoire d'installation de dremgr.
+  répertoire d'installation de DREmgr.
 
 **Paramètres privés non documentés**
 
