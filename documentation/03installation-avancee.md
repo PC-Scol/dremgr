@@ -5,7 +5,7 @@ Le mode avancé permet d'installer autant d'instances que nécessaire sur une m�
 machine. Elle offre aussi une interface utilisateur, mais elle demande (un peu)
 plus de travail.
 
-Si vous avez déjà installé dremgr dans le mode simple, ce n'est pas gênant, il
+Si vous avez déjà installé DREmgr dans le mode simple, ce n'est pas gênant, il
 suffit de faire une simple modification pour basculer dans le mode avancé
 
 # Installer dans le mode avancé
@@ -79,7 +79,7 @@ suivantes seront configurées le cas échéant:
   est plus appropriée
 
 `ADDON_URLS`
-: Liste d'URLs de dépôts git contenant des "addons" de dremgr. Par défaut, les
+: Liste d'URLs de dépôts git contenant des "addons" de DREmgr. Par défaut, les
   deux URLs suivants sont listés:
   * `PC-Scol/dreaddon-documentation.git`
     documentation technique et fonctionnelle de DRE
@@ -156,8 +156,8 @@ Ensuite, démarrer les services frontaux
 ./dremgr
 ~~~
 
-Le script dremgr permet de piloter tous les services en une seule commande. les
-scripts dbinst, dbfront et webfront permettent de piloter les services
+Le script `dremgr` permet de piloter tous les services en une seule commande.
+Les scripts `dbinst`, `dbfront` et `webfront` permettent de piloter les services
 individuellement.
 
 Par exemple, après un changement de configuration, on voudra sans doute ne
@@ -233,7 +233,7 @@ L'image DOIT avoir une hauteur de 50 pixel. La largeur importe peu.
 
 Si vous souhaitez activer l'accès en https, il y a un certain nombre
 d'opérations supplémentaires à effectuer. Le support est géré directement par
-le serveur apache qui fait tourner dremgr.
+le serveur apache qui fait tourner DREmgr.
 
 Modifiez le fichier `dremgr.env` pour indiquer le port sur lequel écouter en
 https (il s'agit habituellemet du port 443)

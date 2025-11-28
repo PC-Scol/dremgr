@@ -1,6 +1,6 @@
-# Nouveautés de dremgr 2.0
+# Nouveautés de DREmgr 2.0
 
-Ce document liste toutes les nouveautés de la version 2.0 de dremgr
+Ce document liste toutes les nouveautés de la version 2.0 de DREmgr
 
 La mise à jour nécessite une trentaire de minutes, le temps de reconstruire les
 images. Avec le mode avancé, la mise à jour se fait de cette façon:

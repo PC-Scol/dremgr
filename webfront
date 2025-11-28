@@ -25,7 +25,7 @@ function start_webfront() {
     if [ -n "$ForceStart" ]; then
         :
     elif dcrunning "${composefiles[@]}"; then
-        enote "Le frontal web DRE est démarré"
+        enote "Le frontal web DREmgr est démarré"
         return
     fi
 
@@ -34,7 +34,7 @@ function start_webfront() {
 
     "$MYDIR/build" ${Rebuild:+--rebuild} || die
 
-    estep "Démarrage du frontal web DRE"
+    estep "Démarrage du frontal web DREmgr"
     docker compose "${composeargs[@]}" up -d --wait ${Recreate:+--force-recreate} || die
 
     #if [ -n "$reload" ]; then
@@ -50,7 +50,7 @@ function stop_webfront() {
 
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
-        estep "Arrêt du frontal web DRE"
+        estep "Arrêt du frontal web DREmgr"
         docker compose "${composeargs[@]}" down || die
     fi
 }
@@ -72,7 +72,7 @@ Recreate=
 action=auto
 Rebuild=
 args=(
-    "Gérer le frontal web de DRE"
+    "Gérer le frontal web de DREmgr"
     #"usage"
     --check-only action=none "++Ne faire que la vérification de l'environnement"
     -s,--start action=start "Démarrer le frontal web"

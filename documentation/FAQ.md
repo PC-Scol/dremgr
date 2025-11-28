@@ -187,7 +187,7 @@ Vous trouverez sans doute des choses intéressantes sur les sites suivants:
 * https://www.postgresql.org/docs/current/performance-tips.html
 * https://postgresqlco.nf/tuning-guide
 
-La configuration par défaut livrée avec dremgr est plus ou moins taillée pour un
+La configuration par défaut livrée avec DREmgr est plus ou moins taillée pour un
 serveur avec 4Go de RAM, 2 coeurs et un disque SSD
 
 Les valeurs suivantes sont modifiées par rapport aux valeurs par défaut:

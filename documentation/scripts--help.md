@@ -5,14 +5,14 @@ aide intégrée affichée avec l'option `--help`
 
 ## build
 
-build sert à construire les images nécessaires à dremgr
+`build` sert à construire les images nécessaires à DREmgr
 
 Aide standard
 ~~~sh
 ./build --help
 ~~~
 ~~~
-build: Construire les images pour DRE
+build: Construire les images pour DREmgr
 
 USAGE
     build [options]
@@ -31,7 +31,7 @@ Aide avancée
 ./build --help++
 ~~~
 ~~~
-build: Construire les images pour DRE
+build: Construire les images pour DREmgr
 
 USAGE
     build [options]
@@ -52,7 +52,7 @@ OPTIONS
 
 ## dremgr
 
-dremgr sert à piloter en une seule commandes les frontaux (via `webfront` et
+`dremgr` sert à piloter en une seule commandes les frontaux (via `webfront` et
 `dbfront`) et les instances DRE (via `dbinst`)
 
 Aide standard
@@ -100,7 +100,7 @@ OPTIONS
 
 ## dbinst
 
-dbinst sert à gérer les instances des bases de données
+`dbinst` sert à gérer les instances des bases de données
 
 Aide standard
 ~~~sh
@@ -191,14 +191,14 @@ OPTIONS
 
 ## dbfront
 
-dbfront sert à gérer les services frontaux bdd
+`dbfront` sert à gérer les services frontaux bdd
 
 Aide standard
 ~~~sh
 ./dbfront --help
 ~~~
 ~~~
-dbfront: Gérer le frontal bdd de DRE
+dbfront: Gérer le frontal bdd de DREmgr
 
 USAGE
     dbfront [options]
@@ -221,7 +221,7 @@ Aide avancée
 ./dbfront --help++
 ~~~
 ~~~
-dbfront: Gérer le frontal bdd de DRE
+dbfront: Gérer le frontal bdd de DREmgr
 
 USAGE
     dbfront [options]
@@ -242,14 +242,14 @@ OPTIONS
 
 ## webfront
 
-webfront sert à gérer les services frontaux web
+`webfront` sert à gérer les services frontaux web
 
 Aide standard
 ~~~sh
 ./webfront --help
 ~~~
 ~~~
-webfront: Gérer le frontal web de DRE
+webfront: Gérer le frontal web de DREmgr
 
 USAGE
     webfront [options]
@@ -272,7 +272,7 @@ Aide avancée
 ./webfront --help++
 ~~~
 ~~~
-webfront: Gérer le frontal web de DRE
+webfront: Gérer le frontal web de DREmgr
 
 USAGE
     webfront [options]

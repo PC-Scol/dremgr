@@ -1,6 +1,6 @@
 # Pré-requis sous Linux
 
-dremgr est développé et testé sur Debian 12. Il devrait fonctionner sur
+DREmgr est développé et testé sur Debian 12. Il devrait fonctionner sur
 n'importe quel système Linux, pourvu que les pré-requis soient respectés.
 
 Les programmes suivants sont nécessaires:
@@ -96,8 +96,8 @@ administrateur système pour avoir les informations nécessaires (il s'agit
 habituellement de renseigner le fichier `/etc/environment`)
 
 Cette configuration présente dans votre environnement est automatiquement
-utilisée par l'application `dremgr`. Par contre il faut explicitement configurer
-le daemon docker pour utiliser votre proxy (ce n'est pas automatique)
+utilisée par DREmgr. Par contre il faut explicitement configurer le daemon
+docker pour utiliser votre proxy (ce n'est pas automatique)
 
 Sur Debian Linux, vous pouvez définir un override sur l'unité systemd qui
 démarre docker
