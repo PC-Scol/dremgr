@@ -1,3 +1,7 @@
+## Release 2.0.8 du 28/11/2025-10:55
+
+* `28ec901` maj doc
+
 ## Release 2.0.7 du 20/11/2025-07:40
 
 * `02e04bf` maj doc

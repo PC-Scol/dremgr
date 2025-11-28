@@ -154,7 +154,7 @@ class DumpsPage extends ANavigablePage {
     ]);
     $this->fo->print();
 
-    $yfiles = $this->yfiles[$this->ymd];
+    $yfiles = $this->yfiles[$this->ymd] ?? [];
     $totalSize = 0;
     foreach ($yfiles as $yfile) {
       $totalSize += $yfile["size"];

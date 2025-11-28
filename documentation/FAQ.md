@@ -175,6 +175,10 @@ services:
 ~~~
 Dans cet exemple, on augmente la valeur par défaut de 1Go à 2Go
 
+IMPORTANT: le fichier `dbinst-docker-compose.local.yml` ne doit contenir QUE les
+nouvelles valeurs à fusionner avec les valeurs de base. Il ne faut pas copier
+`dbinst-docker-compose.yml` sur `dbinst-docker-compose.local.yml`
+
 ## Comment optimiser les performances de la base de données?
 
 Je ne suis pas spécialiste de la chose :-(
@@ -215,5 +219,84 @@ full_page_writes = off
 ~~~
 A utiliser avec précaution. Un grand pouvoir implique de grandes responsabilités
 :-)
+
+## Les dépôt ne sont plus mis à jour lors de la planification quotidienne
+
+Quand un dépôt est mentionné dans la variable `ADDON_URLS`, il est cloné et son
+url n'est plus mis à jour. La conséquence est que si l'url est modifiée par la
+suite (par exemple si le mot de passe est mis à jour ou si le dépôt change de
+serveur), le dépôt n'est pas mis à jour correctement
+
+Dans ce cas, il faut forcer la recréation des dépôts git
+~~~sh
+./dbinst -Ai -- --klone
+~~~
+
+## Je voudrais authentifier les utilisateurs à partir de LDAP
+
+Si vous voulez que les utilisateurs soient authentifiés sur la base d'un serveur
+LDAP au lieu du serveur CAS, pour par exemple utiliser l'autorisation sur la
+base de groupes, il y a un certain nombre de modifications à effectuer:
+
+Tout d'abord, faire un fichier local pour la configuration apache
+~~~sh
+cp config/apache/setup.conf config/apache/setup.conf.template.local
+~~~
+
+Puis modifier le fichier pour rajouter `authnz_ldap` dans la section `ENMODS`
+~~~sh
+vi config/apache/setup.conf.template.local
+~~~
+~~~sh
+ENMODS=(
+    ...
+    authnz_ldap
+)
+~~~
+
+Puis changer le mode d'authentification dans `dremgr.env`
+~~~sh
+AUTH_CAS=
+AUTH_BASIC=1
+~~~
+
+Puis configurer le fichier `config/apache/auth_basic.conf`
+(cf https://httpd.apache.org/docs/2.4/mod/mod_authnz_ldap.html pour les détails)
+~~~sh
+vi config/apache/auth_basic.conf
+~~~
+~~~conf
+# supprimer ces lignes
+    AuthUserFile auth_basic.auth
+    Require valid-user
+
+# ajouter ces lignes
+    AuthBasicProvider ldap
+    AuthLDAPURL "ldap://ldap.univ-domain.tld:389/ou=People,dc=univ-domain,dc=tld?uid?sub?(objectClass=*)"
+
+# ajouter ces lignes en fonction des utilisateurs à autoriser
+    # autoriser tous les utilisateurs correspondant au filtre
+    Require valid-user
+
+    # autoriser certains utilisateurs seulement. l'attribut est celui mentionné ci-dessus, i.e uid
+    Require ldap-user alice
+    Require ldap-user bob
+
+    # autoriser les utilisateurs d'un groupe. par défaut, les attributs member et uniqueMember sont considérés
+    Require ldap-group cn=dreadmin,ou=Groups,dc=univ-domain,dc=tld
+~~~
+dans cet exemple:
+* `ldap.univ-domain.tld` est l'adresse du serveur LDAP
+* `ou=People,dc=univ-domain,dc=tld` est la branche des comptes utilisateurs
+* `?uid` désigne l'attribut permettant d'identifier les utilisateurs
+* `?sub` désigne le scope pour la recherche dans la branche (facultatif)
+* `(objectClass=*)` est le filtre identifiant les utilisateurs valides (facultatif)
+
+n'hésitez pas à interroger votre spécialiste LDAP local pour les détails :-)
+
+Enfin, redémarrer le frontal web
+~~~sh
+./webfront -R
+~~~
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
