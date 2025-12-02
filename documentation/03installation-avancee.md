@@ -78,6 +78,13 @@ suivantes seront configurées le cas échéant:
   pour une installation à destination des utilisateurs, la valeur standard `80`
   est plus appropriée
 
+`CAS_URL`
+: par défaut, l'authentification CAS est activée. il faut donc spécifier
+  l'adresse du serveur CAS, e.g
+  ~~~sh
+  CAS_URL=https://cas.univ.run/cas
+  ~~~
+
 `ADDON_URLS`
 : Liste d'URLs de dépôts git contenant des "addons" de DREmgr. Par défaut, les
   deux URLs suivants sont listés:
@@ -121,9 +128,9 @@ configurer les services frontaux. Ces services frontaux comprennent:
   documentation technique et/ou fonctionnelle
 
 Pour la connexion à l'application web, éditez les fichiers suivants:
-* `config/apache/mods-available/auth_cas.conf`
-  Par défaut, l'authenfication se fait par CAS. Ce fichier sert à indiquer
-  l'adresse du serveur CAS.
+* `dremgr.env`
+  Par défaut, l'authenfication se fait par CAS. Modifiez la ligne `CAS_URL=`
+  pour indiquer l'adresse du serveur CAS.
 * `config/apache/auth_cas.conf`
   Ce fichier détaille les utilisateurs autorisés. Par défaut, seul l'utilisateur
   hypothétique `dreuser` est autorisé. Lister les utilisateurs de cette façon:

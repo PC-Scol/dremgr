@@ -39,6 +39,13 @@ Ces paramètres sont cherchés dans le fichier de configuration `dremgr.env`
   est initialisé à la valeur de DBPORT. Cela permet de passer facilement d'un
   mode à l'autre sans trop de modifications.
 
+`CAS_URL`
+: Si le mode avancé et l'authentification CAS sont utilisés (c'est le cas par
+  défaut), ce paramètre permet de spécifier l'adresse du serveur CAS, e.g
+  ~~~sh
+  CAS_URL=https://cas.univ.run/cas
+  ~~~
+
 **Récupération des données chez PC-SCOL**
 
 `DRE_URL`
