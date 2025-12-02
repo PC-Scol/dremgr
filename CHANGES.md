@@ -1,7 +1,3 @@
-## Release 2.1.1 du 02/12/2025-10:25
-
-* `db0e8ce` maj doc
-
 ## Release 2.1.0 du 02/12/2025-09:57
 
 Cette version contient des modifications techniques pour préparer un meilleur
@@ -26,7 +22,9 @@ sed -i '/<Location \/>/s/\//\/_extauth.php/' config/apache/auth_basic.conf
 #     CAS_URL=https://cas.univ.fr/cas
 vi dremgr.env
 
-dremgr -rb
+./build -rU
+
+dremgr -r
 ~~~
 
 Les modifications ci-dessus sont fournies sous forme de script à copier/coller,
