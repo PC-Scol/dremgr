@@ -1,3 +1,7 @@
+## Release 2.1.1 du 02/12/2025-10:25
+
+* `db0e8ce` maj doc
+
 ## Release 2.1.0 du 02/12/2025-09:57
 
 Cette version contient des modifications techniques pour préparer un meilleur
