@@ -1,3 +1,50 @@
+## Release 2.1.0 du 02/12/2025-09:57
+
+Cette version contient des modifications techniques pour préparer un meilleur
+support de l'authentification et de l'autorisation. Elle n'apporte pas de
+fonctionnalités nouvelles.
+
+Cette mise à jour nécessite de modifier deux fichiers ET de rajouter l'adresse
+du serveur CAS dans le fichier `dremgr.env` avant de relancer les services:
+~~~sh
+cd dremgr
+
+git pull
+
+[ -f config/apache/auth_cas.conf ] &&
+sed -i '/<Location \/>/s/\//\/_casauth.php/' config/apache/auth_cas.conf
+
+[ -f config/apache/auth_basic.conf ] &&
+sed -i '/<Location \/>/s/\//\/_extauth.php/' config/apache/auth_basic.conf
+
+# Si vous utilisez l'authentification CAS, ajouter l'adresse du serveur CAS
+# dans le fichier dremgr.env e.g
+#     CAS_URL=https://cas.univ.fr/cas
+vi dremgr.env
+
+dremgr -rb
+~~~
+
+Les modifications ci-dessus sont fournies sous forme de script à copier/coller,
+mais vous pouvez aussi faire la modification manuellement:
+~~~conf
+# dans le fichier config/apache/auth_cas.conf
+# remplacer cette ligne...
+<Location />
+# ...par cette ligne
+<Location /_casauth.php>
+
+
+# dans le fichier config/apache/auth_basic.conf
+# remplacer cette ligne...
+<Location />
+# ...par cette ligne
+<Location /_extauth.php>
+~~~
+
+* `25b2905` remanier les méthodes d'authentification
+* `969aaeb` maj doc
+
 ## Release 2.0.9 du 28/11/2025-11:21
 
 * `1ae4c9c` maj doc
