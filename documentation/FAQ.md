@@ -240,7 +240,7 @@ base de groupes, il y a un certain nombre de modifications à effectuer:
 
 Tout d'abord, faire un fichier local pour la configuration apache
 ~~~sh
-cp config/apache/setup.conf config/apache/setup.conf.template.local
+cp config/apache/.setup.conf.template config/apache/setup.conf.template.local
 ~~~
 
 Puis modifier le fichier pour rajouter `authnz_ldap` dans la section `ENMODS`
@@ -292,11 +292,25 @@ dans cet exemple:
 * `?sub` désigne le scope pour la recherche dans la branche (facultatif)
 * `(objectClass=*)` est le filtre identifiant les utilisateurs valides (facultatif)
 
-n'hésitez pas à interroger votre spécialiste LDAP local pour les détails :-)
-
 Enfin, redémarrer le frontal web
 ~~~sh
 ./webfront -R
 ~~~
+
+NB: les instructions ci-dessus partent du principe que la connexion au serveur
+LDAP se fait en clair avec un bind anonyme.
+* S'il faut se connecter en TLS, il faudra sans doute rajouter la ligne suivante
+  ~~~conf
+  LDAPTrustedMode TLS
+  ~~~
+* S'il faut se connecter avec compte/mot de passe spécifique, il faudra rajouter
+  des lignes de la forme
+  ~~~conf
+  AuthLDAPBindDN uid=search-account,ou=services,dc=univ-domain,dc=tld
+  AuthLDAPBindPassword MyS3cret
+  ~~~
+
+En d'autres termes, n'hésitez pas à vous rapprocher de votre spécialiste LDAP
+local pour recevoir l'aide appropriée :-)
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
