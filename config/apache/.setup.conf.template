@@ -49,15 +49,14 @@ ENSITES=(
 #   #unless var uncomment NUMBER#
 #   #ignore#
 VARS=(
-    AUTH_CAS CAS_URL
+    BASE_URL
+    AUTH_CAS CAS_URL BASE_URL_CAS
     AUTH_BASIC
     LBHTTPS
     #PROD TEST DEVEL
     #SERVER_NAME
-    #BASE_URL
-    BASE_URL_CAS
-    #conf_CONF
-    #module_MOD
+    #CONF_conf
+    #MOD_module
 )
 
 # Par défaut, l'interpolation des variables se fait sur les fichiers suivants:

@@ -44,7 +44,8 @@ class IndexPage extends ANavigablePage {
   ];
 
   const url_SCHEMA = [
-    "name" => "?string",
+    "filename" => "?string",
+    "file" => "?string",
     "isa_file" => "bool",
     "url" => "?string",
     "title" => "?string",
@@ -59,57 +60,57 @@ class IndexPage extends ANavigablePage {
     $this->docdir = $docdir = path::join("/data", $profile, "documentation");
     $metadata = file::try_ext("$docdir/metadata.yml", ".yaml");
     if ($metadata !== null) $metadata = yaml::load($metadata);
-    if (is_dir($docdir)) {
-      $files = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
-    } else {
-      $files = [];
-    }
+    if (!is_dir($docdir)) $filenames = [];
+    else $filenames = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
     $docs = [];
-    foreach ($files as $file) {
-      if ($file === "metadata.yml" || $file === "metadata.yaml") continue;
-      if (fnmatch("*.url", $file)) {
+    foreach ($filenames as $filename) {
+      if ($filename === "metadata.yml" || $filename === "metadata.yaml") continue;
+      $file = path::join($docdir, $filename);
+      $fileobj = null;
+      if (fnmatch("*.url", $filename)) {
         try {
-          $data = json::load(path::join($docdir, $file));
+          $data = json::load($file);
           md::ensure_schema($data, self::url_SCHEMA);
-          $url = $data["url"];
+          $url = $data["url"] ?? null;
           $target = $data["target"] ?? "_blank";
-          $title = $data["title"] ?? $file;
+          $title = $data["title"] ?? $filename;
           $desc = $data["desc"] ?? null;
-          $file = [
-            "name" => $file,
-            "isa_file" => false,
-            "url" => $url,
-            "target" => $target,
-            "title" => $title,
-            "desc" => $desc,
-          ];
+          if ($url !== null) {
+            $fileobj = [
+              "filename" => $filename,
+              "file" => "$file",
+              "isa_file" => false,
+              "url" => $url,
+              "target" => $target,
+              "title" => $title,
+              "desc" => $desc,
+            ];
+          }
         } catch (Exception $e) {
         }
       } else {
-        $data = $metadata["files"][$file] ?? null;
-        if ($data !== null) {
-          md::ensure_schema($data, self::url_SCHEMA);
-          $data["name"] = $file;
-          $data["isa_file"] = true;
-          $data["url"] = null;
-          $data["title"] ??= $file;
-          $file = $data;
+        $fileobj = $metadata["files"][$filename] ?? null;
+        if ($fileobj !== null) {
+          md::ensure_schema($fileobj, self::url_SCHEMA);
+          $fileobj["filename"] = $filename;
+          $fileobj["file"] = $file;
+          $fileobj["isa_file"] = true;
+          $fileobj["url"] = null;
+          $fileobj["title"] ??= $filename;
         }
       }
-      if (is_array($file)) {
-        $docs[$file["name"]] = $file;
-      } else {
-        $docs[$file] = [
-          "name" => $file,
-          "isa_file" => true,
-          "url" => null,
-          "title" => $file,
-          "target" => null,
-          "desc" => null,
-        ];
-      }
+      $fileobj ??= [
+        "filename" => $filename,
+        "file" => $file,
+        "isa_file" => true,
+        "url" => null,
+        "title" => $filename,
+        "target" => null,
+        "desc" => null,
+      ];
+      $docs[$filename] = $fileobj;
     }
-    if ($this->download($docdir, $docs)) return;
+    if ($this->download($docs)) return;
     $this->docs = $docs;
 
     $this->conninfo = tools::get_profile_vars(self::FE_VARS, $profile);
@@ -260,7 +261,7 @@ class IndexPage extends ANavigablePage {
       new CListGroup($docs, [
         "container" => "ul",
         "map_func" => function ($file) use ($markdown) {
-          $name = $file["name"];
+          $name = $file["filename"];
           $title = $file["title"];
           if ($file["isa_file"]) {
             if ($title !== $name) {

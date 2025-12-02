@@ -1,3 +1,0 @@
-CASCookiePath /var/cache/apache2/mod_auth_cas/
-CASLoginURL https://cas.univ.fr/cas/login
-CASValidateURL https://cas.univ.fr/cas/serviceValidate
