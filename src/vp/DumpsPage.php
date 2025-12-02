@@ -4,6 +4,7 @@ namespace app\vp;
 use app\app\ANavigablePage;
 use app\q\tools;
 use Exception;
+use nulib\file;
 use nur\b\date\Datetime;
 use nur\config;
 use nur\F;
@@ -41,15 +42,19 @@ class DumpsPage extends ANavigablePage {
       return SV::compare($afilename, $bfilename);
     });
 
-    if ($this->download($dldir, $afilenames)) return;
-
+    $files = [];
     $ydates = [];
     $yfiles = [];
     foreach ($afilenames as $filename) {
+      $file = "$dldir/$filename";
+      $files[$filename] = [
+        "filename" => $filename,
+        "file" => $file,
+        "isa_file" => true,
+      ];
       if (tools::isa_ts($filename, $ms)) {
         $date = tools::ts2date($filename, $ymd);
         if (!array_key_exists($ymd, $ydates)) $ydates[$ymd] = $date;
-        $file = "$dldir/$filename";
         $yfiles[$ymd][] = [
           "filename" => $filename,
           "file" => $file,
@@ -62,6 +67,8 @@ class DumpsPage extends ANavigablePage {
       $date = [$ymd, $date];
     }; unset($date);
     $this->yfiles = $yfiles;
+
+    if ($this->download($files)) return;
 
     $dre = tools::get_profile_vars([
       "url" => "DRE_URL",

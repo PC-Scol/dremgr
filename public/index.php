@@ -4,6 +4,10 @@ require __DIR__.'/../sbin/vendor/autoload.php';
 use app\config\cdefaults;
 use app\config\cprod;
 use app\vp\IndexPage;
+use app\vp\LoginPage;
+use nur\authz;
+use nur\b\authnz\CasAuthzManager;
+use nur\b\authnz\ExtAuthzManager;
 use nur\config;
 use nur\config\ArrayConfig;
 use nur\msg;
@@ -12,7 +16,10 @@ use nur\v\bs3\Bs3Messenger;
 use nur\v\bs3\Bs3PageContainer;
 use nur\v\page;
 use nur\v\route;
+use nur\v\vp\AppCasauthPage;
+use nur\v\vp\AppExtauthPage;
 use nur\v\vp\AppHealthcheckPage;
+use nur\v\vp\AppLogoutPage;
 
 config::set_fact("nur/v-bs3");
 config::init_configurator(new class {
@@ -32,9 +39,20 @@ config::init_configurator(new class {
     msg::set_messenger_class(Bs3Messenger::class, true);
   }
 
+  function configure__authnz() {
+    if (getenv("AUTH_CAS")) $class = CasAuthzManager::class;
+    elseif (getenv("AUTH_BASIC")) $class = ExtAuthzManager::class;
+    else $class = null;
+    if ($class !== null) authz::set_manager_class($class);
+  }
+
   function configure__routes() {
     route::add(["_hk.php", AppHealthcheckPage::class]);
+    route::add(["_casauth.php", AppCasauthPage::class]);
+    route::add(["_extauth.php", AppExtauthPage::class]);
+    route::add(["_logout.php", AppLogoutPage::class]);
     route::add(["index.php", IndexPage::class]);
+    route::add(["login.php", LoginPage::class]);
     route::add(["", IndexPage::class, route::MODE_PACKAGE]);
   }
 

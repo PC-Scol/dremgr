@@ -15,14 +15,11 @@ class ANavigablePage extends NavigablePage {
   const CSS = ["dre.css"];
   const NAVBAR_OPTIONS = [
     "brand" => [
-      "<img src='brand.png' width='50' height='50' alt='Logo'/>",
+      "<img src='brand.png' alt='Logo'/>",
       "<span style='margin-right: 1em;'>&nbsp;<b>DRE - Données PEGASE</b></span>",
     ],
     "show_brand" => "asis",
   ];
-  const REQUIRE_AUTH = false;
-  const REQUIRE_AUTHZ = false;
-  const REQUIRE_PERM = "connect";
 
   protected function resolveProfiles() {
     $profiles = explode(" ", getenv("APP_PROFILES"));
@@ -59,7 +56,7 @@ class ANavigablePage extends NavigablePage {
     return $this->haveContent;
   }
 
-  function download(string $dldir, array $files): bool {
+  function download(array $files): bool {
     $dl = F::get("dl");
     if (!$dl) return false;
     # télécharger un fichier
@@ -70,10 +67,9 @@ class ANavigablePage extends NavigablePage {
     $dl = $files[$dl];
     if ($dl["isa_file"]) {
       # c'est un fichier
-      $file = $dl["name"];
-      header("x-sendfile: $dldir/$file");
+      header("x-sendfile: {$dl["file"]}");
       http::content_type();
-      http::download_as($file);
+      http::download_as($dl["filename"]);
     } else {
       # c'est un lien
       http::redirect($dl["url"], false);

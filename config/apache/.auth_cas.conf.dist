@@ -1,7 +1,7 @@
 # -*- coding: utf-8 mode: conf -*- vim:syntax=apache:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 
 #if BASE_URL_CAS#CASRootProxiedAs @@BASE_URL_CAS@@
-<Location />
+<Location /_casauth.php>
     AuthType CAS
     CASAuthNHeader On
     Require user dreuser
