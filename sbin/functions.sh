@@ -16,7 +16,24 @@ if [ ! -f "$DREMGR/.proxy.env" ]; then
     done
 fi
 
-function verifix_mode() {
+function verifix_vars() {
+    # Corriger certaines variables
+    DlProfile="$DRE_FILES_FROM"
+    [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
+    [ -n "$LBVIP" ] && LBVIP="$LBVIP:"
+    [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"
+    [ -n "$PRIVAREG" ] && PRIVAREG="${PRIVAREG%/}/"
+    [ "${DATADIR#/}" == "$DATADIR" ] && DATADIR="./$DATADIR"
+    if [ -z "$WEBFRONT_URL" ]; then
+        if [ -n "$LBHTTPS" ]; then
+            WEBFRONT_URL="https://$LBHOST:$LBHTTPS"
+            WEBFRONT_URL="${WEBFRONT_URL%:443}"
+        else
+            WEBFRONT_URL="http://$LBHOST:$LBHTTP"
+            WEBFRONT_URL="${WEBFRONT_URL%:80}"
+        fi
+    fi
+
     # définir plusieurs profils désactive automatiquement le mode simple
     local -a profiles
     read -a profiles <<<"${APP_PROFILES//
@@ -53,7 +70,7 @@ function load_envfiles() {
 function load_envs() {
     eval "$(
         load_envfiles
-        verifix_mode
+        verifix_vars
         for param in "$@"; do
             if [ "$param" == DATADIR ]; then
                 setx DATADIR=abspath "$DATADIR" "$DREMGR"
@@ -172,13 +189,7 @@ function template_source_envs() {
     fi
 
     ## fix pour certaines variables
-    DlProfile="$DRE_FILES_FROM"
-    [ -n "$DBVIP" ] && DBVIP="$DBVIP:"
-    [ -n "$LBVIP" ] && LBVIP="$LBVIP:"
-    [ -n "$INST_VIP" ] && INST_VIP="$INST_VIP:"
-    [ -n "$PRIVAREG" ] && PRIVAREG="${PRIVAREG%/}/"
-    [ "${DATADIR#/}" == "$DATADIR" ] && DATADIR="./$DATADIR"
-    verifix_mode
+    verifix_vars
 }
 
 function build_check_env() {

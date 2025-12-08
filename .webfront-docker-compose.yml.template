@@ -37,8 +37,7 @@ services:
       - .forced.env
     environment:
       #@@UL:LBHTTPS@@DEVEL: 1
-      #@@UL:LBHTTPS@@BASE_URL: http://@@LBHOST@@:@@LBHTTP@@
-      #@@IF:LBHTTPS@@BASE_URL: https://@@LBHOST@@:@@LBHTTPS@@
+      BASE_URL: @@WEBFRONT_URL@@
     volumes:
       - .:/var/www/app
       - ./config/apache:/apache-config
