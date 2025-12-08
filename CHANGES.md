@@ -1,3 +1,7 @@
+## Release 2.1.3 du 08/12/2025-10:37
+
+* `029863a` corriger calcul webfront_url
+
 ## Release 2.1.2 du 02/12/2025-10:27
 
 * `36f90d4` maj doc
@@ -54,14 +58,6 @@ mais vous pouvez aussi faire la modification manuellement:
 ## Release 2.0.9 du 28/11/2025-11:21
 
 * `1ae4c9c` maj doc
-
-## Release 2.0.8 du 28/11/2025-10:55
-
-* `28ec901` maj doc
-
-## Release 2.0.7 du 20/11/2025-07:40
-
-* `02e04bf` maj doc
 
 ## Release 2.0.0 du 07/11/2025-13:14
 
