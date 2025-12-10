@@ -1,3 +1,7 @@
+## Release 2.1.4 du 10/12/2025-19:45
+
+* `3b5f5fd` maj doc: attention à la version de docker compose
+
 ## Release 2.1.3 du 08/12/2025-10:37
 
 * `029863a` corriger calcul webfront_url
