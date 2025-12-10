@@ -78,6 +78,14 @@ configuration des groupes
 
 Pour les autres systèmes, vous devez vous reporter à votre manuel utilisateur
 
+> [!IMPORTANT]
+> La version de docker compose installé via les dépôts debian est trop ancienne
+> et pose problème. C'est la raison pour laquelle la commande ci-dessus installe
+> la dernière version livrée par docker.
+>
+> Si vous êtes tenus à cause de la politique interne d'installer la version du
+> dépôt, envoyez un message sur le forum pour avoir une solution.
+
 ## Configuration du proxy
 
 Si vous utilisez un proxy, vous avez sûrement des variables `http_proxy`,
