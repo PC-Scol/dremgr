@@ -1,3 +1,7 @@
+## Release 2.1.5 du 12/12/2025-17:21
+
+* `d778bfa` corriger l'emplacement de la variable config::k(cas_url)
+
 ## Release 2.1.4 du 10/12/2025-19:45
 
 * `3b5f5fd` maj doc: attention à la version de docker compose
