@@ -38,6 +38,7 @@ services:
     environment:
       #@@UL:LBHTTPS@@DEVEL: 1
       BASE_URL: @@WEBFRONT_URL@@
+      CONFIG_ALL_app__cas_url: $CAS_URL
     volumes:
       - .:/var/www/app
       - ./config/apache:/apache-config
