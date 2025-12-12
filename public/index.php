@@ -10,6 +10,7 @@ use nur\b\authnz\CasAuthzManager;
 use nur\b\authnz\ExtAuthzManager;
 use nur\config;
 use nur\config\ArrayConfig;
+use nur\config\EnvConfig;
 use nur\msg;
 use nur\session;
 use nur\v\bs3\Bs3Messenger;
@@ -28,6 +29,7 @@ config::init_configurator(new class {
   function configure__initial_config() {
     config::init_appcode(self::APPCODE);
     config::add(cdefaults::class);
+    config::add(new EnvConfig());
     config::add(new ArrayConfig(["app" => [
       "url" => getenv("BASE_URL"),
     ]]));
