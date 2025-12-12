@@ -1,3 +1,15 @@
+## Release 2.1.6 du 12/12/2025-17:58
+
+Le correctif livré en 2.1.5 ne corrige pas le problème avec la prise en compte
+de l'adresse du serveur CAS. Il est donc retiré avec cette nouvelle release.
+
+La vraie cause est avec les versions anciennes de docker compose qui ne sont
+pas capables d'interpoler les variables correctement dans certaines
+circonstances. Un prochain correctif sera livré qui corrigera toutes les
+classes de problème générées par les anciennes versions de docker compose.
+
+* `7f0cf0a` Revert "corriger l'emplacement de la variable config::k(cas_url)"
+
 ## Release 2.1.5 du 12/12/2025-17:21
 
 * `d778bfa` corriger l'emplacement de la variable config::k(cas_url)
