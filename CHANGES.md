@@ -1,3 +1,11 @@
+## Release 2.1.7 du 12/12/2025-19:49
+
+pff le problème avec l'authentification CAS venait du fait que j'avais oublié
+d'ajouter la prise en compte des paramètres provenant de l'environnement. ce
+chapitre-là peut être refermé :-)
+
+* `2dd3ad2` corriger la prise en compte de la configuration venant de l'environnement
+
 ## Release 2.1.6 du 12/12/2025-17:58
 
 Le correctif livré en 2.1.5 ne corrige pas le problème avec la prise en compte
