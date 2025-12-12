@@ -13,5 +13,7 @@ RUN /g/build
 COPY --from=php /g/ /g/
 RUN /g/build -a @adminer
 
+COPY config/initenv/ /g/initenv.d/
+
 EXPOSE 80
 ENTRYPOINT ["/g/entrypoint"]

@@ -14,6 +14,7 @@ RUN /g/pkg i @ssl @git
 COPY --from=postgres /g/ /g/
 RUN /g/build -a @postgres
 
+COPY config/initenv/ /g/initenv.d/
 COPY config/dremgr/ /g/dremgr/
 RUN /g/build dremgr
 

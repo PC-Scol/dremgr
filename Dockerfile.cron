@@ -19,6 +19,7 @@ RUN /g/build @php-cli php-utils
 COPY --from=postgres /g/ /g/
 RUN /g/build @postgres
 
+COPY config/initenv/ /g/initenv.d/
 COPY config/dremgr/ /g/dremgr/
 RUN /g/build dremgr
 

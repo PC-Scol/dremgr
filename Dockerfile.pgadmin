@@ -10,5 +10,7 @@ COPY --from=base /g/ /g/
 COPY --from=postgres /g/ /g/
 RUN /g/build.bb -z pgadmin && /g/pgadmin/fixperms
 
+COPY config/initenv/ /g/initenv.d/
+
 USER pgadmin
 ENTRYPOINT ["/g/pgadmin/entrypoint"]

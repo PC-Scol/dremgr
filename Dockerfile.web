@@ -15,5 +15,7 @@ RUN /g/build -a @php-apache-cas php-utils
 
 #RUN /g/php-exts/enable-xdebug
 
+COPY config/initenv/ /g/initenv.d/
+
 EXPOSE 80
 ENTRYPOINT ["/g/entrypoint"]
