@@ -25,7 +25,7 @@ DL_MAX=5
 function dl() {
     local r=22 count=0
     while recoverable_curl_error $r; do
-        curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "$DRE_URL/$1"; r=$?
+        curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
         if recoverable_curl_error $r; then
             let count=count+1
             [ $count -gt $DL_MAX ] && break
