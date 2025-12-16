@@ -256,6 +256,9 @@ privée dans le répertoire `config/ssl`
 ~~~sh
 cp path/to/mycert.crt path/to/mycert.key config/ssl
 ~~~
+IMPORTANT: seuls les fichiers `*.crt`, `*.pem` et `*.key` sont considérés. les
+autres sont ignorés (notamment, si votre certificat a l'extension `.cer`, il
+faut le renommer en `.crt`)
 
 Si le certificat ne contient pas la chaine autorité, vous devez aussi copier le
 fichier autorité
@@ -270,11 +273,15 @@ certificats
 SSLCertificateFile    /etc/ssl/certs/mycert.crt
 SSLCertificateKeyFile /etc/ssl/private/mycert.key
 ~~~
+IMPORTANT: il ne faut pas modifier le chemin, uniquement le nom des fichiers. il
+s'agit des chemins des fichiers du certificat à l'intérieur du container docker.
 
 Si l'autorité est dans un fichier à part, il faut le mentionner aussi
 ~~~conf
 SSLCertificateChainFile /etc/ssl/certs/myca.crt
 ~~~
+IMPORTANT: il ne faut pas modifier le chemin, uniquement le nom du fichier. il
+s'agit du chemins du certificat à l'intérieur du container docker.
 
 Puis relancez le frontal
 ~~~sh
