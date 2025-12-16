@@ -333,21 +333,46 @@ class IndexPage extends ANavigablePage {
       "Nom d'hôte" => $conninfo["host"],
       "Port" => $conninfo["port"],
       "Nom de la base de données" => $conninfo["dbname"],
-      "Compte utilisateur" => $conninfo["user"],
+      "URL JDBC" => [
+        "class" => "copy-container",
+        v::a([
+          "class" => "btn btn-default btn-sm copy-btn",
+          "href" => "#",
+          icon::copy("Copier"),
+        ]),
+        "&nbsp;&nbsp;",
+        v::span([
+          "class" => "copy-data",
+          "jdbc:postgresql://{$conninfo["host"]}:{$conninfo["port"]}/{$conninfo["dbname"]}",
+        ]),
+      ],
+      "Compte utilisateur" => [
+        "class" => "copy-container",
+        v::a([
+          "class" => "btn btn-default btn-sm copy-btn",
+          "href" => "#",
+          icon::copy("Copier"),
+        ]),
+        "&nbsp;&nbsp;",
+        v::span([
+          "class" => "copy-data",
+          $conninfo["user"],
+        ]),
+      ],
       "Mot de passe" => [
         "class" => "copy-container",
+        v::a([
+          "class" => "btn btn-default btn-sm copy-btn",
+          "href" => "#",
+          icon::copy("Copier"),
+        ]),
+        "&nbsp;&nbsp;",
         v::span([
           "class" => "hpc",
           v::span([
             "class" => "hp password copy-data",
             $conninfo["password"],
           ]),
-        ]),
-        "&nbsp;&nbsp;",
-        v::a([
-          "class" => "btn btn-default btn-sm copy-btn",
-          "href" => "#",
-          icon::copy("Copier"),
         ]),
       ],
     ]], [
