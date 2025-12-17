@@ -1,3 +1,9 @@
+## Release 2.1.8 du 17/12/2025-06:49
+
+* `4ae284d` maj doc concernant les certificats
+* `8a49bfd` pallier caractère parasite dans l'url
+* `24e50db` afficher l'url jdbc
+
 ## Release 2.1.7 du 12/12/2025-19:49
 
 pff le problème avec l'authentification CAS venait du fait que j'avais oublié
