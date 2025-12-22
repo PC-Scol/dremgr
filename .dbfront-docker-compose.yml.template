@@ -11,7 +11,6 @@ services:
       - .proxy.env
       - .defaults.env
       - dremgr.env
-      - .forced.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBFRONT@@#@@IF:DBPORT@@ports:
