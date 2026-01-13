@@ -61,7 +61,9 @@ liens pour avoir des détails sur la procédure.
     > **Configuration du proxy**
     > Si vous utilisez un proxy, veuillez consulter la page
     > [pré-requis pour linux](documentation/00prerequis-linux.md)
-    > pour des instructions sur la façon de le configurer
+    > pour des instructions sur la façon de le configurer ET les machines
+    > auquelles il faut ouvrir l'accès le cas échéant
+
   * Installation des [pré-requis pour WSL](documentation/00prerequis-wsl.md), le
     sous-système Linux pour Windows. Ce mode d'installation est approprié pour
     les tests ou le développement.

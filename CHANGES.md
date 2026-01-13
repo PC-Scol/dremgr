@@ -1,3 +1,7 @@
+## Release 2.1.9 du 13/01/2026-17:58
+
+* `a794382` maj doc concernant les accès à autoriser via le proxy
+
 ## Release 2.1.8 du 17/12/2025-06:49
 
 * `4ae284d` maj doc concernant les certificats
