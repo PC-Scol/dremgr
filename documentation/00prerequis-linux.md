@@ -146,6 +146,11 @@ sudo nano /etc/docker/daemon.json
 sudo systemctl restart docker.service
 ~~~
 
+Les adresses suivantes doivent pouvoir être accédées via la proxy. Pensez le cas
+échéant à demander l'ouverture des accès:
+* `pubdocker.univ-reunion.fr` sur le port 443
+* `git.univ-reunion.fr` sur le port 443
+
 ---
 
 Une fois que vous avez installé les pré-requis, vous pouvez passer à l'étape
