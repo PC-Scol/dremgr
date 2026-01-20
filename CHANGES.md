@@ -1,3 +1,12 @@
+## Release 2.2.0 du 20/01/2026-07:26
+
+les règles de clasement de mail étant potentiellement différentes selon les
+destinataires spécifiés, sendmails.php envoie maintenant deux mails différents
+(bien qu'au contenu identique) en cas d'erreur
+
+* `99beead` maj runphp
+* `b8b9074` sendmails: faire deux mails différents en cas d'erreur
+
 ## Release 2.1.9 du 13/01/2026-17:58
 
 * `a794382` maj doc concernant les accès à autoriser via le proxy
