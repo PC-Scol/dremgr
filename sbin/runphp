@@ -80,7 +80,7 @@ if [ -n "$RUNPHP_STANDALONE" ]; then
     BUILDENV0=
     BUILDENV=
     DIST="${RUNPHP_DIST:-$DEFAULT_DIST}"
-    IMAGENAME=nulib/
+    IMAGENAME=nulib-base/
 
     PRIVAREG=docker.io
     REGISTRY="$RUNPHP_REGISTRY"
@@ -97,7 +97,7 @@ else
     [ -n "$BUILDENV0" ] || BUILDENV0=.build.env.dist
     [ -n "$BUILDENV" ] || BUILDENV=build.env
     [ -n "$DIST" ] || DIST="$DEFAULT_DIST"
-    [ -n "$IMAGENAME" ] || IMAGENAME=nulib/
+    [ -n "$IMAGENAME" ] || IMAGENAME=nulib-base/
 
     [ "$COMPOSERPHAR" == none ] && COMPOSERPHAR=
     [ "$BUILDENV0" == none ] && BUILDENV0=
@@ -337,7 +337,7 @@ function host_docker_build() {
     )
 
     SOPTS=+d:9876543210:c:UjDx:z:r:p
-    LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,ci,no-use-rslave
+    LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,ci,use-rslave,no-use-rslave
     args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
     Dist=
@@ -370,6 +370,7 @@ OPTIONS
     --ci
     --cu
         lancer composer install (resp. update) s'il y a eu bootstrap
+    --use-rslave
     --no-use-rslave
         paramètre montage des volumes"
             exit 0
@@ -388,6 +389,7 @@ OPTIONS
         -p|--push) Push=1;;
         --ci) Composer=ci;;
         --cu) Composer=cu;;
+        --use-rslave) UseRslave=1;;
         --no-use-rslave) UseRslave=;;
         *) die "$1: option non configurée";;
         esac
@@ -452,7 +454,7 @@ function host_docker_run() {
         ;;
     *)
         SOPTS=+w:
-        LOPTS=help,chdir:,no-use-rslave
+        LOPTS=help,chdir:,use-rslave,no-use-rslave
         args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
         while [ $# -gt 0 ]; do
@@ -484,11 +486,13 @@ courant est forcé au répertoire du projet composer
 OPTIONS
     -w, --chdir CHDIR
         aller dans le répertoire spécifié avant de lancer la commande
+    --use-rslave
     --no-use-rslave
         paramètre montage des volumes"
                 exit 0
                 ;;
             -w|--chdir) shift; Chdir="$1";;
+            --use-rslave) UseRslave=1;;
             --no-use-rslave) UseRslave=;;
             *) die "$1: option non configurée";;
             esac
@@ -515,32 +519,51 @@ OPTIONS
         args+=(--add-host "$host")
     done
 
-    # monter le répertoire qui contient $PROJDIR
     Cwd="$(pwd)"
-    mount_homes=1
-    mount_standalone=1
-    mount_mount=1
-    mount_cwd=1
-    if [ -z "$PROJDIR" -o "${PROJDIR#$HOME/}" != "$PROJDIR" -o "$PROJDIR" == "$HOME" ]; then
-        # bind mount $HOME
-        args+=(-v "$HOME:$HOME${UseRslave:+:rslave}")
-        [ "${HOME#/home/}" != "$HOME" ] && mount_homes=
-        [ -n "$RUNPHP_STANDALONE" -a "${RUNPHP_STANDALONE#$HOME/}" != "$RUNPHP_STANDALONE" ] && mount_standalone=
-        [ -n "$RUNPHP_MOUNT" -a "${RUNPHP_MOUNT#$HOME/}" != "$RUNPHP_MOUNT" ] && mount_mount=
-        [ "${Cwd#$HOME/}" != "$Cwd" ] && mount_cwd=
-    elif [ -n "$PROJDIR" -a "${PROJDIR#/home/}" == "$PROJDIR" ]; then
-        # bind mount le répertoire du projet s'il n'est pas dans /home (qui est
-        # monté par défaut si $HOME n'est pas monté)
-        args+=(-v "$PROJDIR:$PROJDIR${UseRslave:+:rslave}")
-        [ "$RUNPHP_STANDALONE" == "$PROJDIR" -o "${RUNPHP_STANDALONE#$PROJDIR/}" != "$PROJDIR" ] && mount_standalone=
-        [ "$RUNPHP_MOUNT" == "$PROJDIR" -o "${RUNPHP_MOUNT#$PROJDIR/}" != "$PROJDIR" ] && mount_mount=
-        [ "$Cwd" == "$PROJDIR" -o "${Cwd#$PROJDIR/}" != "$PROJDIR" ] && mount_cwd=
-    fi
-    [ -n "$mount_homes" ] && args+=(-v "/home:/home${UseRslave:+:rslave}")
-    [ -n "$RUNPHP_STANDALONE" -a -n "$mount_standalone" ] && args+=(-v "$RUNPHP_STANDALONE:$RUNPHP_STANDALONE${UseRslave:+:rslave}")
-    [ -n "$RUNPHP_MOUNT" -a -n "$mount_mount" ] && args+=(-v "$RUNPHP_MOUNT:$RUNPHP_MOUNT${UseRslave:+:rslave}")
-    [ -n "$mount_cwd" ] && args+=(-v "$Cwd:$Cwd${UseRslave:+:rslave}")
     args+=(-w "$Cwd")
+
+    # monter les répertoires
+    ALWAYS_MOUNT=(/mnt /home "$HOME")
+    NEVER_MOUNT=(/etc /bin /usr /var /proc /dev /sys /run /tmp)
+    ALLOW_MOUNT=(/usr/local /var/local /opt/local)
+    already_mounted_dirs=()
+    function should_mount() {
+        local dir="$(cd "$1" 2>/dev/null && pwd)"
+        [ -n "$dir" ] || return 1
+        local mount
+        [ "$dir" == / ] && return 1
+        for mount in "${already_mounted_dirs[@]}"; do
+            [ "$dir" == "$mount" -o "${dir#$mount/}" != "$dir" ] && return 1
+        done
+        for mount in "${ALWAYS_MOUNT[@]}"; do
+            [ "$dir" == "$mount" -o "${dir#$mount/}" != "$dir" ] && return 0
+        done
+        for mount in "${NEVER_MOUNT[@]}"; do
+            if [ "$dir" == "$mount" -o "${dir#$mount/}" != "$dir" ]; then
+                for mount in "${ALLOW_MOUNT[@]}"; do
+                    [ "$dir" == "$mount" -o "${dir#$mount/}" != "$dir" ] && return 0
+                done
+                return 1
+            fi
+        done
+        return 0
+    }
+
+    for dir in "${ALWAYS_MOUNT[@]}"; do
+        args+=(-v "$dir:$dir${UseRslave:+:rslave}")
+        already_mounted_dirs+=("$dir")
+    done
+    try_dirs=(
+        "$RUNPHP_STANDALONE" "$PROJDIR" "$RUNPHP_MOUNT"
+        "$Cwd"
+    )
+    for dir in "${try_dirs[@]}"; do
+        [ -n "$dir" ] || continue
+        if should_mount "$dir"; then
+            args+=(-v "$dir:$dir${UseRslave:+:rslave}")
+            already_mounted_dirs+=("$dir")
+        fi
+    done
 
     # lancer avec l'utilisateur courant
     if [ $(id -u) -ne 0 ]; then
