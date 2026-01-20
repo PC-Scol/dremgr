@@ -26,6 +26,12 @@ Application::run(new class extends Application {
     return DateTime::withn(self::get_string($name));
   }
 
+  private static function sendmail(array $mail, ?string $importLog, ?array $to, ?array $cc, ?string $from): void {
+    $mailer = mailer::build($to, $mail["subject"], $mail["body"], $cc, null, $from);
+    if ($importLog !== null) $mailer->addAttachment($importLog, "import.log");
+    mailer::_send($mailer);
+  }
+
   function main() {
     # ne pas envoyer de mail si c'est désactivé
     $disabled = vbool::with(config::k("disabled"));
@@ -52,24 +58,9 @@ Application::run(new class extends Application {
     $haveErrors = self::get_bool("HAVE_ERRORS");
     $importLog = self::get_string("IMPORT_LOG");
 
-    $from = config::k("from");
-    $allTo = cl::withn(config::k("to"));
-    $errorTo = cl::withn(config::k("to_error"));
-    if ($criticalError) {
-      $template = config::l("critical");
-      $to = cl::merge($allTo, $errorTo);
-    } elseif ($haveErrors) {
-      $template = config::l("error");
-      $to = cl::merge($allTo, $errorTo);
-    } else {
-      $template = config::l("success");
-      $to = $allTo;
-    }
-    $cc = cl::withn(config::k("cc"));
-
-    # ne pas envoyer de mail si aucun destinataire n'est spécifié
-    if (!$to) return;
-
+    if ($criticalError) $template = config::l("critical");
+    elseif ($haveErrors) $template = config::l("error");
+    else $template = config::l("success");
     $mail = (new MailTemplate($template))->eval([
       "profile" => $profile,
       "date_debut" => $dateDeb,
@@ -82,10 +73,18 @@ Application::run(new class extends Application {
       "critical_error" => $criticalError,
       "have_errors" => $haveErrors,
     ]);
-    $mailer = mailer::build($to, $mail["subject"], $mail["body"], $cc, null, $from);
-    if ($importLog !== null) {
-      $mailer->addAttachment($importLog, "import.log");
+
+    $from = config::k("from");
+    $cc = cl::withn(config::k("cc"));
+    # faire deux mails différents pour to_error et to: les règles de classement
+    # ne sont sans doute pas les mêmes pour ces destinataires
+    $errorTo = cl::withn(config::k("to_error"));
+    if ($errorTo && ($criticalError || $haveErrors)) {
+      self::sendmail($mail, $importLog, $errorTo, $cc, $from);
     }
-    mailer::_send($mailer);
+    $allTo = cl::withn(config::k("to"));
+    if ($allTo) {
+      self::sendmail($mail, $importLog, $allTo, $cc, $from);
+    }
   }
 });
