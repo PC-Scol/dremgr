@@ -24,14 +24,7 @@ Si vous n'aviez encore rien fait, il faut générer le fichier de configuration:
 ~~~sh
 ./dremgr
 ~~~
-La *première* invocation crée le fichier d'exemple `dremgr.env`. Ce fichier ne
-contient qu'une configuration d'exemple pour la prod. Si vous voulez économiser
-un copier/coller, vous pouvez aussi prendre le fichier d'exemple de la
-documentation qui contient aussi une configuration d'exemple pour l'instance de
-test.
-~~~sh
-cp documentation/dremgr.env.sample dremgr.env
-~~~
+La *première* invocation crée le fichier d'exemple `dremgr.env`
 
 Il FAUT consulter le fichier `dremgr.env` et l'éditer AVANT de continuer.
 *Au minimum*, commentez ou supprimez la ligne `MODE_SIMPLE=1` si elle existe et
