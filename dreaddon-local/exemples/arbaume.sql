@@ -1,11 +1,23 @@
 -- -*- coding: utf-8 mode: sql -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 -- exemple de code pour créer l'arborescence des objets maquettes dans une table
--- nommée arbaume
+-- nommée arbaume. à placer dans le répertoire updates/ ou dans un répertoire v30
+-- ou supérieure s'il est intégré dans un autre addon
 
--- à utiliser de cette façon:
---   select * from arbaume
---   where temoin_valide and code_periode = 'PERIODE'
---   order by chemin 
+-- à utiliser de cette façon.
+--   select * from public.arbaume
+--   where temoin_valide
+--   and code_periode = 'PERIODE'
+--   order by chemin;
+-- l'idée est de filtrer sur le code période et de trier suivant le chemin. on
+-- peut aussi filtrer sur le chemin_pia pour avoir l'arborescence depuis le PIA,
+-- ou sur code_formation pour avoir l'arborescence depuis la formation.
+
+-- lister les PIAs valides:
+--   select * from public.arbaume
+--   where code_periode = 'PERIODE'
+--   and temoin_valide
+--   and temoin_pia
+--   and temoin_pia_actif;
 
 -- arbaume est un jeu de mot idiot entre "arbre objet maquette" et le fait
 -- qu'avoir ces données est un soulagement certain.
