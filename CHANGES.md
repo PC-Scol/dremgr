@@ -1,3 +1,8 @@
+## Release 2.2.1 du 18/02/2026-18:30
+
+* `d102c12` maj doc
+* `7d07c23` ajout de la requête d'exemple arbaume.sql
+
 ## Release 2.2.0 du 20/01/2026-07:26
 
 les règles de clasement de mail étant potentiellement différentes selon les
