@@ -1,3 +1,7 @@
+## Release 2.2.3 du 02/03/2026-18:03
+
+* `cab8c1f` ajouter le droit de création des tables à la permission rw
+
 ## Release 2.2.2 du 02/03/2026-17:52
 
 * `0c9a269` corriger l'attribution des droits aux utilisateurs
