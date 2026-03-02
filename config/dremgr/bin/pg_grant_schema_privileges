@@ -24,7 +24,8 @@ for user in "${user_access[@]}"; do
         sgrant="select"
         ;;
     esac
-    grants["$user"]="$grant"
+    tgrants["$user"]="$tgrant"
+    sgrants["$user"]="$sgrant"
 done
 
 schema="${1:-public}"
