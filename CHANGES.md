@@ -1,3 +1,7 @@
+## Release 2.2.4 du 02/03/2026-18:19
+
+* `e4dc27d` Revert "ajouter le droit de création des tables à la permission rw"
+
 ## Release 2.2.3 du 02/03/2026-18:03
 
 * `cab8c1f` ajouter le droit de création des tables à la permission rw
