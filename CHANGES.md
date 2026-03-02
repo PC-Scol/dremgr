@@ -1,3 +1,7 @@
+## Release 2.2.2 du 02/03/2026-17:52
+
+* `0c9a269` corriger l'attribution des droits aux utilisateurs
+
 ## Release 2.2.1 du 18/02/2026-18:30
 
 * `d102c12` maj doc
