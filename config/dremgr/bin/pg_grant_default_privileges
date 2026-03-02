@@ -16,7 +16,7 @@ for user in "${user_access[@]}"; do
         sgrant="update"
         ;;
     write|rw|w)
-        tgrant="select, insert, update, delete, truncate"
+        tgrant="create, select, insert, update, delete, truncate"
         sgrant="usage"
         ;;
     read|ro|r|*)
