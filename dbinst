@@ -112,8 +112,18 @@ function import_one_devel() {
 }
 
 function psql_prompt() {
-     local composefile localfile; local -a composefiles composeargs
+    local composefile localfile; local -a composefiles composeargs
     _set_composefiles
+
+    if [ -n "$PsqlUserDb" ]; then
+        local user db conn
+        splituserhost "$PsqlUserDb" user db
+        conn=
+        [ -n "$db" ] && conn="${conn}dbname=$db"
+        [ -n "$db" -a -n "$user" ] && conn="${conn} "
+        [ -n "$user" ] && conn="${conn}user=$user"
+        set -- -d "$conn" "$@"
+    fi
 
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
@@ -227,6 +237,7 @@ ForceStart=
 Recreate=
 action=auto
 Rebuild=
+PsqlUserDb=
 args=(
     "Gérer cette instance de DRE"
     #"usage"
@@ -257,7 +268,10 @@ Importer un addon en mode développement:
 - puis l'addon est importé comme avec les options suivantes:
     $MYNAME -i -- --no-updateao --runao -o DREADDON \"\$@\"
   cf la documentation pour les détails"
-    -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
+    -q::,--psql '$action=psql; set@ PsqlUserDb' "\
+Lancer une invite psql connecté avec le compte administrateur
+Pour se connecter à une autre base et/ou avec un autre utilisateur, il faut
+spécifier un argument facultatif de la forme [user@]db"
     --shell-db action=shell_db "++Lancer une invite bash dans le container db"
     --show-conf action=show_conf "++Afficher la configuration postgresql.conf"
     -x,--shell-cron action=shell_cron "++Lancer une invite bash dans le container cron"
