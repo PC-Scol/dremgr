@@ -9,10 +9,10 @@ for user in "${users[@]}"; do
     user="${user%%:*}"
     echo "\
   if not exists (select from pg_user where usename = '$user') then
-    \\echo create user $user;
+    raise NOTICE 'create user $user;';
     create user $user with password '$password';
   else
-    \\echo -- user $user already exists
+    raise INFO '-- user $user already exists';
   end if;
 "
 done
