@@ -4,7 +4,7 @@
 readonly=
 defaults=
 grant=grant; to=to
-args="$(getopt -o rdK -l readonly,defaults,revoke -n "$0" -- "$@")" || exit 1
+args="$(getopt -o rdpK -l readonly,defaults,privileges,revoke -n "$0" -- "$@")" || exit 1
 eval "set -- $args"
 while [ $# -gt 0 ]; do
     arg="$1"; shift
@@ -12,6 +12,7 @@ while [ $# -gt 0 ]; do
     --) break;;
     -r|--readonly) readonly=1;;
     -d|--defaults) defaults=1;;
+    -p|--privileges) defaults=;;
     -K|--revoke) grant=revoke; to=from;;
     esac
 done
