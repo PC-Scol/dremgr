@@ -488,6 +488,8 @@ if [ -n "$step_checkao" ]; then
         done
 
         eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMA_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
+        # si pas de répertoire de version, assumer COMPAT=all
+        [ -n "$minv" ] || vxx=all
         if [ "$vxx" == all ]; then
             vxx=
         else
