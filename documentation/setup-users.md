@@ -30,17 +30,17 @@ instances
 ./dremgr -r
 ~~~
 
-*Après* avoir redémarré les instances, lancer la commande pour créer les
-nouveaux comptes
+*Après* avoir redémarré les instances, lancer cette commande pour créer les
+nouveaux comptes et configurer les permissions
 ~~~sh
 ./dbinst -Ax create-pgusers.sh
 ~~~
 NB: seuls les nouveaux comptes sont créés. les comptes existant ne sont pas
-modifiés
+modifiés. les permissions sur le schéma public sont toujours mises à jour
 
-IMPORTANT: notez que les nouveaux utilisateurs n'ont pas d'accès aux données
-avant la prochaine importation, soit le lendemain. S'il faut leur donner l'accès
-de suite, il faut forcer la réimportation des fichiers
+IMPORTANT: les nouveaux utilisateurs n'ont pas d'accès aux données avant la
+prochaine importation, soit le lendemain. S'il faut leur donner l'accès de
+suite, il faut forcer la réimportation des fichiers
 ~~~sh
 ./dbinst -Ai -- -@latest
 ~~~

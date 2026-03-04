@@ -37,9 +37,13 @@ données et les fichiers de dumps (par défaut, les fichiers des 15 derniers jou
 sont conservés) --> en fonction de la taille de vos données, de **50 à 100 Go**
 devraient suffire pour une machine de production.
 
-Les commandes listées ci-dessous sont pour un démarrage rapide si vous savez ce
-que vous faites. Si c'est la première fois, il est conseillée de cliquer sur les
-liens pour avoir des détails sur la procédure.
+Les commandes listées ci-dessous sont pour un démarrage rapide **si vous savez
+ce que vous faites**.
+
+**Si c'est la première fois que vous installez DREmgr**, il est conseillé de
+cliquer sur les liens pour avoir des détails sur la procédure. Il y a notamment
+des informations pour votre équipe systèmes et réseaux dont il faut tenir
+compte.
 
 * Installez d'abord les pré-requis
   * Installation des [pré-requis pour linux](documentation/00prerequis-linux.md)

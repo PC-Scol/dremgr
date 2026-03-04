@@ -3,6 +3,19 @@
 Voici une liste de questions que personne n'a jamais posées, mais qui si
 c'était le cas, seraient sûrement les plus fréquentes :-)
 
+> [!IMPORTANT]
+> **Quand redémarrer les services**
+>
+> D'une manière générale, si un paramétrage est modifié dans `dremgr.env` ou
+> ailleurs, il faut TOUJOURS redémarrer les services.
+> ~~~sh
+> # redémarrer si nécessaire
+> ./dremgr -r
+>
+> # OU forcer le redémarrage pour être sûr
+> ./dremgr -R
+> ~~~
+
 ## La base de données n'est pas accessible par BO / PowerBI / tout autre client
 
 Par défaut, la base de données n'est accessible que depuis l'hôte local (via
