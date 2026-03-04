@@ -50,10 +50,9 @@ curl -fsSL https://get.docker.com | sh
 ~~~
 
 > [!IMPORTANT]
-> La version de docker compose installé via les dépôts debian est trop ancienne
-> et pose problème. (plus exactement, c'est docker compose qui est trop ancien)
-> C'est la raison pour laquelle la commande ci-dessus installe la dernière
-> version livrée par docker.
+> La version de docker *compose* installé via les dépôts debian est trop
+> ancienne et pose problème. C'est la raison pour laquelle la commande
+> ci-dessus installe la dernière version livrée par docker.
 >
 > Si vous êtes tenus à cause de la politique interne d'installer la version du
 > dépôt, envoyez un message sur le forum pour avoir une solution.
@@ -119,10 +118,9 @@ Il faut se déconnecter et se reconnecter pour activer le changement dans la
 configuration des groupes
 
 > [!IMPORTANT]
-> La version de docker compose installé via les dépôts debian est trop ancienne
-> et pose problème. (plus exactement, c'est docker compose qui est trop ancien)
-> C'est la raison pour laquelle la commande ci-dessus installe la dernière
-> version livrée par docker.
+> La version de docker *compose* installé via les dépôts debian est trop
+> ancienne et pose problème. C'est la raison pour laquelle la commande
+> ci-dessus installe la dernière version livrée par docker.
 >
 > Si vous êtes tenus à cause de la politique interne d'installer la version du
 > dépôt, envoyez un message sur le forum pour avoir une solution.
