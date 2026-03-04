@@ -10,6 +10,7 @@ function _set_composefiles() {
     composefile="$DREMGR/dbinst-docker-compose.yml"
     composefiles=("$composefile")
     composeargs=(-f "$composefile")
+    in_isatty && execargs=() || execargs=(-T)
     localfile="$DREMGR/dbinst-docker-compose.local.yml"
     if [ -f "$localfile" ]; then
         composefiles+=("$localfile")
@@ -18,7 +19,7 @@ function _set_composefiles() {
 }
 
 function start_dbinst() {
-     local composefile localfile; local -a composefiles composeargs
+     local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
 
     [ -f "$composefile" ] || die "$composefile: fichier introuvable"
@@ -49,7 +50,7 @@ function start_dbinst() {
 }
 
 function stop_dbinst() {
-     local composefile localfile; local -a composefiles composeargs
+     local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
 
     [ -f "$composefile" ] || return 0
@@ -71,13 +72,13 @@ function restart_dbinst() {
 }
 
 function import_dumps() {
-     local composefile localfile; local -a composefiles composeargs
+     local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
 
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
         estep "Import des dumps [$Profile]"
-        docker compose "${composeargs[@]}" exec cron import-dumps "$@" || die
+        docker compose "${composeargs[@]}" exec "${execargs[@]}" cron import-dumps "$@" || die
     else
         eerror "Impossible d'importer les dumps: DRE [$Profile] est arrêté"
     fi
@@ -112,20 +113,30 @@ function import_one_devel() {
 }
 
 function psql_prompt() {
-     local composefile localfile; local -a composefiles composeargs
+    local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
+
+    if [ -n "$PsqlUserDb" ]; then
+        local user db conn
+        splituserhost "$PsqlUserDb" user db
+        conn=
+        [ -n "$db" ] && conn="${conn}dbname=$db"
+        [ -n "$db" -a -n "$user" ] && conn="${conn} "
+        [ -n "$user" ] && conn="${conn}user=$user"
+        set -- -d "$conn" "$@"
+    fi
 
     [ -f "$composefile" ] || return 0
     if dcrunning "${composefiles[@]}"; then
         estep "Invite psql [$Profile]"
-        docker compose "${composeargs[@]}" exec db psql "$@" || die
+        docker compose "${composeargs[@]}" exec "${execargs[@]}" db psql "$@" || die
     else
         eerror "Impossible de lancer l'invite psql: DRE [$Profile] est arrêté"
     fi
 }
 
 function shell_prompt() {
-     local composefile localfile; local -a composefiles composeargs
+     local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
 
     [ -f "$composefile" ] || return 0
@@ -139,7 +150,7 @@ function shell_prompt() {
             cmd=(bash)
             estep "$container [$Profile] Invite shell"
         fi
-        docker compose "${composeargs[@]}" exec "$container" "${cmd[@]}" || die
+        docker compose "${composeargs[@]}" exec "${execargs[@]}" "$container" "${cmd[@]}" || die
     else
         eerror "Impossible de lancer l'invite shell $container: DRE [$Profile] est arrêté"
     fi
@@ -154,7 +165,7 @@ function write_output() {
 }
 
 function backup_db() {
-    local composefile localfile; local -a composefiles composeargs
+    local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
     [ -f "$composefile" ] || return 0
 
@@ -182,7 +193,7 @@ function read_input() {
 }
 
 function restore_db() {
-    local composefile localfile; local -a composefiles composeargs
+    local composefile localfile; local -a composefiles composeargs execargs
     _set_composefiles
     [ -f "$composefile" ] || return 0
 
@@ -227,6 +238,7 @@ ForceStart=
 Recreate=
 action=auto
 Rebuild=
+PsqlUserDb=
 args=(
     "Gérer cette instance de DRE"
     #"usage"
@@ -257,7 +269,10 @@ Importer un addon en mode développement:
 - puis l'addon est importé comme avec les options suivantes:
     $MYNAME -i -- --no-updateao --runao -o DREADDON \"\$@\"
   cf la documentation pour les détails"
-    -q,--psql action=psql "Lancer une invite psql connecté avec le compte administrateur"
+    -q::,--psql '$action=psql; set@ PsqlUserDb' "\
+Lancer une invite psql connecté avec le compte administrateur
+Pour se connecter à une autre base et/ou avec un autre utilisateur, il faut
+spécifier un argument facultatif de la forme [user@]db"
     --shell-db action=shell_db "++Lancer une invite bash dans le container db"
     --show-conf action=show_conf "++Afficher la configuration postgresql.conf"
     -x,--shell-cron action=shell_cron "++Lancer une invite bash dans le container cron"

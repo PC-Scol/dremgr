@@ -15,8 +15,50 @@ Les programmes suivants sont nécessaires:
 * docker
   (podman n'a pas été testé, je ne sais pas si ça marche avec)
 
-Les instructions suivantes permettent d'installer ce qui est nécessaire sous
-Debian Linux:
+Les instructions ci-dessous permettent d'installer ce qui est nécessaire sous
+Debian Linux. Pour les autres systèmes, vous devez vous reporter à votre manuel
+utilisateur en vous inspirant des informations fournies
+
+> [!IMPORTANT]
+> L'utilisateur qui fait l'installation doit être sudoer, ou l'installation doit
+> être effectuée avec l'utilisateur root.
+
+## Installation avec le compte root
+
+Pour un serveur distant ou de production, vous installerez habituellement avec
+le compte root. S'il s'agit d'installer sur votre poste, veuillez vous référer à
+la section suivante "Installation avec un compte sudoer"
+
+NB: pour une installation avec le compte root, il n'est pas nécessaire
+d'utiliser sudo. Adaptez en conséquences les instructions de la documentation
+qui mentionnent l'utilisation de sudo.
+
+Installer les programmes requis
+~~~sh
+apt update && apt install git curl rsync tar unzip python3 gawk
+~~~
+
+Certaines universités ont eu des soucis avec apparmor, qu'ils ont résolu en
+installant les paquets suivants:
+~~~sh
+apt install apparmor apparmor-utils
+~~~
+
+Puis installer docker
+~~~sh
+curl -fsSL https://get.docker.com | sh
+~~~
+
+> [!IMPORTANT]
+> La version de docker compose installé via les dépôts debian est trop ancienne
+> et pose problème. (plus exactement, c'est docker compose qui est trop ancien)
+> C'est la raison pour laquelle la commande ci-dessus installe la dernière
+> version livrée par docker.
+>
+> Si vous êtes tenus à cause de la politique interne d'installer la version du
+> dépôt, envoyez un message sur le forum pour avoir une solution.
+
+## Installation avec un compte sudoer
 
 Ouvrir un terminal, et vérifier que l'utilisateur courant est sudoer
 ~~~sh
@@ -76,12 +118,11 @@ sudo usermod -aG docker $USER
 Il faut se déconnecter et se reconnecter pour activer le changement dans la
 configuration des groupes
 
-Pour les autres systèmes, vous devez vous reporter à votre manuel utilisateur
-
 > [!IMPORTANT]
 > La version de docker compose installé via les dépôts debian est trop ancienne
-> et pose problème. C'est la raison pour laquelle la commande ci-dessus installe
-> la dernière version livrée par docker.
+> et pose problème. (plus exactement, c'est docker compose qui est trop ancien)
+> C'est la raison pour laquelle la commande ci-dessus installe la dernière
+> version livrée par docker.
 >
 > Si vous êtes tenus à cause de la politique interne d'installer la version du
 > dépôt, envoyez un message sur le forum pour avoir une solution.
@@ -146,10 +187,15 @@ sudo nano /etc/docker/daemon.json
 sudo systemctl restart docker.service
 ~~~
 
-Les adresses suivantes doivent pouvoir être accédées via la proxy. Pensez le cas
-échéant à demander l'ouverture des accès:
+## Configuration des accès réseaux
+
+Les adresses suivantes doivent êtres accessibles:
 * `pubdocker.univ-reunion.fr` sur le port 443
 * `git.univ-reunion.fr` sur le port 443
+
+Si nécessaire, faites la demande à votre équipe système et réseaux pour
+autoriser ces accès (que ce soit en direct ou via le proxy selon la politique en
+vigueur dans votre université)
 
 ---
 

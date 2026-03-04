@@ -6,7 +6,7 @@ if [ "$1" == --create ]; then
 fi
 
 if [ -n "$PDBNAME" ]; then
-    psql <<EOF
+    psql -a <<EOF
 create extension if not exists postgres_fdw;
 
 create server if not exists $PDBNAME
