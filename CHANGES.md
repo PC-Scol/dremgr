@@ -1,3 +1,30 @@
+## Release 2.3.0 du 04/03/2026-12:00
+
+Cette release corrige un problème avec la création des permissions des
+utilisateurs, notamment sur la base pdata. Après la mise à jour, il faut forcer
+la recréation des droits et réimporter les données
+~~~sh
+cd dremgr
+
+# mettre à jour le dépôt
+git pull
+
+# reconstruire les images si nécessaire puis redémarrer les services le cas échéant
+./dremgr -rb
+
+# refaire les permissions
+./dbinst -Ax create-pgusers.sh
+
+# relancer l'import, ou attendre le lendemain
+./dbinst -Ai -- -@latest
+~~~
+
+* `2707c63` maj doc
+* `8c83ee1` COMPAT=all forcé si pas de répertoires v*
+* `199ff3c` dbinst: support redirection entrée standard
+* `0df3f37` remanier et corriger la gestion des droits
+* `91c1819` connexion avec utilisateur spécifique
+
 ## Release 2.2.4 du 02/03/2026-18:19
 
 * `e4dc27d` Revert "ajouter le droit de création des tables à la permission rw"
