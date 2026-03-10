@@ -100,6 +100,7 @@ declare -A ALL_FILES
 DL_FILES=()
 DROP_SCHEMA_SCHEMAS=()
 IMPORT_SCHEMA_SCHEMAS=()
+HAVE_TECH_SCHEMA=
 DROP_MONGO_SCHEMAS=()
 IMPORT_MONGO_SCHEMAS=()
 IMPORT_MONGO_COLLECTIONS=()
@@ -113,6 +114,7 @@ function _add_bin() {
     schema="${schema##*-$Timestamp-}"
     DROP_SCHEMA_SCHEMAS+=("schema_$schema")
     IMPORT_SCHEMA_SCHEMAS+=("$schema")
+    [ "$schema" == tech ] && HAVE_TECH_SCHEMA=1
     _add_file=1
 }
 function _add_json() {
@@ -572,18 +574,36 @@ create schema if not exists $schema;
 " || critical
     done
 
-    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
-        file="${DRE_PREFIX}-$Timestamp-$schema.bin"
+    if [ "$VxxTECH" == auto ]; then
+        [ -n "$HAVE_TECH_SCHEMA" ] && VxxTECH=1 || VxxTECH=
+    fi
+
+    function import_bin() {
+        local schema="$1"
+        local file="${DRE_PREFIX}-$Timestamp-$schema.bin"
         schema="schema_$schema"
 
-        qstep "$schema: drop extensions"
-        runsql "\
+        if [ -z "$VxxTECH" ]; then
+            qstep "$schema: drop extensions"
+            runsql "\
 drop extension if exists unaccent, pg_trgm cascade;
 " || critical
+        fi
 
         qstep "$schema: import $file"
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
         runsql "$(pg_grant_privileges -r "$schema")" || critical
+    }
+    if [ -n "$VxxTECH" ]; then
+        for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
+            [ "$schema" == tech ] || continue
+            import_bin "$schema"
+        done
+    fi
+
+    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
+        [ -n "$VxxTECH" -a "$schema" == tech ] && continue
+        import_bin "$schema"
     done
     eend
 fi
