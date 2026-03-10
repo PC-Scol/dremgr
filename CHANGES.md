@@ -1,3 +1,7 @@
+## Release 2.4.0 du 10/03/2026-11:32
+
+* `9253755` support du schéma tech
+
 ## Release 2.3.2 du 04/03/2026-13:09
 
 * `a66187c` maj doc
