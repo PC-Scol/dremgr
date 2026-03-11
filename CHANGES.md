@@ -1,3 +1,7 @@
+## Release 2.4.1 du 11/03/2026-20:15
+
+* `bc4170c` pallier le nommage différent du fichier tech
+
 ## Release 2.4.0 du 10/03/2026-11:32
 
 * `9253755` support du schéma tech
