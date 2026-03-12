@@ -1,3 +1,7 @@
+## Release 2.4.2 du 12/03/2026-07:41
+
+* `4a0f7a7` corriger la prise en compte du paramètre VxxTECH dans cron
+
 ## Release 2.4.1 du 11/03/2026-20:15
 
 * `bc4170c` pallier le nommage différent du fichier tech
