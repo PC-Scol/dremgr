@@ -578,6 +578,9 @@ create schema if not exists $schema;
     if [ "$VxxTECH" == auto ]; then
         [ -n "$HAVE_TECH_SCHEMA" ] && VxxTECH=1 || VxxTECH=
     fi
+    if [ -n "$VxxTECH" ]; then
+        qstep "Activation du support du schéma tech"
+    fi
 
     function import_bin() {
         local schema="$1"
@@ -602,13 +605,10 @@ drop extension if exists unaccent, pg_trgm cascade;
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
         runsql "$(pg_grant_privileges -r "$schema")" || critical
     }
-    if [ -n "$VxxTECH" ]; then
-        for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
-            [ "$schema" == tech ] || continue
-            import_bin "$schema"
-        done
-    fi
-
+    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
+        [ -n "$VxxTECH" -a "$schema" == tech ] || continue
+        import_bin "$schema"
+    done
     for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
         [ -n "$VxxTECH" -a "$schema" == tech ] && continue
         import_bin "$schema"
