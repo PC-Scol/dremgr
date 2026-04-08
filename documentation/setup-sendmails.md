@@ -45,4 +45,16 @@ Les paramètres suivants sont supportés pour la clé `app.mailer`
   * `tls` pour connexion TLS (avec généralement le port 587)
   * `ssl` pour connexion SSL (avec généralement le port 465)
 
+## Tester l'envoi du mail
+
+Pour vérifier le paramétrage du serveur smtp, il est possible d'envoyer un mail de test
+~~~sh
+cd dreaddon-local/notifications
+
+./sendmails.php --test
+~~~
+
+Le mode DEBUG est activé, ce qui permet de voir le détail des échanges avec le
+serveur SMTP et d'identifier les erreurs éventuelles
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
