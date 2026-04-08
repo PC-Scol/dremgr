@@ -1,3 +1,7 @@
+## Release 2.4.3 du 08/04/2026-05:50
+
+* `73c53e9` possibilité d'envoyer un mail de test
+
 ## Release 2.4.2 du 12/03/2026-07:41
 
 * `4a0f7a7` corriger la prise en compte du paramètre VxxTECH dans cron
