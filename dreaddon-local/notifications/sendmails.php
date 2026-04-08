@@ -18,7 +18,7 @@ Application::run(new class extends Application {
     "merge" => parent::ARGS,
     "purpose" => "Envoyer un mail de notification à la fin de l'importation",
 
-    ["-t::", "--test", "value" => "normal",
+    ["-t::", "--test", "value" => "success",
       "help" => <<<EOT
 Envoyer un mail de test. Par défaut, le type sélectionné est "succès"
 Il est possible de sélectionner un autre type avec un argument optionnel e.g --test=error ou --test=critical
