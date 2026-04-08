@@ -1,3 +1,7 @@
+## Release 2.4.4 du 08/04/2026-05:59
+
+* `8a94b59` maj doc
+
 ## Release 2.4.3 du 08/04/2026-05:50
 
 * `73c53e9` possibilité d'envoyer un mail de test
