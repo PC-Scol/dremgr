@@ -20,7 +20,7 @@ Application::run(new class extends Application {
 
     ["-t::", "--test", "value" => "success",
       "help" => <<<EOT
-Envoyer un mail de test. Par défaut, le type sélectionné est "succès"
+Envoyer un mail de test. Par défaut, le type sélectionné est 'success'
 Il est possible de sélectionner un autre type avec un argument optionnel e.g --test=error ou --test=critical
 EOT,
     ],
@@ -56,6 +56,9 @@ EOT,
   private ?string $test = null;
 
   function main() {
+    $disabled = vbool::with(config::k("disabled"));
+    $requireCron = vbool::with(config::k("require_cron"));
+
     $test = $this->test;
     if ($test !== null) {
       $profile = "prod";
@@ -76,14 +79,24 @@ EOT,
         throw _exceptions::forbidden_value("--test=$test", null, ["success", "error", "critical"]);
       }
       msg::set_verbosity("debug");
+
+      if ($disabled) {
+        msg::warning("Avec le paramètre disabled:true, aucun mail ne sera envoyé après les imports");
+        msg::note("si vous souhaitez activer l'envoi des mails, supprimez ou commentez la ligne disabled:true");
+      } else {
+        if ($requireCron) {
+          msg::info("Avec le paramètre require_cron:true, les mails ne seront envoyés que lors de l'import de la planification quotidienne");
+        } else {
+          msg::info("Avec le paramètre require_cron:false, les mails seront systématiquement envoyés après chaque import");
+        }
+      }
+      msg::section("Envoi du mail de test");
     } else {
       # ne pas envoyer de mail si c'est désactivé
-      $disabled = vbool::with(config::k("disabled"));
       if ($disabled) return;
 
       # ne pas envoyer de mail si on n'est pas dans le cadre de la planification
       # et que require_cron==true
-      $requireCron = vbool::with(config::k("require_cron"));
       $isCron = self::get_bool("TEM_CRON");
       if ($requireCron && !$isCron) return;
 
