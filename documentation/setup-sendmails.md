@@ -49,9 +49,7 @@ Les paramètres suivants sont supportés pour la clé `app.mailer`
 
 Pour vérifier le paramétrage du serveur smtp, il est possible d'envoyer un mail de test
 ~~~sh
-cd dreaddon-local/notifications
-
-./sendmails.php --test
+./dbinst -x -- /app/dremgr/dreaddon-local/notifications/sendmails.php -t
 ~~~
 
 Le mode DEBUG est activé, ce qui permet de voir le détail des échanges avec le
