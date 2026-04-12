@@ -1,3 +1,7 @@
+## Release 2.4.6 du 12/04/2026-18:36
+
+* `dad5ee8` maj doc
+
 ## Release 2.4.5 du 12/04/2026-18:25
 
 * `da4a754` afficher le paramétrage de l'envoi des mails lors du test
