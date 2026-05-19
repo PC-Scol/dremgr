@@ -1,4 +1,13 @@
-# TODO / ROADMAP
+# TODO
+
+* [ ] option `-ff` pour forcer le retéléchargement des fichiers
+* [ ] option `-@-1` pour télécharger les fichiers juste avant les derniers
+  (cela permet de rétablir la situation si les fichiers du jour sont corrompus)
+* [ ] possibilité de vérifier si la livraison est complète: si des fichiers
+  manquent, ne pas faire l'importation. par exemple une liste de modules qui
+  doivent être présents?
+
+# ROADMAP
 
 Sans ordre particulier, fonctionnalités qui seront implémentées dans le futur:
 * Support d'autant de comptes "reader" que nécessaire
