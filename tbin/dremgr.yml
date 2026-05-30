@@ -1,0 +1,26 @@
+# -*- coding: utf-8 mode: yaml -*- vim:sw=2:sts=2:et:ai:si:sta:fenc=utf-8
+
+dbs:
+  pgbouncer:
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=pgbouncer user=pgbouncer password=admin
+  prod_dre: &dre
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=prod_dre user=postgres password=admin
+  test_dre:
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=test_dre user=postgres password=admin
+  demo_dre:
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=demo_dre user=postgres password=admin
+  dre: *dre
+  prod_pdata: &pdata
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=prod_pdata user=postgres password=admin
+  test_pdata:
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=test_pdata user=postgres password=admin
+  demo_pdata:
+    type: pgsql
+    name: host=pegase-dre.self port=5432 dbname=demo_pdata user=postgres password=admin
+  pdata: *pdata
