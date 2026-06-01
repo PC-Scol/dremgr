@@ -1,3 +1,9 @@
+## Release 2.4.7 du 01/06/2026-15:56
+
+* `3d23011` bug avec la création initiale de la BDD
+* `2dfd3cc` outils pour les tests
+* `abe7da4` maj TODO
+
 ## Release 2.4.6 du 12/04/2026-18:36
 
 * `dad5ee8` maj doc
