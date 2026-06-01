@@ -58,7 +58,6 @@ function get_envfile() {
 function get_envfiles() {
     echo "$DREMGR/.defaults.env"
     get_envfile
-    echo "$DREMGR/.forced.env"
 }
 function load_envfiles() {
     local envfile; local -a envfiles
@@ -159,13 +158,20 @@ DREMGR_TEMPLATE_LIST_VARS=(
     POSTGRES_PROFILES
 )
 
+function _template_dump_vars() {
+    #XXX supprimer quand on passera à nulib/base 0.11
+    [ $# -gt 0 ] || return 0
+    cat "$@" |
+        grep -E '^((re)?setenv )?[A-Z][A-Za-z_]*=' |
+        sed -E 's/^((re)?setenv )?//; s/=.*//' |
+        sort -u
+}
 function template_dump_vars() {
     echo Profile
     _template_dump_vars \
         "$DREMGR/.build.env.dist" \
         "$DREMGR/.defaults.env" \
-        "$DREMGR/.dremgr.env.dist" \
-        "$DREMGR/.forced.env"
+        "$DREMGR/.dremgr.env.dist"
 }
 
 function template_source_envs() {
@@ -173,7 +179,6 @@ function template_source_envs() {
     source_envs=("$DREMGR/build.env" "$DREMGR/.defaults.env")
     setx envfile=get_envfile
     [ -f "$envfile" ] && source_envs+=("$envfile")
-    source_envs+=("$DREMGR/.forced.env")
     _template_source_envs "${source_envs[@]}"
     template_vars+=(DlProfile IS_DBINST IS_DBFRONT IS_WEBFRONT)
     template_lists=("${DREMGR_TEMPLATE_LIST_VARS[@]}")

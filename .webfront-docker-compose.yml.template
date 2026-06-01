@@ -10,7 +10,6 @@ services:
       - .proxy.env
       - .defaults.env
       - dremgr.env
-      - .forced.env
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
     restart: always
@@ -21,7 +20,6 @@ services:
       - .proxy.env
       - .defaults.env
       - dremgr.env
-      - .forced.env
     volumes:
       - @@DATADIR@@/pgadmindata:/var/lib/pgadmin
     #@@IF:DBNET@@networks:
@@ -34,7 +32,6 @@ services:
       - .proxy.env
       - .defaults.env
       - dremgr.env
-      - .forced.env
     environment:
       #@@UL:LBHTTPS@@DEVEL: 1
       BASE_URL: @@WEBFRONT_URL@@

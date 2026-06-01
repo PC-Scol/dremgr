@@ -14,10 +14,8 @@ services:
       - .proxy.env
       - .defaults.env
       - @@DATADIR@@/@@Profile@@-dredata/profile.env
-      - .forced.env
     environment: &db-environment
       APP_PROFILE: @@Profile@@
-      POSTGRES_PROFILE: @@Profile@@
     shm_size: 1G
     volumes:
       - @@DATADIR@@/@@Profile@@-run:/run/postgresql
@@ -41,7 +39,6 @@ services:
       - .proxy.env
       - .defaults.env
       - @@DATADIR@@/@@Profile@@-dredata/profile.env
-      - .forced.env
     environment:
       <<: *db-environment
       APP_DATADIR: /data/dre
@@ -49,13 +46,6 @@ services:
       UPDATE_CRON_FILES: import-dumps
       UPDATE_CRON_VARS: >
         HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
-        APP_PROFILE APP_DATADIR
-        DBNAME PDBNAME
-        POSTGRES_USER POSTGRES_PASSWORD
-        FE_USER FE_USERS FE_ACCESS
-        ADDON_URLS
-        CRON_DISABLE CRON_MAX_AGE MINIMIZE_DOWNTIME
-        VxxFIX_FC V29FIX_DY VxxTECH
     command: cron
     volumes:
       - .:/app/dremgr
