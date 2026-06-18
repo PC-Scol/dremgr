@@ -269,6 +269,8 @@ Importer un addon en mode développement:
 - puis l'addon est importé comme avec les options suivantes:
     $MYNAME -i -- --no-updateao --runao -o DREADDON \"\$@\"
   cf la documentation pour les détails"
+    --JZ import_one_reset=1 "++\
+Option non documentée. Ne pas utiliser"
     -q::,--psql '$action=psql; set@ PsqlUserDb' "\
 Lancer une invite psql connecté avec le compte administrateur
 Pour se connecter à une autre base et/ou avec un autre utilisateur, il faut
@@ -334,8 +336,8 @@ stop) stop_dbinst "$@";;
 refresh) refresh_dbinst "$@";;
 restart) restart_dbinst "$@";;
 import_all) import_dumps "$@";;
-import_one) import_one "$@";;
-import_one_devel) import_one_devel "$@";;
+import_one) import_one "$@" ${import_one_reset:+--enable-sql-reset};;
+import_one_devel) import_one_devel "$@" ${import_one_reset:+--enable-sql-reset};;
 psql) psql_prompt "$@";;
 shell_*) shell_prompt "${action#shell_}" "$@";;
 show_conf) shell_prompt db show-conf.sh;;

@@ -11,6 +11,7 @@ profile=prod
 conn="$ADMIN"
 inputs=()
 input_all=
+trace=
 args=(
     "lancer une console psql sur l'instance de dev"
     -g:,--profile profile= "se connecter à l'instance correspondant au profil spécifié"
@@ -22,6 +23,7 @@ args=(
     -r,--read conn="$RO" "accès en lecture seule"
     -f:,--input:INPUT inputs "spécifier un fichier à importer"
     -F,--input-all input_all=1 "importer tous les fichiers mentionnés en argument"
+    -t,--trace trace=1 "tracer toutes les requêtes SQL"
 )
 parse_args "$@"; set -- "${args[@]}"
 
@@ -39,8 +41,8 @@ fi
 if [ ${#inputs[*]} -gt 0 ]; then
     for input in "${inputs[@]}"; do
         estep "$input"
-        psql -d "$conn" -v ON_ERROR_STOP=1 "$@" -f "$input" || die
+        psql -d "$conn" ${trace:+-a} -v ON_ERROR_STOP=1 "$@" -f "$input" || die
     done
 else
-    exec psql -d "$conn" "$@"
+    exec psql -d "$conn" ${trace:+-a} "$@"
 fi
