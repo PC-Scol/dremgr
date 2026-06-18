@@ -1,3 +1,8 @@
+## Release 2.4.8 du 18/06/2026-14:17
+
+* `e7135c8` support fichiers .sql.reset
+* `9a379ad` option pour tracer les requêtes
+
 ## Release 2.4.7 du 01/06/2026-15:56
 
 * `3d23011` bug avec la création initiale de la BDD
