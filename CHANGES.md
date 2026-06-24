@@ -1,3 +1,7 @@
+## Release 2.4.9 du 24/06/2026-17:23
+
+* `2ae57e0` maj du texte du mail pour faire ressortir l'erreur plus clairement
+
 ## Release 2.4.8 du 18/06/2026-14:17
 
 * `e7135c8` support fichiers .sql.reset
