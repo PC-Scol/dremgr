@@ -41,8 +41,8 @@ mails:
     body: |
       Bonjour,
 
-      L'importation des dumps DRE et l'exécution des addons ont été effectués
-      avec succès le {date_fin} ({duree}).
+      L'importation des dumps DRE et l'exécution des addons pour le profil
+      {profile} ont été effectués avec succès le {date_fin} ({duree}).
       
       Les logs sont attachés à ce mail.
 
@@ -57,10 +57,11 @@ mails:
     body: |
       Bonjour,
 
-      L'importation des dumps DRE a été effectuée avec succès le {date_fin} ({duree}).
+      L'importation des dumps DRE <b>pour le profil {profile}</b> a été
+      effectuée avec succès le {date_fin} ({duree}).
       
-      Cependant, une erreur s'est produite pendant l'exécution des addons. Cela
-      veut dire que potentiellement certaines données ne sont pas cohérentes.
+      Cependant, <b>une erreur s'est produite pendant l'exécution des addons</b>.
+      Cela veut dire que potentiellement certaines données ne sont pas cohérentes.
 
       Les logs sont attachés à ce mail: vous y trouverez sans doute la cause du
       problème ou des éléments pour vos investigations ainsi que pour une
@@ -77,10 +78,11 @@ mails:
     body: |
       Bonjour,
 
-      Une erreur critique s'est produite pendant l'importation des dumps DRE
-      commencée le {date_debut}. Cela signifie que la base de données DRE du
-      jour n'a pas pu être importée. En fonction du type de l'erreur, il est
-      aussi possible que la base de données ne soit plus accessible.
+      <b>Une erreur critique s'est produite</b> pendant l'importation des dumps
+      DRE <b>pour le profil {profile}</b> commencée le {date_debut}.
+      Cela signifie que la base de données DRE du jour n'a pas pu être importée.
+      En fonction du type de l'erreur, il est aussi possible que la base de
+      données ne soit plus accessible.
 
       Les logs sont attachés à ce mail: vous y trouverez sans doute la cause du
       problème ou des éléments pour vos investigations ainsi que pour une
