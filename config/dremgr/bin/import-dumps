@@ -752,9 +752,16 @@ if [ -n "$step_runao" ]; then
 
     rm -rf "$WORKDIR"
 
-    if [ -n "$have_ignore_errors" ] && grep -q "ERROR:" "$APP_DATADIR/import.log"; then
-        eimportant "Des erreurs se sont produites pendant l'import. Veuillez consulter les logs"
+    ac_set_tmpfile errors
+    grep "ERROR:" "$APP_DATADIR/import.log" >"$errors"
+    if [ -s "$errors" ]; then
+        if [ -n "$have_ignore_errors" ]; then
+            eimportant "Des erreurs se sont produites pendant l'import. Consultez les logs pour les détails."
+        fi
+        echo "## Extrait des logs ##"
+        cat "$errors"
     fi
+    ac_clean "$errors"
 
     eend
 fi
