@@ -15,6 +15,8 @@ unset PGHOST PGPORT
 read -a VxxFIX_FC <<<"${VxxFIX_FC//
 / }"
 
+[ -x /usr/bin/7zz ] && SZ=7zz || SZ=7z
+
 function recoverable_curl_error() {
     case "$1" in
     5|6|7|22) return 0;;
@@ -24,8 +26,9 @@ function recoverable_curl_error() {
 DL_MAX=5
 function dl() {
     local r=22 count=0
+    [ -f "$1" ] && rm "$1"
     while recoverable_curl_error $r; do
-        curl -fsSO -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
+        curl -fsSOL -C - --retry 10 -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
         if recoverable_curl_error $r; then
             let count=count+1
             [ $count -gt $DL_MAX ] && break
@@ -109,14 +112,17 @@ function rundir() {
 
 declare -A ALL_FILES
 DL_FILES=()
-DROP_SCHEMA_SCHEMAS=()
-IMPORT_SCHEMA_SCHEMAS=()
+IMPORT_PGSQL_SCHEMAS=()
 HAVE_TECH_SCHEMA=
 DROP_MONGO_SCHEMAS=()
 IMPORT_MONGO_SCHEMAS=()
 IMPORT_MONGO_COLLECTIONS=()
 function add2all_files() {
     local file="$2"
+    if [ -n "$V33Format" ]; then
+        # ignorer les fichiers .bin
+        [[ "$file" == *.bin ]] && return
+    fi
     ALL_FILES["$file"]=1
 }
 function _add_bin() {
@@ -124,8 +130,7 @@ function _add_bin() {
     schema="${schema%.bin}"
     schema="${schema##*-$Timestamp-}"
     schema="${schema#schema_}"
-    DROP_SCHEMA_SCHEMAS+=("schema_$schema")
-    IMPORT_SCHEMA_SCHEMAS+=("$schema")
+    IMPORT_PGSQL_SCHEMAS+=("$schema")
     [ "$schema" == tech ] && HAVE_TECH_SCHEMA=1
     _add_file=1
 }
@@ -145,6 +150,11 @@ function _add_json() {
 }
 function add2dl_files() {
     local sum="$1" file="$2"
+
+    if [ -n "$V33Format" ]; then
+        # ignorer les fichiers .bin
+        [[ "$file" == *.bin ]] && return
+    fi
 
     if [[ "$file" != "$DRE_PREFIX"* ]]; then
         quietc_echo "$file: KO ce fichier sera ignoré"
@@ -177,12 +187,11 @@ Klone=
 UpdateAo=1
 step_dl=
 Timestamp=
-ForceDlSums=
+ForceDl=
 Clean=1
 step_import=
 step_import_bin=
 step_import_json=
-MinimizeDowntime="$MINIMIZE_DOWNTIME"
 step_runao=
 SelectAo=
 EnableSqlReset=
@@ -197,14 +206,12 @@ args=(
     -e,--no-updateao UpdateAo= "++Ne pas mettre à jour les addons"
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
-    -f,--force-dlsums ForceDlSums=1 "forcer le retéléchargement des checksums même si le fichier existe déjà"
+    -f,--force-dl ForceDl=1 "forcer le retéléchargement des fichiers même s'ils existent déjà"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
     --import step_import=1 "++Importer tous les dumps"
     --import-bin step_import_bin=1 "++Importer seulement les dumps .bin et le fichier DRE_VERSION"
     --import-json step_import_json=1 "++Importer seulement les dumps .json"
-    --minimize-downtime MinimizeDowntime=1 "++Utiliser une base de données temporaire pour la mise à jour"
-    --no-minimize-downtime MinimizeDowntime= "++Ne pas utiliser une base de données temporaire pour la mise à jour"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
     -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
     --enable-sql-reset EnableSqlReset=1 "++Option non documentée"
@@ -423,51 +430,96 @@ if [ -z "$Timestamp" ]; then
     fi
 fi
 sums="checksums-$Timestamp"
-version="DRE_VERSION_$Timestamp"
+leginfos="DRE_VERSION_$Timestamp"
+v33infos="DRE_INFOS_$Timestamp.json"
+v33infos_sum="$v33infos.sha512sum"
+pegase="${DRE_PREFIX}-$Timestamp-pegase.bin.zip"
+pegase_sum="$pegase.sha512sum"
 
+function dl_required() {
+    if [ ! -f "$1" -o -n "$ForceDl" ]; then
+        qstep "dl  $1"
+        dl "$1" || critical
+    else
+        qstep "dl~ $1"
+    fi
+}
+function dl_optional() {
+    if [ ! -f "$1" -o -n "$ForceDl" ]; then
+        qstep "dl  $1"
+        dl "$1"
+    else
+        qstep "dl~ $1"
+    fi
+}
+
+V33Format=
 if [ -n "$step_dl" ]; then
     qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
 
-    if [ ! -f "$sums" -o -n "$ForceDlSums" ]; then
-        qstep "dl $sums"
-        dl "$sums" || critical
+    [ ! -f "$v33infos" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
+    DL_MAX=0 dl_optional "$v33infos"
+    if [ -f "$v33infos" ]; then
+        V33Format=1
+
+        dl_required "$v33infos_sum"
+        if [ -n "$check_sum" ]; then
+            sha512sum --status -c "$v33infos_sum" || critical "Erreur de somme de contrôle sur $v33infos"
+        fi
+        eval "$(parse-version.php "$v33infos")"
+
+        [ ! -f "$pegase" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
+        dl_required "$pegase"
+        dl_required "$pegase_sum"
+        if [ -n "$check_sum" ]; then
+            sha512sum --status -c "$pegase_sum" || critical "Erreur de somme de contrôle sur $pegase"
+            $SZ t -p"$DRE_CIPHERKEY" "$pegase" || critical "Erreur sur l'archive"
+        fi
+
+        [ -n "$DRE_CIPHERKEY" ] || critical "Vous devez spécifier la clé de chiffrement dans la configuration"
+    else
+        dl_required "$leginfos"
+        eval "$(parse-version.php --legacy "$leginfos")"
     fi
+
+    dl_required "$sums"
     ac_set_tmpfile Tmpsums
     eval "$(sed 's/^/add2all_files /' "$sums")"
     eval "$(sed 's/^/add2dl_files /' "$sums")"
-
-    if [ ! -f "$version" ]; then
-        qstep "dl $version"
-        dl "$version" || critical
-    fi
+    check_sum=
     for file in "${DL_FILES[@]}"; do
-        if [ ! -f "$file" ]; then
-            qstep "dl $file"
-            dl "$file" || critical
-        fi
+        [ ! -f "$file" -o -n "$ForceDl" ] && check_sum=1
+        dl_required "$file"
     done
-
-    qstep "Vérifications des sommes de contrôle"
-    sha256sum --status -c "$Tmpsums" ||
-        critical "Une erreur s'est produite lors de la vérification des sommes de contrôle"
-
-    if [ -n "$Clean" ]; then
-        qstep "Nettoyage des fichiers obsolètes"
-        age="${CRON_MAX_AGE:-30}"
-        find -name "checksums-*" -mtime "+$age" -delete
-        find -name "DRE_VERSION_*" -mtime "+$age" -delete
-        find -name "$DRE_PREFIX-*" -mtime "+$age" -delete
+    if [ -n "$check_sum" ]; then
+        sha256sum --status -c "$Tmpsums" || critical "Erreur de somme de contrôle sur $sums"
     fi
-elif [ -f "$sums" ]; then
+
+elif [ -f "$v33infos" ]; then
+    V33Format=1
     Tmpsums=
+    eval "$(parse-version.php "$v33infos")"
     eval "$(sed 's/^/add2all_files /' "$sums")"
     eval "$(sed 's/^/add2dl_files /' "$sums")"
+
+elif [ -f "$sums" ]; then
+    Tmpsums=
+    eval "$(parse-version.php --legacy "$leginfos")"
+    eval "$(sed 's/^/add2all_files /' "$sums")"
+    eval "$(sed 's/^/add2dl_files /' "$sums")"
+
 else
-    critical "Impossible de trouver le fichier $sums. Essayez avec l'option -@"
+    critical "Impossible de trouver l'un des fichiers $sums ou $v33infos. Essayez avec l'option -@"
 fi
 
-estep "Calcul de la version"
-eval "$(<"$version" sed -r 's/[{}]//g; s/,/\n/g' | sed -r 's/^"([a-z]+)":/\1=/')"
+if [ -n "$step_dl" -a -n "$Clean" ]; then
+    qstep "Nettoyage des fichiers obsolètes"
+    age="${CRON_MAX_AGE:-30}"
+    find -name "checksums-*" -mtime "+$age" -delete
+    find -name "DRE_VERSION_*" -mtime "+$age" -delete
+    find -name "DRE_INFOS_*" -mtime "+$age" -delete
+    find -name "${DRE_PREFIX}-*" -mtime "+$age" -delete
+fi
 
 if [ -n "$step_checkao" ]; then
     # Refaire la liste des addons en tenant compte de la version
@@ -503,7 +555,7 @@ if [ -n "$step_checkao" ]; then
             fi
         done
 
-        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "DROP_SCHEMA_SCHEMAS+=(${SCHEMAS[*]}); vxx=${COMPAT:-all}")"
+        eval "$(SCHEMAS=(); COMPAT=; source "$aodir/dreaddon.conf"; echo "vxx=${COMPAT:-all}")"
         # si pas de répertoire de version, assumer COMPAT=all
         [ -n "$minv" ] || vxx=all
         if [ "$vxx" == all ]; then
@@ -536,49 +588,46 @@ if [ -n "$step_checkao" ]; then
 fi
 
 if [ -n "$step_import" ]; then
-    if [ -n "$MinimizeDowntime" ]; then
-        finaldb="$PGDATABASE"
-        PGDATABASE=
+    finaldb="$PGDATABASE"
+    PGDATABASE=
 
-        etitle "Nettoyage des bases de données temporaires"
-        setx -a tmpdbs=psql -t --csv -c "\
+    etitle "Nettoyage des bases de données temporaires"
+    setx -a tmpdbs=psql -t --csv -c "\
 select datname from pg_database where datname like 'dre_tmp%' or datname like 'dre_delete%';
 "
-        for tmpdb in "${tmpdbs[@]}"; do
-            estep "$tmpdb"
-            runsql "\
+    for tmpdb in "${tmpdbs[@]}"; do
+        estep "$tmpdb"
+        runsql "\
 drop database if exists $tmpdb with (force);
 " || critical
-        done
-        eend
+    done
+    eend
 
-        tmpdb="dre_tmp$$"
-        moridb="dre_delete$$"
-        etitle "Création de la base de données temporaire $tmpdb"
-        runsql "\
+    tmpdb="dre_tmp$$"
+    moridb="dre_delete$$"
+    etitle "Création de la base de données temporaire $tmpdb"
+    runsql "\
 create database $tmpdb;
 " || critical
-        PGDATABASE="$tmpdb"
-        runsql "$(pg_grant_privileges -rd)" || critical
-        if [ -n "$PDBNAME" ]; then
-            qstep "configuration $PDBNAME"
-            quietc setup-pdb.sh
-        fi
-    else
-        etitle "Suppression des anciens schémas"
-        schema_list=
-        for schema in "${DROP_SCHEMA_SCHEMAS[@]}" "${DROP_MONGO_SCHEMAS[@]}"; do
-            qstep "$schema"
-            schema_list="${schema_list}${schema_list:+, }${schema}"
-        done
-        runsql "\
-drop schema if exists $schema_list cascade;
-" || critical
-        eend
+    PGDATABASE="$tmpdb"
+    runsql "$(pg_grant_privileges -rd)" || critical
+    if [ -n "$PDBNAME" ]; then
+        qstep "configuration $PDBNAME"
+        quietc setup-pdb.sh
     fi
 fi
 
-if [ -n "$step_import_bin" ]; then
+if [ -n "$step_import_bin" -a -n "$V33Format" ]; then
+    etitle "Importation du fichier unique (pgsql)"
+    qstep "import $pegase"
+    $SZ x -so -p"$DRE_CIPHERKEY" "$pegase" | quietc pg_restore -d "$PGDATABASE" --no-owner || critical
+
+    qstep "maj authnz"
+    runsql "$(pg_grant_privileges -ar)" || critical
+    eend
+fi
+
+if [ -n "$step_import_bin" -a ${#IMPORT_PGSQL_SCHEMAS[@]} -gt 0 ]; then
     etitle "Importation des schémas (pgsql)"
     for schema in "${VxxFIX_FC[@]}"; do
         schema="schema_${schema#schema_}"
@@ -618,18 +667,18 @@ drop extension if exists unaccent, pg_trgm cascade;
         quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
         runsql "$(pg_grant_privileges -r "$schema")" || critical
     }
-    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
+    for schema in "${IMPORT_PGSQL_SCHEMAS[@]}"; do
         [ -n "$VxxTECH" -a "$schema" == tech ] || continue
         import_bin "$schema"
     done
-    for schema in "${IMPORT_SCHEMA_SCHEMAS[@]}"; do
+    for schema in "${IMPORT_PGSQL_SCHEMAS[@]}"; do
         [ -n "$VxxTECH" -a "$schema" == tech ] && continue
         import_bin "$schema"
     done
     eend
 fi
 
-if [ -n "$step_import_json" ]; then
+if [ -n "$step_import_json" -a ${#IMPORT_MONGO_COLLECTIONS[@]} -gt 0 ]; then
     etitle "Création des schémas (json)"
     for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
         schema="mongo_$schema"
@@ -661,7 +710,9 @@ create table if not exists $schema.$collection (source_json jsonb);
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
 " || critical
     }
-    import_json mongo_piste_inscription version_instance "$version"
+    runsql "\
+create table if not exists mongo_piste_inscription.version_instance (source_json jsonb);
+" || critical
     for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
         splitpair "$schema_collection" schema collection
         file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
@@ -752,19 +803,29 @@ if [ -n "$step_runao" ]; then
 
     rm -rf "$WORKDIR"
 
-    if [ -n "$have_ignore_errors" ] && grep -q "ERROR:" "$APP_DATADIR/import.log"; then
-        eimportant "Des erreurs se sont produites pendant l'import. Veuillez consulter les logs"
+    ac_set_tmpfile errors
+    grep "ERROR:" "$APP_DATADIR/import.log" >"$errors"
+    if [ -s "$errors" ]; then
+        if [ -n "$have_ignore_errors" ]; then
+            eimportant "Des erreurs se sont produites pendant l'import. Consultez les logs pour les détails."
+        fi
+        echo "## Extrait des logs ##"
+        cat "$errors"
     fi
+    ac_clean "$errors"
 
     eend
 fi
 
 if [ -n "$step_import_bin" ]; then
     estep "Maj version"
-    profile="${APP_PROFILE^^}"
-    lprofile="$APP_PROFILE"
-    <"$version" runsql "\
-create table if not exists version (
+    if [ -n "$V33Format" ]; then
+        jsonver="$(parse-version.php "$v33infos" --json)"
+    else
+        jsonver="$(parse-version.php "$leginfos" --json --legacy)"
+    fi
+    runsql "\
+create table if not exists public.version (
   majeure varchar
 , mineure varchar
 , patch varchar
@@ -773,8 +834,14 @@ create table if not exists version (
 , profile varchar
 , source_json jsonb
 );
-truncate table version;
-copy version(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
+" || critical
+
+    profile="${APP_PROFILE^^}"
+    lprofile="$APP_PROFILE"
+    for table in mongo_piste_inscription.version_instance public.version; do
+        <<<"$jsonver" runsql "copy $table(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';" || critical
+    done
+    runsql "\
 update version set
   majeure = source_json->>'majeure'
 , mineure = source_json->>'mineure'
@@ -783,7 +850,6 @@ update version set
 , timestamp = '$Timestamp'
 , profile = '$lprofile'
 ;
-
 create table if not exists \"_infos_$profile\" (description varchar);
 truncate table \"_infos_$profile\";
 insert into \"_infos_$profile\" (description) values
@@ -792,7 +858,7 @@ insert into \"_infos_$profile\" (description) values
 " || critical
 fi
 
-if [ -n "$step_import" -a -n "$MinimizeDowntime" ]; then
+if [ -n "$step_import" ]; then
     estep "Bascule $tmpdb --> $finaldb"
     runsql "select pg_terminate_backend(pid) from pg_stat_activity where datname = '$finaldb';"
     runsql "alter database $finaldb rename to $moridb;"

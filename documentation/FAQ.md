@@ -28,10 +28,10 @@ changement de configuration.
 
 ## Je voudrais créer des schémas supplémentaires
 
-Par défaut, pour minimiser le temps d'indisponibilité, la base est recréée à
-zéro chaque jour. L'avantage est aussi que les addons sont simplifiés puisqu'ils
-sont toujours exécutés sur une base vierge, et n'ont pas besoin de prendre en
-compte l'existence éventuelle de précédentes données.
+Pour minimiser le temps d'indisponibilité, la base est recréée à zéro chaque
+jour (*). L'avantage est aussi que les addons sont simplifiés puisqu'ils sont
+toujours exécutés sur une base vierge, et n'ont pas besoin de prendre en compte
+l'existence éventuelle de précédentes données.
 
 S'il faut gérer des données persistantes, elles peuvent être créées dans la base
 de données `pdata`. A chaque fois que la base `dre` est recréée, les tables du
@@ -39,13 +39,34 @@ schéma `public` de `pdata` sont importées automatiquement en tant que "tables
 étrangères" dans le schéma `public` de `dre`
 
 Ainsi, les tables de la base de données `pdata` sont utilisables directement,
-comme si elles faisaient partie de la base de données `dre`
+comme si elles faisaient partie de la base de données `dre`<br/>
+NB: cet import automatique ne concerne que les tables, pas les vues ou d'autres
+objets similaires.
 
-Consulter la [documentation du paramètre MINIMIZE_DOWNTINE](parametres.md#minimize_downtine)
-pour d'autres pistes si l'utilisation de la base de données `pdata` ne convient pas.
-
-NB: dans la configuration par défaut via pgbouncer, l'accès aux bases est
+NB: quand vous tentez d'accéder à la base de données `pdata`, tenez compte du
+fait que dans la configuration par défaut via pgbouncer, l'accès aux bases est
 préfixé du profil, i.e il faut se connecter à `prod_pdata`, `test_pdata`, etc.
+
+(*) l'importation des dumps et des addons se fait de façon à minimiser le temps
+d'indisponibilité de la base de données DRE: l'importation se fait dans une
+base temporaire vide, et ensuite, cette base temporaire remplace la base
+actuelle.
+
+De cette façon, le temps pendant lequel la base DRE n'est pas disponible à cause
+de l'import quotidien est réduit à 1 ou 2 secondes. Bien entendu, les connexion
+en cours sont "sauvagement" arrêtées lors de la bascule sur la nouvelle base.
+
+Cependant, à cause de ce mode opératoire, toutes les tables et données qui ont
+été créées "manuellement" dans la base de données DRE sont perdues, puisqu'on
+repart toujours d'une base vide.
+
+Comme indiqué plus haut, on peut créer les tables dans le schéma `public` de la
+base de données `pdata`: elles sont importées automatiquement dans le schéma
+`public` de la base de données `dre` à chaque fois.
+
+Une alternative est de créer les tables et/ou des vues supplémentaires via un
+addon. Cette méthode n'exclue pas la création de tables de paramétrages dans la
+base de données `pdata`
 
 ## Je voudrais que la base de données de prod soit accessible avec le nom `dre` au lieu de `prod_dre`
 
