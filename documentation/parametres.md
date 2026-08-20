@@ -55,14 +55,22 @@ Ces paramètres sont cherchés dans le fichier de configuration `dremgr.env`
 `DRE_PASSWORD`
 : utilisateur et mot de passe pour accéder au serveur des dumps DRE
 
-`DRE_PREFIX`
-: Préfixe des fichiers à télécharger. Normalement, la liste des fichiers à
-  télécharger est calculée à partir du contenu du fichier `checksums`. Dans tous
-  les cas, seuls les fichiers dont le nom commence par ce préfixe sont
-  considérés.
+`DRE_CIPHERKEY`
+: (à partir de la V33) Clé AES-256 avec laquelle le fichier de dump a été
+  chiffré. Cette clé doit être récupérée depuis le module ADMIN.
 
-  La valeur par défaut est `prod-DOMAINEETAB` pour le profil `prod` et
-  `DOMAINEETAB` pour les autres profils
+`DRE_PREFIX`
+: (à partir de la V33) Préfixe du fichier unique à télécharger. Cette valeur
+  peut être modifiée dans le module ADMIN. Si c'est le cas, il faut mettre à
+  jour le fichier de configuration.
+
+  Si elle n'est pas spécifiée, la valeur par défaut est `prod-DOMAINEETAB` pour
+  le profil `prod` et `DOMAINEETAB` pour les autres profils
+
+  Jusqu'à la V32, ce paramètre désigne le préfixe des fichiers à télécharger.
+  Normalement, la liste des fichiers à télécharger est calculée à partir du
+  contenu du fichier `checksums`. Dans tous les cas, seuls les fichiers dont le
+  nom commence par ce préfixe sont considérés.
 
   Attention! si vous utilisez le mode simple pour attaquer une instance qui
   n'est PAS de production avec le nom de profil `prod`, il faut alors absolument
@@ -200,32 +208,6 @@ informations à l'utilisateur.
 : Liste de mappings d'hôte à installer dans le container, un par ligne
 
   Les mappings sont au format docker, i.e `cas.univ.tld:10.50.20.30`
-
-<a name="minimize_downtine"></a>
-`MINIMIZE_DOWNTINE`
-: Si ce paramètre est activé, l'importation des dumps et des addons se fait de
-  façon à minimiser le temps d'indisponibilité de la base de données DRE:
-  l'importation se fait dans une base temporaire vide, et ensuite, cette base
-  temporaire remplace la base actuelle.
-
-  De cette façon, le temps pendant lequel la base DRE n'est pas disponible à
-  cause de l'import quotidien est réduit à 1 ou 2 secondes. Bien entendu, les
-  connexion en cours sont "sauvagement" arrêtées lors de la bascule sur la
-  nouvelle base.
-
-  Cependant, à cause de ce mode opératoire, toutes les tables et données qui ont
-  été créées "manuellement" dans la base de données DRE sont perdues, puisqu'on
-  repart toujours d'une base vide. Il y a plusieurs solutions, par ordre de
-  préférence:
-  * Créer les tables dans le schéma `public` de la base de données `pdata` :
-    Elles sont importées automatiquement dans le schéma `public` de la base de
-    données `dre` à chaque fois.
-    C'est sans doute la méthode la plus simple et la plus efficace.
-  * Créer les tables supplémentaires via un addon. Ce n'est pas forcément
-    possible, surtout si ce sont des données créées manuellement.
-  * Désactiver cette fonctionnalité (i.e `MINIMIZE_DOWNTINE=`) mais le temps
-    d'indisponibilité va de 10 à 15 minutes voire plus en fonction du nombre
-    d'addons et de la quantité de données.
 
 **Paramètres partagés**
 

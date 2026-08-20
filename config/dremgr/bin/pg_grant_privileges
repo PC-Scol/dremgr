@@ -1,17 +1,19 @@
 #!/bin/bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 
+all_schemas=
 readonly=
 auto=1
 defaults=
 privileges=
 grant=grant; to=to
-args="$(getopt -o rdpK -l readonly,defaults,privileges,revoke -n "$0" -- "$@")" || exit 1
+args="$(getopt -o ardpK -l all-schemas,readonly,defaults,privileges,revoke -n "$0" -- "$@")" || exit 1
 eval "set -- $args"
 while [ $# -gt 0 ]; do
     arg="$1"; shift
     case "$arg" in
     --) break;;
+    -a|--all-schemas) all_schemas=1;;
     -r|--readonly) readonly=1;;
     -d|--defaults) auto=; defaults=1;;
     -p|--privileges) auto=; privileges=1;;
@@ -28,7 +30,11 @@ read -a users <<<"$FE_USER: ${FE_USERS//
 read -a user_access <<<"$FE_USER:rw ${FE_ACCESS//
 / }"
 
-schema="${1:-public}"
+if [ -n "$all_schemas" ]; then
+    eval "schemas=($(psql -tAc "select schema_name from information_schema.schemata where schema_name like 'schema_%';"))"
+else
+    schemas=("${1:-public}")
+fi
 for user in "${users[@]}"; do
     user="${user%%:*}"
     access=
@@ -62,14 +68,17 @@ for user in "${users[@]}"; do
         sequence_grant="select"
         ;;
     esac
-    if [ -n "$defaults" ]; then
-        echo "alter default privileges $grant $schema_grant on schemas $to $user;"
-        echo "alter default privileges in schema $schema $grant $table_grant on tables $to $user;"
-        echo "alter default privileges in schema $schema $grant $sequence_grant on sequences $to $user;"
-    fi
-    if [ -n "$privileges" ]; then
-        echo "$grant $schema_grant on schema $schema $to $user;"
-        echo "$grant $table_grant on all tables in schema $schema $to $user;"
-        echo "$grant $sequence_grant on all sequences in schema $schema $to $user;"
-    fi
+
+    for schema in "${schemas[@]}"; do
+        if [ -n "$defaults" ]; then
+            echo "alter default privileges $grant $schema_grant on schemas $to $user;"
+            echo "alter default privileges in schema $schema $grant $table_grant on tables $to $user;"
+            echo "alter default privileges in schema $schema $grant $sequence_grant on sequences $to $user;"
+        fi
+        if [ -n "$privileges" ]; then
+            echo "$grant $schema_grant on schema $schema $to $user;"
+            echo "$grant $table_grant on all tables in schema $schema $to $user;"
+            echo "$grant $sequence_grant on all sequences in schema $schema $to $user;"
+        fi
+    done
 done
