@@ -457,26 +457,28 @@ V33Format=
 if [ -n "$step_dl" ]; then
     qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
 
-    [ ! -f "$v33infos" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
+    [ ! -f "$v33infos.sumok" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
     DL_MAX=0 dl_optional "$v33infos"
     if [ -f "$v33infos" ]; then
         V33Format=1
 
+        [ -n "$DRE_CIPHERKEY" ] || critical "Vous devez spécifier la clé de chiffrement dans la configuration"
+
         dl_required "$v33infos_sum"
         if [ -n "$check_sum" ]; then
             sha512sum --status -c "$v33infos_sum" || critical "Erreur de somme de contrôle sur $v33infos"
+            >"$v33infos.sumok"
         fi
         eval "$(parse-version.php "$v33infos")"
 
-        [ ! -f "$pegase" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
+        [ ! -f "$pegase.sumok" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
         dl_required "$pegase"
         dl_required "$pegase_sum"
         if [ -n "$check_sum" ]; then
             sha512sum --status -c "$pegase_sum" || critical "Erreur de somme de contrôle sur $pegase"
             $SZ t -p"$DRE_CIPHERKEY" "$pegase" || critical "Erreur sur l'archive"
+            >"$pegase.sumok"
         fi
-
-        [ -n "$DRE_CIPHERKEY" ] || critical "Vous devez spécifier la clé de chiffrement dans la configuration"
     else
         dl_required "$leginfos"
         eval "$(parse-version.php --legacy "$leginfos")"

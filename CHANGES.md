@@ -1,3 +1,7 @@
+## Release 2.5.1 du 20/08/2026-09:55
+
+* `5a9b029` corriger le calcul des sommes de contrôle
+
 ## Release 2.5.0 du 20/08/2026-09:26
 
 * `9d08c8a` support dumps v33. MINIMZE_DOWNTIME n'est plus configurable
