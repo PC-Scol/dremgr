@@ -1,3 +1,8 @@
+## Release 2.5.0 du 20/08/2026-09:26
+
+* `9d08c8a` support dumps v33. MINIMZE_DOWNTIME n'est plus configurable
+* `6cd2056` afficher un extrait des logs en cas d'erreur
+
 ## Release 2.4.9 du 24/06/2026-17:23
 
 * `2ae57e0` maj du texte du mail pour faire ressortir l'erreur plus clairement
