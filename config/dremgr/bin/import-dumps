@@ -458,7 +458,13 @@ if [ -n "$step_dl" ]; then
     qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
 
     [ ! -f "$v33infos.sumok" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
-    DL_MAX=0 dl_optional "$v33infos"
+    if [ -n "$DRE_CIPHERKEY" ]; then
+        # Jusqu'à la V35, ne pas chercher à télécharger les nouveaux dumps si la
+        # clé de chiffrement n'est pas spécifiée
+        DL_MAX=0 dl_optional "$v33infos"
+    else
+        qwarn "Le paramètre DRE_CIPHERKEY n'étant pas spécifié, le support du nouveau format de dump est désactivé"
+    fi
     if [ -f "$v33infos" ]; then
         V33Format=1
 
