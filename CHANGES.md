@@ -1,3 +1,7 @@
+## Release 2.5.2 du 24/08/2026-07:15
+
+* `a1c74de` si DRE_CIPHERKEY n'est pas spécifié, télécharger les anciens fichiers
+
 ## Release 2.5.1 du 20/08/2026-09:55
 
 * `5a9b029` corriger le calcul des sommes de contrôle
