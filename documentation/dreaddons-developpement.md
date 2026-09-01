@@ -218,4 +218,20 @@ rsync -rlp --delete path/to/dreaddon-myaddon/ var/prod-dredata/addons/dreaddon-m
 less var/prod-dredata/import.log
 ~~~
 
+## Développer sans dépôt Github
+
+Si votre dépôt n'existe pas sur Github, vous devez quand même le renseigner dans `dremgr.env` en utilisant directement le nom du dépôt :
+~~~sh
+ADDON_URLS="
+PC-Scol/dreaddon-documentation.git
+PC-Scol/dreaddon-pilotage.git
+dreaddon-myaddon
+"
+~~~
+Après avoir renseigné votre addon dans `dremgr.env`, il faut relancer le service et importer le dépôt :
+~~~sh
+./dbinst -r
+./dbinst -J path/to/dreaddon-myaddon
+~~~
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
