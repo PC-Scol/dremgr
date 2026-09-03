@@ -26,7 +26,7 @@ function recoverable_curl_error() {
 DL_MAX=5
 function dl() {
     local r=22 count=0
-    [ -f "$1" ] && rm "$1"
+    [ -f "$1" -a -z "$ContinueDl" ] && rm "$1"
     while recoverable_curl_error $r; do
         curl -fsSOL -C - --retry 10 -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
         if recoverable_curl_error $r; then
@@ -188,6 +188,7 @@ UpdateAo=1
 step_dl=
 Timestamp=
 ForceDl=
+ContinueDl=
 Clean=1
 step_import=
 step_import_bin=
@@ -207,6 +208,7 @@ args=(
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
     -f,--force-dl ForceDl=1 "forcer le retéléchargement des fichiers même s'ils existent déjà"
+    -c,--continue-dl ContinueDl=1 "si le rétéléchargement est forcé, essayer de continuer le téléchargement des fichiers existants"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
     --import step_import=1 "++Importer tous les dumps"
