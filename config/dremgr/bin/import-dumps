@@ -15,8 +15,6 @@ unset PGHOST PGPORT
 read -a VxxFIX_FC <<<"${VxxFIX_FC//
 / }"
 
-[ -x /usr/bin/7zz ] && SZ=7zz || SZ=7z
-
 function recoverable_curl_error() {
     case "$1" in
     5|6|7|22) return 0;;
@@ -237,6 +235,13 @@ les autres fichiers existants ne sont pas retéléchargés"
     --notifao step_notifao=1 "++Exécuter les notifications à la fin de l'import"
 )
 parse_args "$@"; set -- "${args[@]}"
+
+[ -x /usr/bin/7zz ] && SZ=7zz || SZ=7z
+
+if [ -n "$GIT_CREDENTIALS" -a ! -f ~/.git-credentials ]; then
+    [ -f ~/.gitconfig ] || git config --global credential.helper store
+    echo "$GIT_CREDENTIALS" >~/.git-credentials
+fi
 
 keep_import_log=1
 [ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }

@@ -90,7 +90,7 @@ téléchargement et l'importation:
 ./dbinst -i
 ~~~
 Sinon, le téléchargement et l'importation se fait tous les jours à l'heure
-définie dans la variable `CRON_PLAN` c'est à dire par défaut 4h
+définie dans la variable `CRON_PLAN` c'est à dire par défaut 5h
 
 > [!NOTE]
 > La base de données est accessible sur l'adresse IP spécifiée avec le paramètre
