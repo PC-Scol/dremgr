@@ -1,3 +1,15 @@
+## Release 2.5.3 du 03/09/2026-16:10
+
+github limitant l'accès aux dépôts publics sans authentification, cette version
+ajoute le support de la variable GIT_CREDENTIALS pour spécifier un compte/token
+à utiliser pour accéder aux dépôts github
+
+* `f578e6e` support des addons locaux pour -J
+* `ad9bdd4` support GIT_CREDENTIALS
+* `30fc257` tronquer le fichier à la taille spécifiée
+* `006751a` possibilité de spécifier à partir de quelle taille retélécharger
+* `11ed64e` possibilité de continuer le téléchargement
+
 ## Release 2.5.2 du 24/08/2026-07:15
 
 * `a1c74de` si DRE_CIPHERKEY n'est pas spécifié, télécharger les anciens fichiers
