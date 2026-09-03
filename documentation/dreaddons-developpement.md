@@ -20,9 +20,6 @@ Les variables suivantes peuvent être configurées:
   de cette variable, mais il est possible aussi de faire créer le schéma par
   l'addon, surtout si la création se fait avec des paramètres particuliers.
 
-  dans tous les cas, il faut lister les schémas, parce que ça permet au script
-  d'import de savoir quel schémas supprimer avant la recréation quotidienne.
-
 `COMPAT`
 : indiquer les versions de DRE avec lesquelles cet addon est compatible. seules
   deux valeurs sont autorisées: `all` et `vxx`
@@ -46,14 +43,10 @@ Les variables suivantes peuvent être configurées:
 
 ## Scripts
 
-L'importation des schémas DRE se fait de cette manière:
-
-* Suppression des schémas livrés par DRE
-* Suppression des schémas mentionnés dans la variable `SCHEMAS` de
-  `dreaddon.conf`
-* Importation des dumps du jour livrés par DRE
-* Traitements des scripts des addons, dans l'ordre mentionné dans la
-  configuration de DREmgr
+L'importation des schémas DRE se fait de cette manière, à partir d'une base
+vide: importation des dumps du jour livrés par DRE, qui intègrent aussi la
+création du schéma associé, puis traitements des scripts des addons, dans
+l'ordre mentionné dans la configuration de DREmgr
 
 Pour chaque addon, les scripts sont lancés depuis les répertoires suivants:
 
@@ -166,10 +159,9 @@ sur son poste (via WSL ou autre méthode) et lancer l'importation à chaque fois
   les fichiers depuis le serveur de prod
   ~~~sh
   # ici, on récupére les fichiers depuis le serveur monserveur.univ.tld dans le
-  # profil prod, en partant du principe que DREmgr est installé dans le
-  # répertoire d'origine de root, et on les copie dans le répertoire courant
-  # dans le profil prod
-  src_dremgr=root@monserveur.univ.tld:dremgr
+  # profil prod, en supposant que DREmgr est installé dans le /opt/dremgr, et on
+  # les copie dans le répertoire courant dans le profil prod
+  src_dremgr=root@monserveur.univ.tld:/opt/dremgr
   src_profile=prod
   dest_profile=prod
 
@@ -217,5 +209,10 @@ rsync -rlp --delete path/to/dreaddon-myaddon/ var/prod-dredata/addons/dreaddon-m
 ./dbinst -i -- --no-updateao --runao -o dreaddon-myaddon -@ latest
 less var/prod-dredata/import.log
 ~~~
+
+NB: l'option -J fonctionne même si l'addon n'est pas listé dans ADDON_URLS, ce
+qui est l'idéal pour un dreaddon qui n'est pas (encore) hébergé dans git, que ce
+soit en local ou sur github.
+Merci à [@kaisersly](https://github.com/kaisersly) pour l'idée
 
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary
