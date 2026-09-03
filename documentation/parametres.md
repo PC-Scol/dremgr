@@ -176,15 +176,25 @@ informations à l'utilisateur.
 
   Cf [Installation d'addons](dreaddons.md) pour les détails
 
+`GIT_CREDENTIALS`
+: Configuration des comptes/mots de passe à utiliser pour se connecter aux
+  dépôts git. C'est une alternative à spécifier directement les credentials dans
+  `ADDON_URLS`
+
+  Le format est celui du fichier `.git-credentials`, e.g:
+  ~~~sh
+  GIT_CREDENTIALS="
+  https://compte:motdepasse@github.com
+  https://compte:motdepasse@gitprive.univ.fr
+  "
+  ~~~
+
 `CRON_PLAN`
 : Planification cron pour le script d'import
 
-  Les fichiers sont générés à 2h dans le fuseau de l'instance PEGASE, qui est
-  habituellement le fuseau local. on planifie à 4h par défaut pour laisser le
-  temps à l'export de se terminer (ce qui est largement suffisant)
-
-  Bien entendu, si vous n'êtes pas en métropole, il faudra penser à demander au
-  support de configurer le fuseau horaire des instances.
+  Il faut adapter l'heure d'importation en fonction de l'heure configurée dans
+  le module ADMIN. Par défaut, on planifie à 5h, mais sentez-vous libre de
+  modifier la valeur.
 
 `CRON_DISABLE`
 : Indiquer une valeur quelconque pour désactiver les imports automatiques. La

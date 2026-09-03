@@ -37,8 +37,20 @@ https://compte:motdepasse@gitprive.univ.fr/addonprive.git
 "
 ~~~
 
-Cet addon sera mis à jour depuis le dépôt et importé chaque jour à l'heure
-configurée, c'est à dire 4h par défaut.
+On peut aussi configurer `GIT_CREDENTIALS`
+~~~sh
+ADDON_URLS="
+...
+https://gitprive.univ.fr/addonprive.git
+...
+"
+GIT_CREDENTIALS="
+https://compte:motdepasse@gitprive.univ.fr
+"
+~~~
+
+L'addon ajouté au fichier sera mis à jour depuis le dépôt et importé chaque jour
+à l'heure configurée, c'est à dire 5h par défaut.
 
 Si une ligne commence par `#`, elle est ignorée, ce qui permet de désactiver
 temporairement un addon, e.g:

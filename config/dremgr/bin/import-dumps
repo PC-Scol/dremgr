@@ -15,8 +15,6 @@ unset PGHOST PGPORT
 read -a VxxFIX_FC <<<"${VxxFIX_FC//
 / }"
 
-[ -x /usr/bin/7zz ] && SZ=7zz || SZ=7z
-
 function recoverable_curl_error() {
     case "$1" in
     5|6|7|22) return 0;;
@@ -26,7 +24,20 @@ function recoverable_curl_error() {
 DL_MAX=5
 function dl() {
     local r=22 count=0
-    [ -f "$1" ] && rm "$1"
+    if [ -f "$1" ]; then
+        # le fichier existe déjà...
+        if [ -n "$ContinueDl" ]; then
+            # tenter de continuer le téléchargement, mais uniquement du fichier
+            # spécifié
+            [ "$ContinueDl" == "$1" ] || return 0
+            # Si on doit continuer à partir d'une certaine taille, tronquer le
+            # fichier à cette taille d'abord si sa taille est supérieure
+            [ -n "$ContinueAt" ] && truncate -s "<$ContinueAt" "$1"
+        else
+            # recommencer le téléchargement à zéro
+            rm "$1"
+        fi
+    fi
     while recoverable_curl_error $r; do
         curl -fsSOL -C - --retry 10 -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
         if recoverable_curl_error $r; then
@@ -188,6 +199,8 @@ UpdateAo=1
 step_dl=
 Timestamp=
 ForceDl=
+ContinueDl=
+ContinueAt=
 Clean=1
 step_import=
 step_import_bin=
@@ -207,17 +220,29 @@ args=(
     --download step_dl=1 "++Télécharger les fichiers du jour"
     -@:,--timestamp Timestamp= "spécifier la date pour laquelle on fait le téléchagement, au format YYYYMMDD. implique --no-clean"
     -f,--force-dl ForceDl=1 "forcer le retéléchargement des fichiers même s'ils existent déjà"
+    -c:,--continue-dl ContinueDl= "++spécifier un fichier existant dont il faut continuer le téléchargement
+cette option modifie le comportement de --force-dl: seul le fichier spécifié est retéléchargé à partir de sa taille actuelle
+les autres fichiers existants ne sont pas retéléchargés"
+    -C:,--continue-at ContinueAt= "++spécifier à partir de quelle taille le retéléchargement du fichier doit être effectué"
     --clean Clean=1 "++Supprimer les fichiers de dumps obsolètes après un téléchargement réussi"
     -g,--no-clean Clean= "Ne pas nettoyer les fichiers de dumps à la fin du téléchargement"
     --import step_import=1 "++Importer tous les dumps"
     --import-bin step_import_bin=1 "++Importer seulement les dumps .bin et le fichier DRE_VERSION"
     --import-json step_import_json=1 "++Importer seulement les dumps .json"
     --runao step_runao=1 "++Installer les addons, implique --checkao"
-    -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié"
+    -o:,--onlyao SelectAo= "++N'installer *que* l'addon spécifié.
+Cette option fonctionne même si l'addon n'est pas listé dans ADDON_URLS"
     --enable-sql-reset EnableSqlReset=1 "++Option non documentée"
     --notifao step_notifao=1 "++Exécuter les notifications à la fin de l'import"
 )
 parse_args "$@"; set -- "${args[@]}"
+
+[ -x /usr/bin/7zz ] && SZ=7zz || SZ=7z
+
+if [ -n "$GIT_CREDENTIALS" -a ! -f ~/.git-credentials ]; then
+    [ -f ~/.gitconfig ] || git config --global credential.helper store
+    echo "$GIT_CREDENTIALS" >~/.git-credentials
+fi
 
 keep_import_log=1
 [ -n "$step_import" ] && { step_import_bin=1; step_import_json=1; }
@@ -288,9 +313,9 @@ qstep "Début de l'import le $DATE_DEB"
 if [ -n "$step_checkao" ]; then
     estep "Vérification des addons"
     if [ -n "$SelectAo" -a "${SelectAo#dreaddon-}" == "$SelectAo" ]; then
-        if [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
+        if [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
             SelectAo="dreaddon-$SelectAo"
-        elif [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
+        elif [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
             SelectAo="dreaddon-$SelectAo"
         fi
     fi
@@ -298,6 +323,7 @@ if [ -n "$step_checkao" ]; then
     read -a aourls <<<"${ADDON_URLS//
 / }"
     aonames=()
+    found_selectao=
     for aourl in "${aourls[@]}"; do
         # ignorer lignes vides
         [ -n "$aourl" ] || continue
@@ -331,7 +357,10 @@ if [ -n "$step_checkao" ]; then
             ewarn "le nom dreaddon-local est réservé. le dépôt $aourl a été ignoré"
             continue
         fi
-        [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
+        if [ -n "$SelectAo" ]; then
+            [ "$aoname" == "$SelectAo" ] || continue
+            found_selectao=1
+        fi
         aonames+=("$aoname")
 
         if [ -n "$Klone" ]; then
@@ -370,24 +399,29 @@ if [ -n "$step_checkao" ]; then
     done
 
     if [ -n "$SelectAo" ]; then
-        if [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
+        [ -n "$found_selectao" ] || aonames+=("$SelectAo")
+        if [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
             array_del aonames "$SelectAo"
             SelectAo="dreaddon-$SelectAo"
             aonames+=("$SelectAo")
-        elif [ ! -d "$APPDIR/$SelectAo" -a -d "$APPDIR/dreaddon-$SelectAo" ]; then
+        elif [ ! -d "$AODIR/$SelectAo" -a -d "$AODIR/dreaddon-$SelectAo" ]; then
             array_del aonames "$SelectAo"
             SelectAo="dreaddon-$SelectAo"
             aonames+=("$SelectAo")
-        elif [ ! -d "$AODIR/$SelectAo" -a ! -d "$APPDIR/$SelectAo" ]; then
+        elif [ ! -d "$APPDIR/$SelectAo" -a ! -d "$AODIR/$SelectAo" ]; then
             ewarn "$SelectAo: addon non installé"
         fi
+    else
+        # dreaddon-local doit toujours être présent, sauf si on sélectionne
+        # explicitement un addon
+        aonames=(dreaddon-local "${aonames[@]}")
     fi
 
     # Lister les addons pour permettre les notifications si nécessaire
     ADDONS=()
-    for aoname in dreaddon-local "${aonames[@]}"; do
+    for aoname in "${aonames[@]}"; do
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
-        if [ "${aoname#dreaddon-}" != "$aoname" -a -d "$APPDIR/$aoname" ]; then
+        if [ -d "$APPDIR/$aoname" ]; then
             aodir="$APPDIR/$aoname"
         elif [ -d "$AODIR/$aoname" ]; then
             aodir="$AODIR/$aoname"
@@ -533,7 +567,7 @@ if [ -n "$step_checkao" ]; then
     # Refaire la liste des addons en tenant compte de la version
     estep "Calcul de la compatibilité des addons"
     ADDONS=()
-    for aoname in dreaddon-local "${aonames[@]}"; do
+    for aoname in "${aonames[@]}"; do
         [ -z "$SelectAo" -o "$aoname" == "$SelectAo" ] || continue
         if [ "${aoname#dreaddon-}" != "$aoname" -a -d "$APPDIR/$aoname" ]; then
             aodir="$APPDIR/$aoname"

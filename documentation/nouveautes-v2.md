@@ -58,6 +58,8 @@ pas envie de vous prendre la tête :-)
 
 Les imports sont maintenant effectués par défaut à 4h, puisque les dumps DRE
 sont maintenant systématiquement générés à 2h heure locale.
+(NB: cette information n'est plus vraie depuis la V33, puisqu'il est possible de
+modifier l'heure d'importation dans le module ADMIN)
 
 Support du paramètre DATADIR qui permet de placer les données ailleurs que dans
 le répertoire du projet. Fini les liens symboliques disgracieux :-)
