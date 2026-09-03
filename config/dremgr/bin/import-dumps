@@ -25,21 +25,23 @@ function recoverable_curl_error() {
 }
 DL_MAX=5
 function dl() {
-    local r=22 count=0 at=-
+    local r=22 count=0
     if [ -f "$1" ]; then
         # le fichier existe déjà...
         if [ -n "$ContinueDl" ]; then
             # tenter de continuer le téléchargement, mais uniquement du fichier
             # spécifié
             [ "$ContinueDl" == "$1" ] || return 0
-            [ -n "$ContinueAt" ] && at="$ContinueAt"
+            # Si on doit continuer à partir d'une certaine taille, tronquer le
+            # fichier à cette taille d'abord si sa taille est supérieure
+            [ -n "$ContinueAt" ] && truncate -s "<$ContinueAt" "$1"
         else
             # recommencer le téléchargement à zéro
             rm "$1"
         fi
     fi
     while recoverable_curl_error $r; do
-        curl -fsSOL -C "$at" --retry 10 -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
+        curl -fsSOL -C - --retry 10 -u "$DRE_USER:$DRE_PASSWORD" "${DRE_URL%/}/$1"; r=$?
         if recoverable_curl_error $r; then
             let count=count+1
             [ $count -gt $DL_MAX ] && break
