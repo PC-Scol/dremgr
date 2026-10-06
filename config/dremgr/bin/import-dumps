@@ -527,7 +527,7 @@ if [ -n "$step_dl" ]; then
     [ -f "$v33infos" ] || dl_optional "$v33infos"
     if [ -f "$v33infos" ]; then
         dl_required "$v33infos_sum"
-        [ -n "ForceDl" ] && rm "$v33infos.sumok"
+        [ -n "ForceDl" ] && rm -f "$v33infos.sumok"
         if [ ! -f "$v33infos.sumok" ]; then
             sha512sum --status -c "$v33infos_sum" || critical "Erreur de somme de contrôle sur $v33infos"
             >"$v33infos.sumok"
@@ -581,16 +581,17 @@ function dl_legacy() {
 function dl_v33() {
     dl_required "$pegase_sum"
     if [ -n "$ForceDl" ]; then
-        rm "$pegase.sumok"
-        [ "$ContinueDl" == "$pegase" ] || rm "$pegase"
+        rm -f "$pegase.sumok"
+        [ "$ContinueDl" == "$pegase" ] || rm -f "$pegase"
     fi
 
     if [ ! -f "$pegase.sumok" ]; then
-        local count=0 max=5 desc
+        local count=1 max=5 desc
         local ContinueDl="$pegase"
         while true; do
             [ $count -gt 0 ] && desc=" (tentative $count/$max)"
-            dl "$pegase$desc"
+            qstep "dl  $pegase$desc"
+            dl "$pegase"
             if sha512sum --status -c "$pegase_sum"; then
                 break
             else
@@ -598,6 +599,7 @@ function dl_v33() {
                 [ $count -gt $max ] && critical "Erreur de somme de contrôle sur $pegase"
                 qwarn "Le fichier téléchargé n'a pas la bonne somme de contrôle. Nouvelle tentative"
             fi
+            sleep $((10 * count))
         done
 
         if [ ! -f "$pegase.sumok" ]; then
