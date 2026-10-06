@@ -965,9 +965,10 @@ create table if not exists public.version (
     profile="${APP_PROFILE^^}"
     lprofile="$APP_PROFILE"
 
-    tables=()
-    [ -z "$V34Format" ] && tables+=(mongo_piste_inscription.version_instance)
-    tables+=(public.version)
+    tables=(public.version)
+    if [ -z "$V34Format" ]; then
+        tables+=(mongo_piste_inscription.version_instance)
+    fi
     for table in "${tables[@]}"; do
         <<<"$jsonver" runsql "copy $table(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';" || critical
     done
