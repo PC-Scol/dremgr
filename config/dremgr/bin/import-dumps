@@ -30,8 +30,9 @@ function dl() {
             # tenter de continuer le téléchargement, mais uniquement du fichier
             # spécifié
             [ "$ContinueDl" == "$1" ] || return 0
-            # Si on doit continuer à partir d'une certaine taille, tronquer le
-            # fichier à cette taille d'abord si sa taille est supérieure
+            # Si on doit continuer à partir d'une certaine taille, tronquer
+            # d'abord le fichier à la taille spécifiée si la taille actuelle est
+            # supérieure
             [ -n "$ContinueAt" ] && truncate -s "<$ContinueAt" "$1"
         else
             # recommencer le téléchargement à zéro
@@ -450,9 +451,19 @@ fi
 cd "$DLDIR"
 [ -n "$Timestamp" ] && Clean=
 if [ "$Timestamp" == latest ]; then
-    # prendre le dernier fichier checksums. utile pour --runao
-    latest="$(ls checksums-* 2>/dev/null | tail -n1)"
-    Timestamp="${latest#checksums-}"
+    # prendre le dernier fichier DRE_INFOS ou checksums. utile pour --runao
+    latest="$(ls DRE_INFOS_* 2>/dev/null | tail -n1)"
+    if [ -n "$latest" ]; then
+        Timestamp="${latest#DRE_INFOS_}"
+        Timestamp="${Timestamp%.json}"
+    else
+        latest="$(ls checksums-* 2>/dev/null | tail -n1)"
+        if [ -n "$latest" ]; then
+            Timestamp="${latest#checksums-}"
+        else
+            critical "Aucun fichier trouvé pour -@ latest"
+        fi
+    fi
     enote "Autosélection de -@ $Timestamp"
 fi
 if [ -z "$Timestamp" ]; then
@@ -463,7 +474,7 @@ if [ -z "$Timestamp" ]; then
         setx Timestamp=date +%Y%m%d
     fi
 fi
-sums="checksums-$Timestamp"
+legsums="checksums-$Timestamp"
 leginfos="DRE_VERSION_$Timestamp"
 v33infos="DRE_INFOS_$Timestamp.json"
 v33infos_sum="$v33infos.sha512sum"
@@ -479,6 +490,7 @@ function dl_required() {
     fi
 }
 function dl_optional() {
+    local DL_MAX=0
     if [ ! -f "$1" -o -n "$ForceDl" ]; then
         qstep "dl  $1"
         dl "$1"
@@ -487,71 +499,139 @@ function dl_optional() {
     fi
 }
 
+V34Format=
 V33Format=
-if [ -n "$step_dl" ]; then
-    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
-
-    [ ! -f "$v33infos.sumok" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
-    if [ -n "$DRE_CIPHERKEY" ]; then
-        # Jusqu'à la V35, ne pas chercher à télécharger les nouveaux dumps si la
-        # clé de chiffrement n'est pas spécifiée
-        DL_MAX=0 dl_optional "$v33infos"
-    else
-        qwarn "Le paramètre DRE_CIPHERKEY n'étant pas spécifié, le support du nouveau format de dump est désactivé"
-    fi
-    if [ -f "$v33infos" ]; then
+function resolve_dump_format() {
+    if [ "$majeure" -ge 35 ]; then
+        V34Format=1
         V33Format=1
-
         [ -n "$DRE_CIPHERKEY" ] || critical "Vous devez spécifier la clé de chiffrement dans la configuration"
+    elif [ "$majeure" -eq 34 ]; then
+        if [ -n "$DRE_CIPHERKEY" ]; then
+            V34Format=1
+            V33Format=1
+        else
+            qwarn "Le paramètre DRE_CIPHERKEY n'étant pas spécifié, le support du format de dump V34 est désactivé"
+        fi
+    elif [ "$majeure" -eq 33 ]; then
+        if [ -n "$DRE_CIPHERKEY" ]; then
+            V33Format=1
+        else
+            qwarn "Le paramètre DRE_CIPHERKEY n'étant pas spécifié, le support du format de dump V33 est désactivé"
+        fi
+    fi
+}
 
+if [ -n "$step_dl" ]; then
+    # d'abord télécharger les fichiers infos
+    [ -f "$v33infos" ] || dl_optional "$v33infos"
+    if [ -f "$v33infos" ]; then
         dl_required "$v33infos_sum"
-        if [ -n "$check_sum" ]; then
+        [ -n "ForceDl" ] && rm "$v33infos.sumok"
+        if [ ! -f "$v33infos.sumok" ]; then
             sha512sum --status -c "$v33infos_sum" || critical "Erreur de somme de contrôle sur $v33infos"
             >"$v33infos.sumok"
         fi
-        eval "$(parse-version.php "$v33infos")"
 
-        [ ! -f "$pegase.sumok" -o -n "$ForceDl" ] && check_sum=1 || check_sum=
-        dl_required "$pegase"
-        dl_required "$pegase_sum"
-        if [ -n "$check_sum" ]; then
-            sha512sum --status -c "$pegase_sum" || critical "Erreur de somme de contrôle sur $pegase"
-            $SZ t -p"$DRE_CIPHERKEY" "$pegase" || critical "Erreur sur l'archive"
-            >"$pegase.sumok"
-        fi
-    else
-        dl_required "$leginfos"
-        eval "$(parse-version.php --legacy "$leginfos")"
+        eval "$(parse-version.php "$v33infos")"
+        resolve_dump_format
     fi
 
-    dl_required "$sums"
+    if [ -z "$V33Format" ]; then
+        dl_optional "$leginfos"
+        if [ -f "$leginfos" ]; then
+            eval "$(parse-version.php --legacy "$leginfos")"
+            resolve_dump_format
+        else
+            critical "Aucun fichier $v33infos ou $leginfos trouvé pour -@ $Timestamp"
+        fi
+    fi
+elif [ -f "$v33infos" ]; then
+    eval "$(parse-version.php "$v33infos")"
+    resolve_dump_format
+elif [ -f "$leginfos" ]; then
+    eval "$(parse-version.php --legacy "$leginfos")"
+    resolve_dump_format
+fi
+
+if [ -n "$V34Format" ]; then
+    qinfo "Sélection du format de dump >= V34"
+elif [ -n "$V33Format" ]; then
+    qinfo "Sélection du format de dump V33"
+else
+    qinfo "Sélection de l'ancien format de dump"
+fi
+
+function dl_legacy() {
+    dl_required "$legsums" || critical
+
     ac_set_tmpfile Tmpsums
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
-    check_sum=
+    eval "$(sed 's/^/add2all_files /' "$legsums")"
+    eval "$(sed 's/^/add2dl_files /' "$legsums")"
+
+    local check_sum
     for file in "${DL_FILES[@]}"; do
         [ ! -f "$file" -o -n "$ForceDl" ] && check_sum=1
         dl_required "$file"
     done
     if [ -n "$check_sum" ]; then
-        sha256sum --status -c "$Tmpsums" || critical "Erreur de somme de contrôle sur $sums"
+        sha256sum --status -c "$Tmpsums" || critical "Erreur de somme de contrôle sur $legsums"
+    fi
+}
+function dl_v33() {
+    dl_required "$pegase_sum"
+    if [ -n "$ForceDl" ]; then
+        rm "$pegase.sumok"
+        [ "$ContinueDl" == "$pegase" ] || rm "$pegase"
     fi
 
-elif [ -f "$v33infos" ]; then
-    V33Format=1
-    Tmpsums=
-    eval "$(parse-version.php "$v33infos")"
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
+    if [ ! -f "$pegase.sumok" ]; then
+        local count=0 max=5 desc
+        local ContinueDl="$pegase"
+        while true; do
+            [ $count -gt 0 ] && desc=" (tentative $count/$max)"
+            dl "$pegase$desc"
+            if sha512sum --status -c "$pegase_sum"; then
+                break
+            else
+                let count=count+1
+                [ $count -gt $max ] && critical "Erreur de somme de contrôle sur $pegase"
+                qwarn "Le fichier téléchargé n'a pas la bonne somme de contrôle. Nouvelle tentative"
+            fi
+        done
 
-elif [ -f "$sums" ]; then
+        if [ ! -f "$pegase.sumok" ]; then
+            $SZ t -p"$DRE_CIPHERKEY" "$pegase" || critical "Erreur sur l'archive $pegase"
+            >"$pegase.sumok"
+        fi
+    fi
+}
+if [ -n "$step_dl" ]; then
+    qinfo "Le préfixe des fichiers à télécharger est $DRE_PREFIX"
+    if [ -n "$V34Format" ]; then
+        # uniquement le fichier $v33infos
+        dl_v33
+    elif [ -n "$V33Format" ]; then
+        # fichier $v33infos et $legsums
+        dl_v33
+        dl_legacy
+    else
+        # fichier $legsums
+        dl_legacy
+    fi
+
+elif [ -n "$V34Format" ]; then
     Tmpsums=
-    eval "$(parse-version.php --legacy "$leginfos")"
-    eval "$(sed 's/^/add2all_files /' "$sums")"
-    eval "$(sed 's/^/add2dl_files /' "$sums")"
+
+elif [ -n "$V33Format" ]; then
+    Tmpsums=
+    eval "$(sed 's/^/add2all_files /' "$legsums")"
+    eval "$(sed 's/^/add2dl_files /' "$legsums")"
 
 else
-    critical "Impossible de trouver l'un des fichiers $sums ou $v33infos. Essayez avec l'option -@"
+    Tmpsums=
+    eval "$(sed 's/^/add2all_files /' "$legsums")"
+    eval "$(sed 's/^/add2dl_files /' "$legsums")"
 fi
 
 if [ -n "$step_dl" -a -n "$Clean" ]; then
@@ -669,105 +749,107 @@ if [ -n "$step_import_bin" -a -n "$V33Format" ]; then
     eend
 fi
 
-if [ -n "$step_import_bin" -a ${#IMPORT_PGSQL_SCHEMAS[@]} -gt 0 ]; then
-    etitle "Importation des schémas (pgsql)"
-    for schema in "${VxxFIX_FC[@]}"; do
-        schema="schema_${schema#schema_}"
-        qstep "$schema: create schema"
-        runsql "\
+if [ -z "$V34Format" ]; then
+    if [ -n "$step_import_bin" -a ${#IMPORT_PGSQL_SCHEMAS[@]} -gt 0 ]; then
+        etitle "Importation des schémas (pgsql)"
+        for schema in "${VxxFIX_FC[@]}"; do
+            schema="schema_${schema#schema_}"
+            qstep "$schema: create schema"
+            runsql "\
 create schema if not exists $schema;
 " || critical
-    done
-
-    if [ "$VxxTECH" == auto ]; then
-        [ -n "$HAVE_TECH_SCHEMA" ] && VxxTECH=1 || VxxTECH=
-    fi
-    if [ -n "$VxxTECH" ]; then
-        qstep "Activation du support du schéma tech"
-    fi
-
-    function import_bin() {
-        local schema="$1"
-        local file; local -a files
-        files=(
-            "${DRE_PREFIX}-$Timestamp-schema_$schema.bin"
-            "${DRE_PREFIX}-$Timestamp-$schema.bin"
-        )
-        for file in "${files[@]}"; do
-            [ -f "$file" ] && break
         done
-        schema="schema_$schema"
 
-        if [ -z "$VxxTECH" ]; then
-            qstep "$schema: drop extensions"
-            runsql "\
-drop extension if exists unaccent, pg_trgm cascade;
-" || critical
+        if [ "$VxxTECH" == auto ]; then
+            [ -n "$HAVE_TECH_SCHEMA" ] && VxxTECH=1 || VxxTECH=
+        fi
+        if [ -n "$VxxTECH" ]; then
+            qstep "Activation du support du schéma tech"
         fi
 
-        qstep "$schema: import $file"
-        quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
-        runsql "$(pg_grant_privileges -r "$schema")" || critical
-    }
-    for schema in "${IMPORT_PGSQL_SCHEMAS[@]}"; do
-        [ -n "$VxxTECH" -a "$schema" == tech ] || continue
-        import_bin "$schema"
-    done
-    for schema in "${IMPORT_PGSQL_SCHEMAS[@]}"; do
-        [ -n "$VxxTECH" -a "$schema" == tech ] && continue
-        import_bin "$schema"
-    done
-    eend
-fi
+        function import_bin() {
+            local schema="$1"
+            local file; local -a files
+            files=(
+                "${DRE_PREFIX}-$Timestamp-schema_$schema.bin"
+                "${DRE_PREFIX}-$Timestamp-$schema.bin"
+            )
+            for file in "${files[@]}"; do
+                [ -f "$file" ] && break
+            done
+            schema="schema_$schema"
 
-if [ -n "$step_import_json" -a ${#IMPORT_MONGO_COLLECTIONS[@]} -gt 0 ]; then
-    etitle "Création des schémas (json)"
-    for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
-        schema="mongo_$schema"
+            if [ -z "$VxxTECH" ]; then
+                qstep "$schema: drop extensions"
+                runsql "\
+drop extension if exists unaccent, pg_trgm cascade;
+" || critical
+            fi
 
-        qstep "$schema"
-        runsql "\
+            qstep "$schema: import $file"
+            quietc pg_restore -d "$PGDATABASE" --no-owner --no-acl -Fc <"$file" || critical
+            runsql "$(pg_grant_privileges -r "$schema")" || critical
+        }
+        for schema in "${IMPORT_PGSQL_SCHEMAS[@]}"; do
+            [ -n "$VxxTECH" -a "$schema" == tech ] || continue
+            import_bin "$schema"
+        done
+        for schema in "${IMPORT_PGSQL_SCHEMAS[@]}"; do
+            [ -n "$VxxTECH" -a "$schema" == tech ] && continue
+            import_bin "$schema"
+        done
+        eend
+    fi
+
+    if [ -n "$step_import_json" -a ${#IMPORT_MONGO_COLLECTIONS[@]} -gt 0 ]; then
+        etitle "Création des schémas (json)"
+        for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
+            schema="mongo_$schema"
+
+            qstep "$schema"
+            runsql "\
 create schema if not exists $schema;
 " || critical
-    done
-    eend
+        done
+        eend
 
-    etitle "Importation des collections (json)"
-    function cat_json() {
-        local file="$1"
-        case "$file" in
-        *.json) cat "$file";;
-        *.json.gz) gzip -dc "$file";;
-        esac
-    }
-    function import_json() {
-        local schema="$1" collection="$2" file="$3"
-        [ -f "$file.gz" ] && file="$file.gz"
+        etitle "Importation des collections (json)"
+        function cat_json() {
+            local file="$1"
+            case "$file" in
+            *.json) cat "$file";;
+            *.json.gz) gzip -dc "$file";;
+            esac
+        }
+        function import_json() {
+            local schema="$1" collection="$2" file="$3"
+            [ -f "$file.gz" ] && file="$file.gz"
 
-        qstep "$schema: $collection: import $file"
-        runsql "
+            qstep "$schema: $collection: import $file"
+            runsql "
 create table if not exists $schema.$collection (source_json jsonb);
 " || critical
-        cat_json "$file" | runsql "
+            cat_json "$file" | runsql "
 copy $schema.$collection(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';
 " || critical
-    }
-    runsql "\
+        }
+        runsql "\
 create table if not exists mongo_piste_inscription.version_instance (source_json jsonb);
 " || critical
-    for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
-        splitpair "$schema_collection" schema collection
-        file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
-        schema="mongo_$schema"
-        import_json "$schema" "$collection" "$file"
-    done
-    for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
-        schema="mongo_$schema"
+        for schema_collection in "${IMPORT_MONGO_COLLECTIONS[@]}"; do
+            splitpair "$schema_collection" schema collection
+            file="${DRE_PREFIX}-$Timestamp-$schema-$collection.json"
+            schema="mongo_$schema"
+            import_json "$schema" "$collection" "$file"
+        done
+        for schema in "${IMPORT_MONGO_SCHEMAS[@]}"; do
+            schema="mongo_$schema"
 
-        qstep "$schema: maj authnz"
-        runsql "$(pg_grant_privileges -r "$schema")" || critical
-    done
-    eend
+            qstep "$schema: maj authnz"
+            runsql "$(pg_grant_privileges -r "$schema")" || critical
+        done
+        eend
+    fi
 fi
 
 if [ -n "$step_runao" ]; then
@@ -880,9 +962,14 @@ create table if not exists public.version (
 
     profile="${APP_PROFILE^^}"
     lprofile="$APP_PROFILE"
-    for table in mongo_piste_inscription.version_instance public.version; do
+
+    tables=()
+    [ -z "$V34Format" ] && tables+=(mongo_piste_inscription.version_instance)
+    tables+=(public.version)
+    for table in "${tables[@]}"; do
         <<<"$jsonver" runsql "copy $table(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';" || critical
     done
+
     runsql "\
 update version set
   majeure = source_json->>'majeure'
