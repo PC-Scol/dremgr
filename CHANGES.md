@@ -1,3 +1,9 @@
+## Release 2.6.0 du 07/10/2026-08:26
+
+* `e8b6c50` créer la table version avant de lancer les addons
+* `52cc766` support de la création d'utilisateurs avec des permissions fines
+* `6596cb8` support dumps V34
+
 ## Release 2.5.3 du 03/09/2026-16:10
 
 github limitant l'accès aux dépôts publics sans authentification, cette version
