@@ -854,6 +854,53 @@ create table if not exists mongo_piste_inscription.version_instance (source_json
     fi
 fi
 
+if [ -n "$step_import_bin" ]; then
+    estep "Maj version"
+    if [ -n "$V33Format" ]; then
+        jsonver="$(parse-version.php "$v33infos" --json)"
+    else
+        jsonver="$(parse-version.php "$leginfos" --json --legacy)"
+    fi
+    runsql "\
+create table if not exists public.version (
+  majeure varchar
+, mineure varchar
+, patch varchar
+, prerelease varchar
+, timestamp varchar
+, profile varchar
+, source_json jsonb
+);
+" || critical
+
+    profile="${APP_PROFILE^^}"
+    lprofile="$APP_PROFILE"
+
+    tables=(public.version)
+    if [ -z "$V34Format" ]; then
+        tables+=(mongo_piste_inscription.version_instance)
+    fi
+    for table in "${tables[@]}"; do
+        <<<"$jsonver" runsql "copy $table(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';" || critical
+    done
+
+    runsql "\
+update version set
+  majeure = source_json->>'majeure'
+, mineure = source_json->>'mineure'
+, patch = source_json->>'patch'
+, prerelease = source_json->>'prerelease'
+, timestamp = '$Timestamp'
+, profile = '$lprofile'
+;
+create table if not exists \"_infos_$profile\" (description varchar);
+truncate table \"_infos_$profile\";
+insert into \"_infos_$profile\" (description) values
+('Cette base de données est sur l''instance du profil $profile')
+;
+" || critical
+fi
+
 if [ -n "$step_runao" ]; then
     etitle "Installation des addons"
     mkdir -p "$WORKDIR"
@@ -941,53 +988,6 @@ if [ -n "$step_runao" ]; then
     ac_clean "$errors"
 
     eend
-fi
-
-if [ -n "$step_import_bin" ]; then
-    estep "Maj version"
-    if [ -n "$V33Format" ]; then
-        jsonver="$(parse-version.php "$v33infos" --json)"
-    else
-        jsonver="$(parse-version.php "$leginfos" --json --legacy)"
-    fi
-    runsql "\
-create table if not exists public.version (
-  majeure varchar
-, mineure varchar
-, patch varchar
-, prerelease varchar
-, timestamp varchar
-, profile varchar
-, source_json jsonb
-);
-" || critical
-
-    profile="${APP_PROFILE^^}"
-    lprofile="$APP_PROFILE"
-
-    tables=(public.version)
-    if [ -z "$V34Format" ]; then
-        tables+=(mongo_piste_inscription.version_instance)
-    fi
-    for table in "${tables[@]}"; do
-        <<<"$jsonver" runsql "copy $table(source_json) from stdin csv quote e'\\x01' delimiter e'\\x02';" || critical
-    done
-
-    runsql "\
-update version set
-  majeure = source_json->>'majeure'
-, mineure = source_json->>'mineure'
-, patch = source_json->>'patch'
-, prerelease = source_json->>'prerelease'
-, timestamp = '$Timestamp'
-, profile = '$lprofile'
-;
-create table if not exists \"_infos_$profile\" (description varchar);
-truncate table \"_infos_$profile\";
-insert into \"_infos_$profile\" (description) values
-('Cette base de données est sur l''instance du profil $profile')
-;
-" || critical
 fi
 
 if [ -n "$step_import" ]; then
