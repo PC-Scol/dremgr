@@ -589,7 +589,7 @@ function dl_v33() {
         local count=1 max=5 desc
         local ContinueDl="$pegase"
         while true; do
-            [ $count -gt 0 ] && desc=" (tentative $count/$max)"
+            [ $count -gt 1 ] && desc=" (tentative $count/$max)"
             qstep "dl  $pegase$desc"
             dl "$pegase"
             if sha512sum --status -c "$pegase_sum"; then
