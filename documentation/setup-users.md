@@ -45,4 +45,42 @@ suite, il faut forcer la réimportation des fichiers
 ./dbinst -Ai -- -@latest
 ~~~
 
+## Créer des utilisateurs avec des permissions fines
+
+Par défaut, les utilisateurs créés avec les instructions ci-dessus ont accès à
+TOUTES les tables de TOUS les schémas, que ce soit en lecture seule ou en
+écriture en fonction des valeurts de `FE_ACCESS`
+
+Si vous voulez créer des utilisateurs avec des permissions plus restreintes
+(comme par exemple accès en lecture à quelques tables de certains schémas), il
+faut créer un addon (ou utiliser dreaddon-local)
+
+Renseigner les paramètres `FE_USERS` et `FE_ACCESS`. Le droit d'accès à utiliser
+est `none`
+~~~sh
+FE_USERS="
+...
+myuser:ZEPASS
+"
+FE_ACCESS="
+...
+myuser:none
+"
+~~~
+
+Redémarrer les instances et créer les nouveaux comptes
+~~~sh
+./dremgr -r
+
+./dbinst -Ax create-pgusers.sh
+~~~
+
+Puis copiez `dreaddon-local/exemples/users.sql` dans `dreaddon-local/updates/`
+et adaptez le code
+
+Pour tester, réimportez `dreaddon-local`
+~~~sh
+./dbinst -I dreaddon-local
+~~~
+
 -*- coding: utf-8 mode: markdown -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8:noeol:binary

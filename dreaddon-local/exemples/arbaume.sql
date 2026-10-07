@@ -1,7 +1,8 @@
 -- -*- coding: utf-8 mode: sql -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 -- exemple de code pour créer l'arborescence des objets maquettes dans une table
--- nommée arbaume. à placer dans le répertoire updates/ ou dans un répertoire v30
--- ou supérieure s'il est intégré dans un autre addon
+-- nommée arbaume.
+-- placer ce fichier dans le répertoire updates/ ou dans un répertoire v30/ ou
+-- supérieur
 
 -- à utiliser de cette façon.
 --   select * from public.arbaume
