@@ -46,10 +46,14 @@ for user in "${users[@]}"; do
     done
     [ -n "$access" ] || access=read
     case "$access" in
+    none|n) access=none;;
     admin|all|a) access=admin;;
     write|rw|w) [ -n "$readonly" ] && access=read || access=write;;
     read|ro|r|*) access=read;;
     esac
+
+    # pas de grants pour l'access none
+    [ "$access" == none ] && continue
 
     case "$access" in
     admin)
