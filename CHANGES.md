@@ -1,3 +1,7 @@
+## Release 2.6.1 du 08/10/2026-22:28
+
+* `92594f2` autres exemples pour users.sql
+
 ## Release 2.6.0 du 07/10/2026-08:26
 
 * `e8b6c50` créer la table version avant de lancer les addons
