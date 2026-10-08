@@ -1,3 +1,5 @@
+## Release 2.6.2 du 08/10/2026-22:29
+
 ## Release 2.6.1 du 08/10/2026-22:28
 
 * `92594f2` autres exemples pour users.sql
