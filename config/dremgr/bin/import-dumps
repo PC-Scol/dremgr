@@ -452,7 +452,7 @@ cd "$DLDIR"
 [ -n "$Timestamp" ] && Clean=
 if [ "$Timestamp" == latest ]; then
     # prendre le dernier fichier DRE_INFOS ou checksums. utile pour --runao
-    latest="$(ls DRE_INFOS_* 2>/dev/null | tail -n1)"
+    latest="$(ls DRE_INFOS_*.json 2>/dev/null | tail -n1)"
     if [ -n "$latest" ]; then
         Timestamp="${latest#DRE_INFOS_}"
         Timestamp="${Timestamp%.json}"
