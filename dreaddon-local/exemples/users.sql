@@ -20,17 +20,23 @@ end $$;
 */
 
 -- il faut toujours accorder le droit d'usage à schema_tech
+
 grant usage on schema schema_tech to myuser;
 
--- puis pour chaque schéma utilisé, accorder le droit d'usage
-grant usage on schema schema_ref to myuser;
-grant usage on schema schema_ins to myuser;
+-- pas besoin d'accorder le droit d'usage au schéma public, c'est natif
+-- pour tous les autres schémas, il faut systématiquement accorder le droit
+-- d'usage avant de pouvoir accorder des droits supplémentaires sur les tables
 
--- puis les droits appropriés aux tables des schémas
 grant select on public.version to myuser;
 
-grant select on schema_ref.structure to myuser;
+-- on peut accorder le droit d'accès à toutes les tables d'un schéma
 
+grant usage on schema schema_ref to myuser;
+grand select on all tables in schema schema_ref to myuser;
+
+-- on peut aussi accorder le droit d'accès à certaines tables uniquement
+
+grant usage on schema schema_ins to myuser;
 grant select on schema_ins.apprenant to myuser;
 grant select on schema_ins.periode to myuser;
 grant select on schema_ins.chemin to myuser;

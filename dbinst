@@ -104,7 +104,7 @@ function import_one_devel() {
     if [ "$srcdir" != "$DREMGR" -a "${srcdir#$DREMGR/}" == "$srcdir" ]; then
         estep "Copie des fichiers vers ${destdir#$DREMGR/}"
         [ "$(id -u)" == 0 ] && sudo= || sudo=sudo
-        $sudo rsync -rlp --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
+        $sudo rsync -rlp ${RILS:+--insecure-links} --delete -f "- /.git/" -f "P /.git/" "$srcdir/" "$destdir/" || die
     fi
 
     import_dumps --clean-import-log -@ latest --no-updateao --runao -o "$name" --notifao "$@"
@@ -234,6 +234,7 @@ case "$MYNAME" in
     ;;
 esac
 
+RILS=
 ForceStart=
 Recreate=
 action=auto
@@ -270,6 +271,8 @@ Importer un addon en mode développement:
     $MYNAME -i -- --no-updateao --runao -o DREADDON \"\$@\"
   cf la documentation pour les détails"
     --JZ import_one_reset=1 "++\
+Option non documentée. Ne pas utiliser"
+    --RILS RILS=1 "++\
 Option non documentée. Ne pas utiliser"
     -q::,--psql '$action=psql; set@ PsqlUserDb' "\
 Lancer une invite psql connecté avec le compte administrateur
