@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 # Script permettant de lancer une commande dans docker et/ou de bootstrapper
 # l'utilisation de nulib dans un projet PHP
@@ -12,6 +12,7 @@
 # du projet, et que le fichier composer.json et le répertoire vendor/ sont à la
 # racine du projet. Le cas échéant, modifier les valeurs ci-dessous
 (return 0 2>/dev/null) && _sourced=1 || _sourced=
+DEFAULT_DIST=d13
 
 ###############################################################################
 # Modifier les valeurs suivantes si nécessaire
@@ -33,7 +34,7 @@ BUILDENV0=.build.env.dist
 BUILDENV=build.env
 
 # Listes des images que le script build construit automatiquement
-BUILD_IMAGES=(db cron web adminer pgadmin)
+BUILD_IMAGES=(db18 cron18 web13 adminer13 pgadmin)
 BUILD_FLAVOUR=
 
 ## En ce qui concerne DIST et IMAGENAME, les valeurs dans BUILDENV prennent le
@@ -42,10 +43,31 @@ BUILD_FLAVOUR=
 
 # version de debian à utiliser pour l'image
 # d12=php8.2, d11=php7.4, d10=php7.3
-DIST=d12
+DIST=d13
 
 # Nom de base de l'image (sans le registry), e.g prefix/
 IMAGENAME=dremgr/
+
+## Fichiers .dist et .template
+# Lors du build, les fichiers de la forme .name.dist sont copiés vers un
+# fichier name sauf s'il existe déjà. Si un fichier name.dist.local existe, il
+# est utilisé à la place de .name.dist
+# Les fichiers de la forme .name.template sont copiés *systématiquement* vers
+# le fichier name. Si un fichier name.template.local existe, il est utilisé à
+# la place de .name.template
+
+# Liste de fichiers (ou de répertoires à considérer). Pour chaque répertoire,
+# les fichiers .*.dist dans l'arborescence du répertoire sont recherchés
+DISTFILES=()
+
+# Liste de fichiers (ou de répertoires à considérer). Pour chaque répertoire,
+# les fichiers .*.template dans l'arborescence du répertoire sont recherchés
+TEMPLATEFILES=()
+
+# Fichiers contenant les valeurs des variables utilisées pour l'interpolation
+# des fichiers dist et template. Seules les variables définies dans ces fichiers
+# sont interpolées.
+VARFILES=()
 
 #EOF:runphp.userconf:ne pas modifier cette ligne
 ################################################################################
@@ -70,9 +92,18 @@ if [ -f "$MYDIR/runphp.userconf.local" ]; then
     source "$MYDIR/runphp.userconf.local"
 fi
 
-DEFAULT_DIST=d13
-if [ -n "$RUNPHP_STANDALONE" ]; then
-    PROJDIR="$RUNPHP_PROJDIR"
+if [ -z "$DIST" -a -n "$PHP" ]; then
+    declare -A PHP2DISTS=(
+        [8.4]=d13
+        [8.2]=d12
+        [7.4]=d11
+        [7.3]=d10
+    )
+    DIST="${PHP2DISTS[$PHP]}"
+fi
+
+if [ -n "$RUNCMD_STANDALONE" ]; then
+    PROJDIR="$RUNCMD_PROJDIR"
 
     COMPOSERDIR=.
     COMPOSERPHAR=
@@ -83,7 +114,7 @@ if [ -n "$RUNPHP_STANDALONE" ]; then
     IMAGENAME=nulib-base/
 
     PRIVAREG=docker.io
-    REGISTRY="$RUNPHP_REGISTRY"
+    REGISTRY="$RUNCMD_REGISTRY"
 
     [ -n "$RUNPHP_BUILD_FLAVOUR" ] && BUILD_FLAVOUR="$RUNPHP_BUILD_FLAVOUR"
 
@@ -133,7 +164,7 @@ function composer() {
     else
         die "impossible de trouver composer"
     fi
-    if [ -n "$PROJDIR" -a -z "$RUNPHP_STANDALONE" -a -f composer.lock ]; then
+    if [ -n "$PROJDIR" -a -z "$RUNCMD_STANDALONE" -a -f composer.lock ]; then
         cp composer.lock "$PROJDIR/.composer.lock.runphp"
     fi
 }
@@ -149,16 +180,16 @@ function host_parse_args() {
     # commande à lancer
     Cmd=()
 
-    if [ "$1" == --runphp-bootstrap -o "$1" == --bs ]; then
+    if [ "$1" == --bootstrap -o "$1" == --bs ]; then
         Bootstrap=1
         shift
-    elif [ "$1" == --runphp-exec ]; then
+    elif [ "$1" == --exec ]; then
         Bootstrap=
         shift
-    elif [ "$1" == --runphp-install -o "$1" == --ci ]; then
+    elif [ "$1" == --install -o "$1" == --ci ]; then
         Composer=ci
         shift
-    elif [ "$1" == --runphp-update -o "$1" == --cu ]; then
+    elif [ "$1" == --update -o "$1" == --cu ]; then
         Composer=cu
         shift
     fi
@@ -170,7 +201,7 @@ function host_ensure_image() {
     local dfdir suffix dockerfiles dockerfile
     local privareg imagename
     if [ -z "$Image" ]; then
-        [ -n "$RUNPHP_STANDALONE" ] && dfdir="$RUNPHP_STANDALONE/runphp" || dfdir="$MYDIR"
+        [ -n "$RUNCMD_STANDALONE" ] && dfdir="$RUNCMD_STANDALONE/runcmd" || dfdir="$MYDIR"
         dockerfiles=(
             "_local:$dfdir/Dockerfile.runphp.local"
             "${BUILD_FLAVOUR//+/_}:$dfdir/Dockerfile.runphp$BUILD_FLAVOUR"
@@ -208,7 +239,7 @@ function host_check_image() {
 
 function host_check_projdir() {
     # vérifier le projet pour voir s'il faut installer les dépendances
-    [ -n "$RUNPHP_STANDALONE" ] && return
+    [ -n "$RUNCMD_STANDALONE" ] && return
 
     local install
     if [ ! -f "$PROJDIR/$VENDORDIR/nulib/base/load.sh" ]; then
@@ -269,7 +300,7 @@ function host_init_env() {
         esac
     }
     envs=()
-    if [ -z "$RUNPHP_IGNORE_DEFAULTS" ]; then
+    if [ -z "$RUNCMD_IGNORE_DEFAULTS" ]; then
         envs+=(
             /etc/default/dkbuild
             ~/etc/default.${HOSTNAME%%.*}/dkbuild
@@ -295,9 +326,9 @@ function host_init_env() {
     done
 
     # Paramètres de montage
-    if [ -n "$RUNPHP_NO_USE_RSLAVE" ]; then
+    if [ -n "$RUNCMD_NO_USE_RSLAVE" ]; then
         UseRslave=
-    elif [ -n "$RUNPHP_USE_RSLAVE" ]; then
+    elif [ -n "$RUNCMD_USE_RSLAVE" ]; then
         UseRslave=1
     elif [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
         # pas de mount propagation sous WSL
@@ -307,8 +338,8 @@ function host_init_env() {
     fi
 
     Image=
-    if [ -n "$RUNPHP_FORCE_BUILDENVS" ]; then
-        eval "Configs=($RUNPHP_FORCE_BUILDENVS)"
+    if [ -n "$RUNCMD_FORCE_BUILDENVS" ]; then
+        eval "Configs=($RUNCMD_FORCE_BUILDENVS)"
     elif [ -n "$BUILDENV" -a -f "$PROJDIR/$BUILDENV" ]; then
         Configs=("$PROJDIR/$BUILDENV")
     elif [ -n "$BUILDENV0" -a -f "$PROJDIR/$BUILDENV0" ]; then
@@ -322,7 +353,7 @@ function host_init_env() {
     after_source_buildenv
 
     Chdir=
-    Verbose="$RUNPHP_VERBOSE"
+    Verbose="$RUNCMD_VERBOSE"
     Exec=
 }
 
@@ -337,7 +368,7 @@ function host_docker_build() {
     )
 
     SOPTS=+d:9876543210:c:UjDx:z:r:p
-    LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,ci,use-rslave,no-use-rslave
+    LOPTS=help,dist:,d19,d18,d17,d16,d15,d14,d13,d12,d11,d10,config:,ue,unless-exists,pull,nc,no-cache,po,plain-output,apt-proxy:,timezone:,privareg:,push,ci,cu,use-rslave,no-use-rslave
     args="$(getopt -n "$MYNAME" -o "$SOPTS" -l "$LOPTS" -- "$@")" || exit 1; eval "set -- $args"
 
     Dist=
@@ -503,16 +534,16 @@ OPTIONS
     args=(
         run -it --rm
         --name "runphp-$(basename -- "$1")-$$"
-        -e RUNPHP_MODE=docker
-        ${RUNPHP_MYSELF:+-e "RUNPHP_MYSELF=$RUNPHP_MYSELF"}
+        -e RUNCMD_MODE=docker
+        ${RUNCMD_MYSELF:+-e "RUNCMD_MYSELF=$RUNCMD_MYSELF"}
     )
     for arg in "${!PROXY_VARS[@]}"; do
         args+=(-e "$arg=${PROXY_VARS[$arg]}")
     done
-    if [ -n "$RUNPHP_STANDALONE" ]; then
+    if [ -n "$RUNCMD_STANDALONE" ]; then
         args+=(
-            -e "RUNPHP_STANDALONE=$RUNPHP_STANDALONE"
-            -e "RUNPHP_PROJDIR=$PROJDIR"
+            -e "RUNCMD_STANDALONE=$RUNCMD_STANDALONE"
+            -e "RUNCMD_PROJDIR=$PROJDIR"
         )
     fi
     for host in "${HOST_MAPPINGS[@]}"; do
@@ -554,7 +585,7 @@ OPTIONS
         already_mounted_dirs+=("$dir")
     done
     try_dirs=(
-        "$RUNPHP_STANDALONE" "$PROJDIR" "$RUNPHP_MOUNT"
+        "$RUNCMD_STANDALONE" "$PROJDIR" "$RUNCMD_MOUNT"
         "$Cwd"
     )
     for dir in "${try_dirs[@]}"; do
@@ -602,11 +633,17 @@ function container_exec() {
     ci)
         eecho "== installing composer dependencies"
         shift
+        if [ ! -f composer.json -a -f .composer.json.dist ]; then
+            cp .composer.json.dist composer.json
+        fi
         composer i "$@"
         ;;
     cu)
         eecho "== upgrading composer dependencies"
         shift
+        if [ ! -f composer.json -a -f .composer.json.dist ]; then
+            cp .composer.json.dist composer.json
+        fi
         composer u "$@"
         ;;
     composer)
@@ -639,7 +676,7 @@ function container_exec() {
 
 ################################################################################
 
-if [ "$RUNPHP_MODE" != docker ]; then
+if [ "$RUNCMD_MODE" != docker ]; then
     # Lancement depuis l'extérieur du container
     declare -A PROXY_VARS
     host_parse_args "$@"

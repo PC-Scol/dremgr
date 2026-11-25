@@ -5,7 +5,7 @@
 
 services:
   db:
-    image: @@PRIVAREG@@dremgr/db
+    image: @@PRIVAREG@@dremgr/db18
     command:
       - postgres
       - "-c"
@@ -22,7 +22,7 @@ services:
     volumes:
       - @@DATADIR@@/@@Profile@@-run:/run/postgresql
       - @@DATADIR@@/@@Profile@@-dredata/postgresql.conf:/etc/postgresql/postgresql.conf
-      - @@DATADIR@@/@@Profile@@-pgdata:/var/lib/postgresql/data
+      - @@DATADIR@@/@@Profile@@-pgdata:/var/lib/postgresql
       - ./config/postgres/initdb:/docker-entrypoint-initdb.d
     #@@IF:DBNET@@networks:
     #@@IF:DBNET@@  @@DBNET@@:
@@ -30,13 +30,10 @@ services:
     #@@IF:DBNET@@      - @@Profile@@_db
     #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBINST@@#@@IF:INST_PORT@@ports:
     #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBINST@@#@@IF:INST_PORT@@  - @@INST_VIP@@@@INST_PORT@@:5432
-    deploy:
-      update_config:
-        order: stop-first
     restart: always
 
   cron:
-    image: @@PRIVAREG@@dremgr/cron
+    image: @@PRIVAREG@@dremgr/cron18
     env_file:
       - .proxy.env
       - .defaults.env
@@ -65,9 +62,6 @@ services:
       #@@IF:DlProfile@@- @@DATADIR@@/@@DlProfile@@-dredata/downloads:/data/dre/downloads
     #@@IF:HOST_MAPPINGS@@extra_hosts:
     @@FOR:HOST_MAPPINGS@@  - @@HOST_MAPPING@@
-    deploy:
-      update_config:
-        order: stop-first
     restart: always
 
 #@@IF:DBNET@@networks:

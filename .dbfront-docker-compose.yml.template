@@ -5,7 +5,7 @@
 
 services:
   pgbouncer:
-    image: @@PRIVAREG@@dremgr/db
+    image: @@PRIVAREG@@dremgr/db18
     command: pgbouncer
     env_file:
       - .proxy.env
@@ -16,9 +16,6 @@ services:
     #@@IF:DBNET@@  @@DBNET@@:
     #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBFRONT@@#@@IF:DBPORT@@ports:
     #@@UL:NO_LISTEN@@#@@UL:NO_LSN_DBFRONT@@#@@IF:DBPORT@@  - @@DBVIP@@@@DBPORT@@:5432
-    deploy:
-      update_config:
-        order: stop-first
     restart: always
 
 networks:

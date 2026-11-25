@@ -5,20 +5,21 @@
 	"repositories": [
 		{
 			"type": "composer",
-			"url": "https://repos.univ-reunion.fr/composer"
+			"url": "https://repos.univ-reunion.fr/composer84"
 		}
 	],
 	"require": {
-		"nulib/base": "^0.8.0p82",
-		"nur/ture": "^0.8.0p82",
-		"league/commonmark": "^2.7.0",
-		"php": "^8.2"
+		"nulib/base": "^8.4-dev",
+		"php": "^8.4"
 	},
 	"autoload": {
 		"psr-4": {
-			"app\\config\\": "../config",
-			"app\\": "../src"
-		}
+			"app\\config\\": "../_webfront.d/cnf",
+			"app\\": "../_webfront.d/src"
+		},
+		"files": [
+			"../_webfront.d/cnf/bootstrap.php"
+		]
 	},
 	"authors": [
 		{

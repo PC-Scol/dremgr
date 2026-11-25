@@ -1,17 +1,7 @@
 <?php
-namespace app\app;
+namespace app\init;
 
-use Exception;
-use nur\A;
-use nur\F;
-use nur\path;
-use nur\txt;
-use nur\v\bs3\vc\CNavTabs;
-use nur\v\http;
-use nur\v\page;
-use nur\v\vp\NavigablePage;
-
-class ANavigablePage extends NavigablePage {
+class _OrigNavigablePage extends NavigablePage {
   const CSS = ["dre.css"];
   const NAVBAR_OPTIONS = [
     "brand" => [

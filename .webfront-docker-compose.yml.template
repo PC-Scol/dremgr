@@ -5,7 +5,7 @@
 
 services:
   adminer:
-    image: @@PRIVAREG@@dremgr/adminer
+    image: @@PRIVAREG@@dremgr/adminer13
     env_file:
       - .proxy.env
       - .defaults.env
@@ -29,7 +29,7 @@ services:
     restart: always
 
   web:
-    image: @@PRIVAREG@@dremgr/web
+    image: @@PRIVAREG@@dremgr/web13
     env_file:
       - .proxy.env
       - .defaults.env

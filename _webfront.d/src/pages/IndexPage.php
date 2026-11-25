@@ -1,30 +1,30 @@
 <?php
-namespace app\vp;
+namespace app\pages;
 
-use app\app\ANavigablePage;
-use app\q\tools;
+use app\init\NavigablePage;
+use app\init\tools;
 use Exception;
-use League\CommonMark\GithubFlavoredMarkdownConverter;
+use nulib\A;
+use nulib\db\pgsql\Pgsql;
+use nulib\ext\json;
 use nulib\ext\yaml;
 use nulib\file;
-use nur\b\date\Hour;
-use nur\json;
-use nur\m\pgsql\PgsqlConn;
-use nur\md;
-use nur\path;
-use nulib\A;
+use nulib\mail\mdc;
+use nulib\os\path;
+use nulib\os\sh;
+use nulib\php\schema\Schema;
 use nulib\php\time\Date;
-use nur\shutils;
-use nur\v\bs3\vc\CListGroup;
-use nur\v\bs3\vc\CVerticalTable;
-use nur\v\icon;
-use nur\v\page;
-use nur\v\plugins\showmorePlugin;
-use nur\v\v;
-use nur\v\vo;
+use nulib\php\time\Hour;
+use nulib\web\bs\bsicon;
+use nulib\web\bs\lists\ListGroup;
+use nulib\web\bs\tables\VTable;
+use nulib\web\contag\v;
+use nulib\web\page;
+use nulib\web\plugins\showmorePlugin;
+use nulib\web\vo;
 
-class IndexPage extends ANavigablePage {
-  const TITLE = "DRE - Données PEGASE";
+class IndexPage extends NavigablePage {
+  const TITLE = "DREmgr";
   const PLUGINS = [showmorePlugin::class];
 
   const FE_VARS = [
@@ -61,16 +61,17 @@ class IndexPage extends ANavigablePage {
     $metadata = file::try_ext("$docdir/metadata.yml", ".yaml");
     if ($metadata !== null) $metadata = yaml::load($metadata);
     if (!is_dir($docdir)) $filenames = [];
-    else $filenames = shutils::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
+    else $filenames = sh::ls_files($docdir, null, SCANDIR_SORT_DESCENDING);
     $docs = [];
     foreach ($filenames as $filename) {
+      if ($filename === ".gitignore") continue;
       if ($filename === "metadata.yml" || $filename === "metadata.yaml") continue;
       $file = path::join($docdir, $filename);
       $fileobj = null;
       if (fnmatch("*.url", $filename)) {
         try {
           $data = json::load($file);
-          md::ensure_schema($data, self::url_SCHEMA);
+          $data = Schema::with($data, self::url_SCHEMA);
           $url = $data["url"] ?? null;
           $target = $data["target"] ?? "_blank";
           $title = $data["title"] ?? $filename;
@@ -91,7 +92,7 @@ class IndexPage extends ANavigablePage {
       } else {
         $fileobj = $metadata["files"][$filename] ?? null;
         if ($fileobj !== null) {
-          md::ensure_schema($fileobj, self::url_SCHEMA);
+          $fileobj = Schema::with($fileobj, self::url_SCHEMA);
           $fileobj["filename"] = $filename;
           $fileobj["file"] = $file;
           $fileobj["isa_file"] = true;
@@ -133,8 +134,8 @@ class IndexPage extends ANavigablePage {
     $inst["port"] = 5432;
     $version = ["valid" => false];
     try {
-      $conn = new PgsqlConn("host=$inst[host] port=$inst[port] dbname=$inst[dbname] user=$inst[user] password=$inst[password]");
-      $version = $conn->first("select * from version");
+      $conn = new Pgsql("host=$inst[host] port=$inst[port] dbname=$inst[dbname] user=$inst[user] password=$inst[password]");
+      $version = $conn->one("select * from version");
       $version["valid"] = true;
       $version["version"] = "$version[majeure].$version[mineure].$version[patch]";
       if ($version["prerelease"]) $version["version"] .= "-$version[prerelease]";
@@ -156,25 +157,25 @@ class IndexPage extends ANavigablePage {
 
   function printJquery(): void {
     ?>
-    <script type="text/javascript">
-      jQuery.noConflict()(function($) {
-        if (navigator.clipboard) {
-          $(".copy-btn").click(function() {
-            var $action = $(this);
-            var $data = $action.closest(".copy-container").find(".copy-data");
-            navigator.clipboard.writeText($data.text());
-            $action.addClass("btn-success").text("Copié!");
-            window.setTimeout(function() {
-              $action.removeClass("btn-success").text("Copier");
-            }, 1000);
-            return false;
-          });
-        } else {
-          $(".copy-btn").addClass("hidden");
-        }
-      });
-    </script>
-    <?php
+<script type="text/javascript">
+jQuery.noConflict()(function($) {
+  if (navigator.clipboard) {
+    $(".copy-btn").click(function() {
+      var $action = $(this);
+      var $data = $action.closest(".copy-container").find(".copy-data");
+      navigator.clipboard.writeText($data.text());
+      $action.addClass("btn-success").text("Copié!");
+      window.setTimeout(function() {
+        $action.removeClass("btn-success").text("Copier");
+      }, 1000);
+      return false;
+    });
+  } else {
+    $(".copy-btn").addClass("d-none");
+  }
+});
+</script>
+<?php
   }
 
   function print(): void {
@@ -230,12 +231,12 @@ class IndexPage extends ANavigablePage {
     vo::p([
       "Vous pouvez vous connecter à la base DRE avec un outil en ligne",
     ]);
-    new CListGroup([
+    new ListGroup([
       "Adminer" => ["/adminer/", "Un outil simple et pragmatique. Le choix du chef!"],
       "pgAdmin" => ["/pgadmin/", "Si vous en avez l'habitude, le même outil que les RDD-Tools"],
     ], [
-      "container" => "div",
-      "map_func" => function ($item, $title) {
+      "type" => "links",
+      "item" => static function ($item, $title) {
         [$url, $desc] = $item;
         return [
           "href" => $url,
@@ -244,23 +245,19 @@ class IndexPage extends ANavigablePage {
           $desc,
         ];
       },
-      "autoprint" => true,
     ]);
 
     vo::h1("Documentation");
     $docs = $this->docs;
     if ($docs) {
-      $markdown = new GithubFlavoredMarkdownConverter([
-        'html_input' => 'strip',
-        'allow_unsafe_links' => false,
-      ]);
+      $mdc = mdc::mdc();
       vo::p([
         "Une documentation technique et fonctionnelle est disponible. ",
         "Vous y trouverez notamment le schéma de la base de données",
       ]);
-      new CListGroup($docs, [
-        "container" => "ul",
-        "map_func" => function ($file) use ($markdown) {
+      new ListGroup($docs, [
+        "type" => "items",
+        "item" => function ($file) use ($mdc) {
           $name = $file["filename"];
           $title = $file["title"];
           if ($file["isa_file"]) {
@@ -274,7 +271,7 @@ class IndexPage extends ANavigablePage {
                     "dl" => $name,
                   ]),
                   "target" => $file["target"],
-                  icon::download($name),
+                  bsicon::download($name),
                 ]),
               ];
             } else {
@@ -294,20 +291,19 @@ class IndexPage extends ANavigablePage {
                 "dl" => $name,
               ]),
               "target" => $file["target"],
-              icon::new_window($title),
+              bsicon::new_window($title),
             ]);
           }
           $desc = $file["desc"];
           if ($desc !== null) {
             return [
               v::p($link),
-              $markdown->convert($desc),
+              $mdc->convert($desc),
             ];
           } else {
             return $link;
           }
         },
-        "autoprint" => true,
       ]);
     } else {
       vo::p([
@@ -315,20 +311,18 @@ class IndexPage extends ANavigablePage {
       ]);
     }
 
-    $sm = new showmorePlugin();
-    $sm->printStartc();
     vo::h2("Connexion postgresql");
-    $sm->printInvite([
+    $sm = new showmorePlugin();
+    $sm->invite([
       "accesskey" => "s",
       "Afficher les informations de connexion à postgresql...",
     ]);
-
-    $sm->printStartp();
+    $sm->more();
     vo::p([
       "Pour vous connecter directement à la base de données, utilisez les informations suivantes",
     ]);
     $conninfo = $this->conninfo;
-    new CVerticalTable([[
+    new VTable([[
       "Type de base de données" => "PostgreSQL",
       "Nom d'hôte" => $conninfo["host"],
       "Port" => $conninfo["port"],
@@ -338,7 +332,7 @@ class IndexPage extends ANavigablePage {
         v::a([
           "class" => "btn btn-default btn-sm copy-btn",
           "href" => "#",
-          icon::copy("Copier"),
+          bsicon::copy("Copier"),
         ]),
         "&nbsp;&nbsp;",
         v::span([
@@ -351,7 +345,7 @@ class IndexPage extends ANavigablePage {
         v::a([
           "class" => "btn btn-default btn-sm copy-btn",
           "href" => "#",
-          icon::copy("Copier"),
+          bsicon::copy("Copier"),
         ]),
         "&nbsp;&nbsp;",
         v::span([
@@ -364,19 +358,19 @@ class IndexPage extends ANavigablePage {
         v::a([
           "class" => "btn btn-default btn-sm copy-btn",
           "href" => "#",
-          icon::copy("Copier"),
+          bsicon::copy("Copier"),
         ]),
         "&nbsp;&nbsp;",
         v::span([
-          "class" => "hpc",
+          "class" => "crdmkc",
           v::span([
-            "class" => "hp password copy-data",
+            "class" => "credential crdmk copy-data",
             $conninfo["password"],
           ]),
         ]),
       ],
     ]], [
-      "autoprint" => true,
+      "class" => "table-auto",
     ]);
     $connstring = [];
     $first = true;
@@ -386,7 +380,7 @@ class IndexPage extends ANavigablePage {
       if ($name == "password") {
         $connstring[] = [
           "$name=",
-          v::span(["class" => "hp password", "$value"]),
+          v::span(["class" => "credential crdmk", "$value"]),
         ];
       } else {
         $connstring[] = "$name=$value";
@@ -397,7 +391,7 @@ class IndexPage extends ANavigablePage {
       "Si une chaine de connexion est demandée, vous pouvez utiliser la valeur suivante:",
       "<br/>",
       v::span([
-        "class" => "hpc connstring",
+        "class" => "crdmkc connstring",
         v::span([
           "class" => "copy-data",
           $connstring,
@@ -406,9 +400,9 @@ class IndexPage extends ANavigablePage {
       v::a([
         "class" => "btn btn-default btn-sm copy-btn",
         "href" => "#",
-        icon::copy("Copier"),
+        bsicon::copy("Copier"),
       ]),
     ]);
-    $sm->printEnd();
+    $sm->print();
   }
 }
