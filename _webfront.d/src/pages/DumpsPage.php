@@ -61,6 +61,18 @@ class DumpsPage extends NavigablePage {
     }; unset($date);
     $this->yfiles = $yfiles;
 
+    $this->data = $data = new ArrayData([
+      "p" => ["string", $this->profile,
+        "form_control" => "hidden",
+      ],
+      "ymd" => ["string", cl::first_key($ydates),
+        "form_control" => "select",
+        "form_params" => [
+          "label" => "Date",
+          "items" => $ydates,
+        ],
+      ],
+    ]);
     if ($this->download($files)) return;
 
     $dre = tools::get_profile_vars([
@@ -69,19 +81,6 @@ class DumpsPage extends NavigablePage {
     ], $this->profile);
     $this->dreUrl = $dre["url"];
     $this->maxAge = $dre["max_age"];
-
-    $this->data = $data = new ArrayData([
-      "p" => ["string", $this->profile,
-        "form_control" => "hidden",
-      ],
-      "ymd" => ["string", null,
-        "form_control" => "select",
-        "form_params" => [
-          "label" => "Date",
-          "items" => $ydates,
-        ],
-      ],
-    ]);
     $this->ymd = $data["ymd"];
 
     $cronlog = path::join($appdir, "cron.log");
