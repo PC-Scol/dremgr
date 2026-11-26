@@ -49,7 +49,7 @@ args=(
     -P,--prod Profile=prod "++alias pour --profile prod"
     -T,--test Profile=test "++alias pour --profile test"
     -x,--shell . ++
-    --j31a,--Je-risque-de-perdre-la-base-pdata ignore_pdata=1 "++Ne pas rendre obligatoire la présence d'une sauvegarde de la base pdata"
+    --l23e,--La-base-pdata-sera-perdue ignore_pdata=1 "++Ne pas rendre obligatoire la présence d'une sauvegarde de la base pdata"
     -m,--migrate . "Faire la migration. c'est la valeur par défaut"
     -r,--restore . "Restaurer la base pdata"
     -k,--cleanup . "Supprimer les anciens fichiers postgresql 15"

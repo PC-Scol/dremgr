@@ -2,8 +2,20 @@
 
 Ce document liste toutes les nouveautés de la version 3.0 de DREmgr
 
-La mise à jour nécessite d'une trentaire de minutes à une heure, le temps de
-reconstruire les images. La mise à jour se fait de cette façon:
+La mise à jour nécessite une trentaire de minutes à une heure, le temps de
+reconstruire les images et de réimporter les données. La mise à jour se fait de
+cette façon.
+
+Si vous utilisez les données persistantes (base de données pdata) la mise à jour
+nécessitera de faire une sauvegarde avant suivi d'une restauration.
+
+Si vous n'utilisez pas les données persistantes (si vous ne savez pas ce que
+c'est, c'est que vous ne les utilisez pas), la mise à jour est plus simple.
+
+**Mise à jour conservant les données persistantes**
+
+Veuillez suivre les instructions suivantes pour faire la mise à jour tout en
+gardant les données persistantes:
 ~~~sh
 # Faire une sauvegarde de la base de données pdata
 ./dbinst -A --backup
@@ -17,7 +29,7 @@ git pull
 # forcer la reconstruction de toutes les images
 ./build -rU
 
-# préparer la migration
+# déplacer les anciennes données
 ./sbin/migrate-pg18
 
 # démarrer les services
@@ -29,6 +41,32 @@ git pull
 # réimporter les données
 ./dbinst -Ai -- -@latest
 ~~~
+
+**Mise à jour qui ne conserve pas les données persistantes**
+
+Veuillez suivre les instructions suivantes pour faire la mise à jour sans garder
+les données persistantes. ATTENTION! les données persistantes seront perdues!
+~~~sh
+# arrêter les services
+./dremgr -k
+
+# mettre à jour le dépôt
+git pull
+
+# forcer la reconstruction de toutes les images
+./build -rU
+
+# déplacer les anciennes données
+./sbin/migrate-pg18 --La-base-pdata-sera-perdue
+
+# démarrer les services
+./dremgr
+
+# réimporter les données
+./dbinst -Ai -- -@latest
+~~~
+
+**Finaliser la mise à jour**
 
 le répertoire contenant les logos personnalisés a changé. vous pouvez déplacer
 le logo actuel vers le nouvel emplacement
@@ -47,7 +85,7 @@ postgresql 15
 
 # le cas échéant, vous pouvez supprimer les sauvegardes de la base pdata
 # utilisées pour la migration
-rm *_pdata-*.sql.gz
+rm -f *_pdata-*.sql.gz
 ~~~
 
 ## Migrations techniques
