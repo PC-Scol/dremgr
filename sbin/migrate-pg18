@@ -73,7 +73,7 @@ if [ "$Profile" == ALL ]; then
         args=(
             --profile "$profile"
             ${shell:+--shell}
-            ${ignore_pdata:+--j31a}
+            ${ignore_pdata:+--l23e}
             ${migrate:+--migrate}
             ${restore:+--restore}
             ${cleanup:+--cleanup}
