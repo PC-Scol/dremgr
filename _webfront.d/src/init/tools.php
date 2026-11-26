@@ -1,5 +1,5 @@
 <?php
-namespace app\q;
+namespace app\init;
 
 class tools {
   static function isa_ts(string $string, ?array &$ms=null): bool {

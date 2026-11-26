@@ -1,20 +1,19 @@
 # -*- coding: utf-8 mode: dockerfile -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 ARG REGISTRY=pubdocker.univ-reunion.fr
 FROM $REGISTRY/src/base AS base
-FROM $REGISTRY/src/postgres AS postgres
+FROM $REGISTRY/src/php AS php
 
-FROM postgres:15-bookworm
+FROM debian:13-slim
 
 COPY --from=base /g/ /g/
 ARG APT_MIRROR SEC_MIRROR APT_PROXY TIMEZONE
 ENV APT_MIRROR=$APT_MIRROR SEC_MIRROR=$SEC_MIRROR APT_PROXY=$APT_PROXY TIMEZONE=$TIMEZONE
 RUN /g/build
-RUN /g/pkg i @ssl @git
 
-COPY --from=postgres /g/ /g/
-RUN /g/build -a @postgres
+COPY --from=php /g/ /g/
+RUN /g/build -a @php-apache-cas php-utils
 
-COPY config/dremgr/ /g/dremgr/
-RUN /g/build dremgr
+#RUN /g/php-exts/enable-xdebug
 
+EXPOSE 80
 ENTRYPOINT ["/g/entrypoint"]

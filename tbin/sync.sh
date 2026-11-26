@@ -39,9 +39,9 @@ if [ -n "$sync" ]; then
     [ -n "$source_profile" ] || source_profile="$profile"
     [ -n "$dest_profile" ] || dest_profile="$source_profile"
     SOURCE="${source_profile}_SOURCE"; SOURCE="${!SOURCE}"
-    args=(
-        -vrltp
-        --include "*$date*" --exclude "*"
+    args=(-vrltp)
+    [ "$date" != all ] && args+=(--include "*$date*" --exclude "*")
+    args+=(
         --delete-excluded --delete-after
         "$SOURCE/${source_profile}-dredata/downloads/"
         "var/${dest_profile}-dredata/downloads/"

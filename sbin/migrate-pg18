@@ -1,0 +1,139 @@
+#!/bin/bash
+# -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
+MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
+"$MYDIR/runphp" --bs --ue --ci || exit 1
+DREMGR="$MYDIR/.."
+source "$DREMGR/sbin/vendor/nulib/base/load.sh" || exit 1
+source "$DREMGR/sbin/functions.sh" || exit 1
+
+function _set_composefiles() {
+    composefile="$DREMGR/dbinst-docker-compose.yml"
+    composefiles=("$composefile")
+    composeargs=(-f "$composefile")
+    in_isatty && execargs=() || execargs=(-T)
+    localfile="$DREMGR/dbinst-docker-compose.local.yml"
+    if [ -f "$localfile" ]; then
+        composefiles+=("$localfile")
+        composeargs+=(-f "$localfile")
+    fi
+}
+
+function ensure_stopped() {
+    _set_composefiles
+    [ -f "$composefile" ] || die "$composefile: fichier introuvable"
+    if dcrunning "${composefiles[@]}"; then
+        die "DRE [$Profile] est démarré: vous DEVEZ l'arrêter pour lancer cette opération"
+    fi
+}
+
+function ensure_started() {
+    _set_composefiles
+    [ -f "$composefile" ] || die "$composefile: fichier introuvable"
+    if ! dcrunning "${composefiles[@]}"; then
+        die "DRE [$Profile] est arrêté: vous DEVEZ le démarrer pour lancer cette opération"
+    fi
+}
+
+Profile=ALL
+shell=
+ignore_pdata=
+migrate=
+restore=
+cleanup=
+args=(
+    "Préparation la migration vers postgresql 18"
+    #"usage"
+    -g:,--profile:PROFILE Profile= "\
+++Spécifier le profil. La valeur par défaut est ALL"
+    -A,--all-profiles Profile=ALL "++Faire l'opération pour tous les profils définis dans dremgr.env"
+    -P,--prod Profile=prod "++alias pour --profile prod"
+    -T,--test Profile=test "++alias pour --profile test"
+    -x,--shell . ++
+    --l23e,--La-base-pdata-sera-perdue ignore_pdata=1 "++Ne pas rendre obligatoire la présence d'une sauvegarde de la base pdata"
+    -m,--migrate . "Faire la migration. c'est la valeur par défaut"
+    -r,--restore . "Restaurer la base pdata"
+    -k,--cleanup . "Supprimer les anciens fichiers postgresql 15"
+)
+parse_args "$@"; set -- "${args[@]}"
+
+IS_DBINST=1
+run_check_env || exit 22
+
+setx Envfile=get_envfile
+[ -f "$Envfile" ] || die "$(ppath "$Envfile"): fichier introuvable"
+load_envs APP_PROFILES APP_PROFILES_AUTO DATADIR
+[ -n "$APP_PROFILES" ] || die "Aucun profil n'est défini"
+
+if [ "$Profile" == ALL ]; then
+    app_profiles="$APP_PROFILES"
+    read -a profiles <<<"${app_profiles//
+/ }"
+    for profile in "${profiles[@]}"; do
+        etitle "$profile"
+        args=(
+            --profile "$profile"
+            ${shell:+--shell}
+            ${ignore_pdata:+--l23e}
+            ${migrate:+--migrate}
+            ${restore:+--restore}
+            ${cleanup:+--cleanup}
+            -- "$@"
+        )
+        "$MYSELF" "${args[@]}"; r=$?
+        [ $r -eq 22 ] && exit
+        eend
+    done
+    exit
+fi
+
+################################################################################
+
+if [ -z "$migrate" -a -z "$restore" -a -z "$cleanup" ]; then
+    migrate=1
+fi
+
+setx -a backups=ls_files "$DREMGR" "${Profile}_pdata-*.sql.gz"
+if [ -n "$migrate" ]; then
+    # Vérifier la présence d'une sauvegarde de pdata
+    if [ -z "$ignore_pdata" -a ${#backups[*]} -eq 0 ]; then
+        ebanner "\
+Aucune sauvegarde de la base pdata n'a été trouvée pour le profil $Profile
+
+Je refuse de continuer la procédure de migration parce que vous risquez de perdre le contenu de la base de données pdata
+
+NB: à ce stade, il n'est pas possible de lancer une sauvegarde.
+vous devez faire une opération délicate pour revenir à l'état précédent.
+n'hésitez pas à demander de l'aide sur le forum en mentionnant @jclain"
+        die
+    fi
+
+    # Lancer le script de migration
+    ensure_stopped
+
+    estep "Migration DRE [$Profile]"
+    if [ -n "$shell" ]; then cmd=(bash)
+    else cmd=(exec prepare-pg18.sh --prepare)
+    fi
+    docker compose "${composeargs[@]}" run --rm db "${cmd[@]}"
+
+elif [ -n "$restore" ]; then
+    if [ ${#backups[*]} -eq 0 ]; then
+        die "Aucune sauvegarde de la base pdata n'a été trouvée pour le profil $Profile"
+    fi
+
+    ensure_started
+
+    setx backup=array_last backups
+    ebanner "Restauration du fichier $backup"
+    "$DREMGR/dbinst" -g"$Profile" --restore -y "$DREMGR/$backup"
+
+elif [ -n "$cleanup" ]; then
+    ensure_started
+
+    estep "Nettoyage DRE [$Profile]"
+    if [ -n "$shell" ]; then cmd=(bash)
+    else cmd=(cleanup-pg15.sh --cleanup)
+    fi
+    docker compose "${composeargs[@]}" exec db "${cmd[@]}"
+
+fi

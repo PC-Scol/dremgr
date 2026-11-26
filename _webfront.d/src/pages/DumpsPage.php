@@ -1,30 +1,23 @@
 <?php
-namespace app\vp;
+namespace app\pages;
 
-use app\app\ANavigablePage;
-use app\q\tools;
-use Exception;
-use nulib\file;
-use nur\b\date\Datetime;
-use nur\config;
-use nur\F;
-use nur\num;
-use nur\path;
-use nur\shutils;
-use nur\SV;
-use nur\v\bs3\fo\ControlHidden;
-use nur\v\bs3\fo\ControlSelect;
-use nur\v\bs3\fo\FormInline;
-use nur\v\bs3\vc\CNavTabs;
-use nur\v\bs3\vc\CTable;
-use nur\v\http;
-use nur\v\js;
-use nur\v\page;
-use nur\v\plugins\showmorePlugin;
-use nur\v\v;
-use nur\v\vo;
+use app\init\NavigablePage;
+use app\init\tools;
+use nulib\cl;
+use nulib\cv;
+use nulib\os\path;
+use nulib\os\sh;
+use nulib\php\coll\Cursor;
+use nulib\php\time\DateTime;
+use nulib\php\types\vfloat;
+use nulib\web\bs\tables\Table;
+use nulib\web\contag\v;
+use nulib\web\fo;
+use nulib\web\page;
+use nulib\web\params\ArrayData;
+use nulib\web\vo;
 
-class DumpsPage extends ANavigablePage {
+class DumpsPage extends NavigablePage {
   const CRON_LOG_MAX_SIZE = 2 * 1024 * 1024;
 
   function setup(): void {
@@ -32,14 +25,14 @@ class DumpsPage extends ANavigablePage {
     $appdir = path::join("/data", $this->profile);
     $this->dldir = $dldir = path::join($appdir, "downloads");
 
-    $afilenames = shutils::ls_files($dldir);
+    $afilenames = sh::ls_files($dldir);
     usort($afilenames, function ($afilename, $bfilename) use ($dldir) {
       if (preg_match('/\d{8}/', $afilename, $ms)) $amod = $ms[0];
       else $amod = strftime("%Y%m%d", filemtime(path::join($dldir, $afilename)));
       if (preg_match('/\d{8}/', $bfilename, $ms)) $bmod = $ms[0];
       else $bmod = strftime("%Y%m%d", filemtime(path::join($dldir, $bfilename)));
-      if (($c = SV::compare($amod, $bmod)) !== 0) return -$c;
-      return SV::compare($afilename, $bfilename);
+      if (($c = cv::compare($amod, $bmod)) !== 0) return -$c;
+      return cv::compare($afilename, $bfilename);
     });
 
     $files = [];
@@ -59,7 +52,7 @@ class DumpsPage extends ANavigablePage {
           "filename" => $filename,
           "file" => $file,
           "size" => filesize($file),
-          "mtime" => new Datetime(filemtime($file)),
+          "mtime" => new DateTime(filemtime($file)),
         ];
       }
     }
@@ -68,6 +61,18 @@ class DumpsPage extends ANavigablePage {
     }; unset($date);
     $this->yfiles = $yfiles;
 
+    $this->data = $data = new ArrayData([
+      "p" => ["string", $this->profile,
+        "form_control" => "hidden",
+      ],
+      "ymd" => ["string", cl::first_key($ydates),
+        "form_control" => "select",
+        "form_params" => [
+          "label" => "Date",
+          "items" => $ydates,
+        ],
+      ],
+    ]);
     if ($this->download($files)) return;
 
     $dre = tools::get_profile_vars([
@@ -76,25 +81,7 @@ class DumpsPage extends ANavigablePage {
     ], $this->profile);
     $this->dreUrl = $dre["url"];
     $this->maxAge = $dre["max_age"];
-
-    $this->fo = $fo = new FormInline([
-      "params" => [
-        "p" => [
-          "control" => ControlHidden::class,
-          "value" => $this->profile,
-        ],
-        "ymd" => [
-          "control" => ControlSelect::class,
-          "label" => "Date",
-          "items" => $ydates,
-        ],
-      ],
-      "autoload_params" => true,
-      "autoadd_submit" => false,
-    ]);
-    $ymd = $fo["ymd"];
-    if (!$ymd) $ymd = array_key_first($ydates);
-    $this->ymd = $ymd;
+    $this->ymd = $data["ymd"];
 
     $cronlog = path::join($appdir, "cron.log");
     if (file_exists($cronlog)) {
@@ -124,8 +111,7 @@ class DumpsPage extends ANavigablePage {
 
   protected $maxAge;
 
-  /** @var FormInline */
-  protected $fo;
+  protected ArrayData $data;
 
   protected $croncontent, $importcontent;
 
@@ -134,14 +120,14 @@ class DumpsPage extends ANavigablePage {
   function printJquery(): void {
     ?>
 <script type="text/javascript">
-  jQuery.noConflict()(function($) {
-    $("#ymd").on("change", function (e) {
-      this.form.submit();
-      return false;
-    });
-
-    $("#cron-content").scrollTop(function () { return this.scrollHeight; });
+jQuery.noConflict()(function($) {
+  $("#ymd").on("change", function (e) {
+    this.form.submit();
+    return false;
   });
+
+  $("#cron-content").scrollTop(function () { return this.scrollHeight; });
+});
 </script>
 <?php
   }
@@ -159,36 +145,43 @@ class DumpsPage extends ANavigablePage {
         $dreUrl,
       ]),
     ]);
-    $this->fo->print();
+    fo::print($this->data, [
+      "type" => "inline",
+      "feedback" => false,
+      "autoadd_submit" => false,
+    ]);
 
     $yfiles = $this->yfiles[$this->ymd] ?? [];
     $totalSize = 0;
     foreach ($yfiles as $yfile) {
       $totalSize += $yfile["size"];
     }
-    new CTable($yfiles, [
-      "map_func" => function($yfile) {
-        $filename = $yfile["filename"];
-        return [
-          "Nom" => v::a([
+    new Table($yfiles, [
+      "layout" => [
+        ["Nom", function(Cursor $yfile) {
+          $filename = $yfile["filename"];
+          return v::a([
             "href" => page::bu("", [
               "p" => $this->profile,
               "dl" => $filename
             ]),
             $filename,
-          ]),
-          "Taille" => num::format_size($yfile["size"]),
-          "Date" => $yfile["mtime"]->format(),
-        ];
-      },
-      "after_table" => v::div([
+          ]);
+        }],
+        ["Taille", static function(Cursor $yfile) {
+          return vfloat::format_size($yfile["size"]);
+        }],
+        ["Date", static function(Cursor $yfile) {
+          return $yfile["mtime"]->format();
+        }],
+      ],
+      "suffix" => v::div([
         "class" => "alert alert-info",
-        "Taille totale: ", num::format_size($totalSize),
+        "Taille totale: ", vfloat::format_size($totalSize),
         "<br/>En tenant compte de CRON_MAX_AGE, il faut prévoir ",
-        num::format_size($totalSize * $this->maxAge),
+        vfloat::format_size($totalSize * $this->maxAge),
         " pour garder une copie de tous les fichiers de dumps",
       ]),
-      "autoprint" => true,
     ]);
 
     if ($this->croncontent || $this->importcontent) {

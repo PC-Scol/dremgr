@@ -221,10 +221,10 @@ l'accès avec le nom `dre`
 ## Modification du logo
 
 Pour remplacer le logo par celui de votre université dans l'application web, il
-faut remplacer le fichier `public/brand.png` par votre propre image au format
-PNG (il faut garder le même nom)
+faut remplacer le fichier `_webfront.d/res/logo.png` par votre propre image au
+format PNG (il faut garder le même nom)
 ~~~sh
-cp ~/path/to/monlogo public/brand.png
+cp ~/path/to/monlogo _webfront.d/res/logo.png
 ~~~
 
 L'image DOIT avoir une hauteur de 50 pixel. La largeur importe peu.

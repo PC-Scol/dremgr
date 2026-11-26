@@ -159,6 +159,10 @@ DREMGR_TEMPLATE_LIST_VARS=(
     POSTGRES_PROFILES
 )
 
+function template_allow_link() {
+    _template_can_process "$@"
+}
+
 function template_dump_vars() {
     echo Profile
     _template_dump_vars \

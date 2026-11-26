@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # -*- coding: utf-8 mode: sh -*- vim:sw=4:sts=4:et:ai:si:sta:fenc=utf-8
 MYDIR="$(cd "$(dirname -- "$0")"; pwd)"
 RUNPHP="$MYDIR/sbin/runphp"
 "$RUNPHP" --bs --ue --ci || exit 1
-RUNPHP_STANDALONE=
+RUNCMD_STANDALONE=
 PROJDIR=; COMPOSERDIR=; COMPOSERPHAR=; VENDORDIR=; BUILDENV0=; BUILDENV=
 BUILD_IMAGES=(php-apache mariadb10); export BUILD_FLAVOUR=; DIST=; IMAGENAME=
 DISTFILES=(); TEMPLATEFILES=(); VARFILES=()
@@ -60,10 +60,13 @@ function dcrunning() {
     fi
 }
 
+function template_allow_link() {
+    _template_can_process "$@"
+}
 function build_check_env() {
     eval "$(template_locals)"
     local updatedenv file name
-    local -a updatedfiles files
+    local -a updatedfiles verifiles files
 
     if template_copy_missing "$PROJDIR/$BUILDENV0"; then
         updated=1
@@ -78,18 +81,20 @@ function build_check_env() {
                 setx file=dirname -- "$file"
                 file="$file/$name"
                 updatedfiles+=("$file")
+                _template_can_process "$file" && verifiles+=("$file")
             fi
         elif [ -d "$PROJDIR/$file" ]; then
             local dir="$PROJDIR/$file"
-            setx -a files=find "$dir" -type f -name ".*.dist"
+            setx -a files=find "$dir" -type f -name ".*.dist" -o -type l -name ".*.dist"
             for file in "${files[@]}"; do
                 if template_copy_missing "$file"; then
                     updated=1
                     setx name=basename -- "$file"
                     name="${name#.}"; name="${name%.*}"
                     setx file=dirname -- "$file"
-                    file="$file/$name"
-                    updatedfiles+=("${file#$PROJDIR/}")
+                    file="${file#$PROJDIR/}/$name"
+                    updatedfiles+=("$file")
+                    _template_can_process "$file" && verifiles+=("$file")
                 fi
             done
         else
@@ -101,7 +106,7 @@ function build_check_env() {
             template_copy_replace "$PROJDIR/$file"
         elif [ -d "$PROJDIR/$file" ]; then
             local dir="$PROJDIR/$file"
-            setx -a files=find "$dir" -type f -name ".*.template"
+            setx -a files=find "$dir" -type f -name ".*.template" -o -type l -name ".*.template"
             for file in "${files[@]}"; do
                 template_copy_replace "$file"
             done
@@ -134,9 +139,9 @@ function build_check_env() {
 Veuillez vérifier le fichier $BUILDENV
     ${EDITOR:-nano} $BUILDENV"
         fi
-        [ ${#updatedfiles[*]} -gt 0 ] && einfo "\
+        [ ${#verifiles[*]} -gt 0 ] && einfo "\
 Le cas échéant, veuillez vérifier ce(s) fichier(s)
-    ${EDITOR:-nano} $(qvals "${updatedfiles[@]}")"
+    ${EDITOR:-nano} $(qvals "${verifiles[@]}")"
         enote "ENSUITE, vous pourrez relancer la commande"
         return 1
     fi
@@ -190,7 +195,7 @@ function build_images() {
     for image in "$@"; do
         case "$image" in
         runphp)
-            [ ${#Configs[*]} -gt 0 ] && export RUNPHP_FORCE_BUILDENVS="${Configs[*]}"
+            [ ${#Configs[*]} -gt 0 ] && export RUNCMD_FORCE_BUILDENVS="${Configs[*]}"
             local -a args=(--bs)
             [ "$ForceBuild" != all ] && args+=(--ue)
             [ -n "$Pull" ] && args+=(--pull)

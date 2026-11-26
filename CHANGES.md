@@ -1,3 +1,11 @@
+## Release 3.0.0 du 26/11/2026-11:13
+
+Veuillez consulter [nouveautées de la v3](documentation/nouveautes-v3.md) pour
+le détail des changements et les instructions de mise à jour
+
+* `ea5f2b6` maj doc
+* `4053484` migration postgresql 18 et debian 13
+
 ## Release 2.6.2 du 08/10/2026-22:29
 
 ## Release 2.6.1 du 08/10/2026-22:28
